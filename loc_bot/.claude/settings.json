@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/post-edit-reminder.ps1 $CLAUDE_FILE_PATH"
+          }
+        ]
+      }
+    ]
+  }
+}

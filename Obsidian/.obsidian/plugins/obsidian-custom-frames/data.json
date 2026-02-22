@@ -1,0 +1,53 @@
+{
+    "frames": [
+        {
+            "url": "file:///C:/Users/user/Desktop/Claud/Quantum/BQB_Final_Launcher.html",
+            "displayName": "BQB Final Launcher",
+            "icon": "rocket",
+            "hideOnMobile": true,
+            "addRibbonIcon": true,
+            "openInCenter": true,
+            "zoomLevel": 1,
+            "forceIframe": false,
+            "customCss": "body { overflow-x: hidden; }",
+            "customJs": ""
+        },
+        {
+            "url": "file:///C:/Users/user/Desktop/Claud/%EC%A0%84%EA%B8%B0%EB%B2%84%EC%8A%A4/RnD_%EC%84%BC%ED%84%B0_%EA%B5%AC%EC%B6%95_%EA%B0%80%EC%9D%B4%EB%93%9C.html",
+            "displayName": "R&D 센터 구축 가이드",
+            "icon": "building",
+            "hideOnMobile": true,
+            "addRibbonIcon": true,
+            "openInCenter": true,
+            "zoomLevel": 1,
+            "forceIframe": false,
+            "customCss": "body { overflow-x: hidden; }",
+            "customJs": ""
+        },
+        {
+            "url": "file:///C:/Users/user/Desktop/Claud/Obsidian/obsidian_guide.html",
+            "displayName": "Obsidian Guide",
+            "icon": "book",
+            "hideOnMobile": true,
+            "addRibbonIcon": true,
+            "openInCenter": true,
+            "zoomLevel": 1,
+            "forceIframe": false,
+            "customCss": "body { overflow-x: hidden; }",
+            "customJs": ""
+        },
+        {
+            "url": "file:///C:/Users/user/Desktop/Claud/Git/Undergraduate-research-student/Claude/Obsidian/html/Git_guide.html",
+            "displayName": "Git 완전 정복 가이드",
+            "icon": "git-branch",
+            "hideOnMobile": true,
+            "addRibbonIcon": true,
+            "openInCenter": true,
+            "zoomLevel": 1,
+            "forceIframe": false,
+            "customCss": "body { overflow-x: hidden; }",
+            "customJs": "auto-registered"
+        }
+    ],
+    "padding": 0
+}

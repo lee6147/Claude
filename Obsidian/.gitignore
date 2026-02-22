@@ -1,0 +1,11 @@
+# Obsidian workspace (자주 바뀌는 UI 상태)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+
+# Obsidian 캐시
+.obsidian/cache
+
+# 시스템 파일
+.trash/
+.DS_Store
+Thumbs.db

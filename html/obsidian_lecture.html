@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>옵시디언 완전 정복</title>
+<style>
+* { margin: 0px; padding: 0px; box-sizing: border-box; }
+html, body, #root { min-height: 100vh; }
+body { background: rgb(13, 15, 20); overflow-x: hidden; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgb(51, 65, 85); border-radius: 3px; }
+@keyframes fadeUp { 
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0px); }
+}
+@keyframes fadeIn { 
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes float { 
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes blink { 
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes spin { 
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes slideIn { 
+  0% { transform: translateX(-20px); opacity: 0; }
+  100% { transform: translateX(0px); opacity: 1; }
+}
+@keyframes gradShift { 
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes confettiFall { 
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+@keyframes fireworkP { 
+  0% { transform: translate(0px, 0px) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx),var(--ty)) scale(0); opacity: 0; }
+}
+@keyframes twinkle { 
+  0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
+  50% { transform: scale(1) rotate(180deg); opacity: 1; }
+}
+@keyframes shimmer { 
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+@keyframes vaultOpen { 
+  0% { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0px); opacity: 1; }
+}
+@keyframes fileSlide { 
+  0% { transform: translateX(-20px); opacity: 0; }
+  100% { transform: translateX(0px); opacity: 1; }
+}
+@keyframes scanline { 
+  0% { top: -10%; }
+  100% { top: 110%; }
+}
+@keyframes popIn { 
+  0% { transform: scale(0.85); opacity: 0; }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes slideUp { 
+  0% { transform: translateY(40px); opacity: 0; }
+  100% { transform: translateY(0px); opacity: 1; }
+}
+@keyframes slideDown { 
+  0% { transform: translateY(-40px); opacity: 0; }
+  100% { transform: translateY(0px); opacity: 1; }
+}
+@keyframes slideLeft { 
+  0% { transform: translateX(40px); opacity: 0; }
+  100% { transform: translateX(0px); opacity: 1; }
+}
+@keyframes slideRight { 
+  0% { transform: translateX(-40px); opacity: 0; }
+  100% { transform: translateX(0px); opacity: 1; }
+}
+@keyframes zoomIn { 
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes bounce { 
+  0%, 20%, 53%, 100% { transform: translateY(0px); }
+  40% { transform: translateY(-20px); }
+  70% { transform: translateY(-10px); }
+}
+@keyframes flipX { 
+  0% { transform: perspective(400px) rotateX(90deg); opacity: 0; }
+  100% { transform: perspective(400px) rotateX(0deg); opacity: 1; }
+}
+@keyframes flipY { 
+  0% { transform: perspective(400px) rotateY(90deg); opacity: 0; }
+  100% { transform: perspective(400px) rotateY(0deg); opacity: 1; }
+}
+@keyframes pulse { 
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.06); opacity: 0.85; }
+}
+@keyframes shake { 
+  0%, 100% { transform: translateX(0px); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+@keyframes glow { 
+  0%, 100% { box-shadow: rgba(124, 140, 248, 0.3) 0px 0px 5px; }
+  50% { box-shadow: rgba(124, 140, 248, 0.7) 0px 0px 25px, rgba(124, 140, 248, 0.3) 0px 0px 50px; }
+}
+@keyframes blurClear { 
+  0% { filter: blur(8px); opacity: 0; }
+  100% { filter: blur(0px); opacity: 1; }
+}
+@keyframes skeletonLoad { 
+  0% { background-position: -200% 0px; }
+  100% { background-position: 200% 0px; }
+}
+@keyframes reveal { 
+  0% { clip-path: inset(0px 100% 0px 0px); }
+  100% { clip-path: inset(0px); }
+}
+@keyframes springIn { 
+  0% { transform: scale(0); }
+  60% { transform: scale(1.15); }
+  80% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+@keyframes progressFill { 
+  0% { width: 0px; }
+  100% { width: var(--target-w,100%); }
+}
+
+</style>
+</head>
+<body>
+
+<div id="root"><div style="background: rgb(13, 15, 20); min-height: 100vh; color: rgb(232, 234, 240); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; overflow-x: hidden;"><nav style="position: sticky; top: 0px; z-index: 100; background: rgba(13, 15, 20, 0.92); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255, 255, 255, 0.07); padding: 10px 16px; display: flex; align-items: center; gap: 8px; justify-content: center; flex-wrap: wrap;"><div style="display: flex; align-items: center; gap: 6px; margin-right: 8px; cursor: pointer;"><svg width="20" height="20" viewBox="0 0 100 100" fill="none"><polygon points="50,4 82,22 82,58 50,96 18,58 18,22" fill="#7C3AED" opacity="0.15"></polygon><polygon points="50,4 82,22 66,40 34,40 18,22" fill="#A78BFA" opacity="0.9"></polygon><polygon points="34,40 50,96 18,58" fill="#7C3AED" opacity="0.85"></polygon><polygon points="66,40 82,58 50,96" fill="#6D28D9" opacity="0.9"></polygon><polygon points="34,40 66,40 50,96" fill="#8B5CF6" opacity="0.8"></polygon><polygon points="50,4 66,40 34,40" fill="#C4B5FD" opacity="0.95"></polygon></svg><span style="font-weight: 700; font-size: 13px; color: rgb(232, 234, 240);">옵시디언</span></div><button style="padding: 7px 15px; border-radius: 999px; border: 1px solid rgba(124, 140, 248, 0.376); background: rgba(124, 140, 248, 0.125); color: rgb(124, 140, 248); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.25s; white-space: nowrap;">🏠 소개</button><button style="padding: 7px 15px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.07); background: transparent; color: rgb(123, 128, 144); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.25s; white-space: nowrap;">📦 보관소</button><button style="padding: 7px 15px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.07); background: transparent; color: rgb(123, 128, 144); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.25s; white-space: nowrap;">🌱 초급</button><button style="padding: 7px 15px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.07); background: transparent; color: rgb(123, 128, 144); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.25s; white-space: nowrap;">🔗 중급</button><button style="padding: 7px 15px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.07); background: transparent; color: rgb(123, 128, 144); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.25s; white-space: nowrap;">🎨 꾸미기</button><button style="padding: 7px 15px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.07); background: transparent; color: rgb(123, 128, 144); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.25s; white-space: nowrap;">⚡ 고급</button></nav><div style="animation: 0.4s ease 0s 1 normal none running fadeUp;"><div style="max-width: 960px; margin: 0px auto; padding: 56px 24px;"><div style="text-align: center; margin-bottom: 72px;"><div style="display: flex; justify-content: center; margin-bottom: 24px; animation: 3s ease-in-out 0s infinite normal none running float;"><svg width="88" height="88" viewBox="0 0 100 100" fill="none"><polygon points="50,4 82,22 82,58 50,96 18,58 18,22" fill="#7C3AED" opacity="0.15"></polygon><polygon points="50,4 82,22 66,40 34,40 18,22" fill="#A78BFA" opacity="0.9"></polygon><polygon points="34,40 50,96 18,58" fill="#7C3AED" opacity="0.85"></polygon><polygon points="66,40 82,58 50,96" fill="#6D28D9" opacity="0.9"></polygon><polygon points="34,40 66,40 50,96" fill="#8B5CF6" opacity="0.8"></polygon><polygon points="50,4 66,40 34,40" fill="#C4B5FD" opacity="0.95"></polygon></svg></div><h1 style="font-size: clamp(36px, 6vw, 64px); font-weight: 800; line-height: 1.1; margin-bottom: 20px; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif;"><span style="background: linear-gradient(135deg, rgb(124, 140, 248), rgb(167, 139, 250), rgb(52, 211, 153)) 0% 0% / 200% text; -webkit-text-fill-color: transparent; animation: 4s ease 0s infinite normal none running gradShift;">옵시디언</span><br><span>완전 정복</span></h1><div style="font-size: 17px; color: rgb(123, 128, 144); height: 28px; margin-bottom: 36px; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif;">지식을 연결하고, 생각을 확장하는 노트 앱<span style="color: rgb(124, 140, 248); animation: 1s ease-in-out 0s infinite normal none running blink;">|</span></div><div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px;"><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(16, 185, 129, 0.133); color: rgb(16, 185, 129); border: 1px solid rgba(16, 185, 129, 0.267);">📦 보관소</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(52, 211, 153, 0.133); color: rgb(52, 211, 153); border: 1px solid rgba(52, 211, 153, 0.267);">🌱 초급</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(245, 158, 11, 0.133); color: rgb(245, 158, 11); border: 1px solid rgba(245, 158, 11, 0.267);">🔗 중급</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(236, 72, 153, 0.133); color: rgb(236, 72, 153); border: 1px solid rgba(236, 72, 153, 0.267);">🎨 꾸미기</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(248, 113, 113, 0.133); color: rgb(248, 113, 113); border: 1px solid rgba(248, 113, 113, 0.267);">⚡ 고급</span></div><button style="padding: 12px 28px; border-radius: 12px; border: none; background: linear-gradient(135deg, rgb(124, 140, 248), rgb(167, 139, 250)); color: rgb(255, 255, 255); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; position: relative; overflow: hidden;"><span style="position: absolute; top: 0px; left: 0px; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent); animation: 2s ease 0s infinite normal none running shimmer; pointer-events: none;"></span>🎉 학습 시작하기!</button></div><div style="opacity: 1; transform: translateY(0px); transition: opacity 0.65s, transform 0.65s;"><div style="background: rgb(20, 23, 32); border: 1px solid rgba(124, 140, 248, 0.3); border-radius: 16px; padding: 24px; transition: transform 0.2s; margin-bottom: 20px;"><h2 style="font-size: 20px; font-weight: 700; margin-bottom: 14px;">❓ 옵시디언이란?</h2><p style="color: rgb(123, 128, 144); line-height: 1.8; margin-bottom: 20px;">옵시디언은 <strong style="color: rgb(232, 234, 240);">로컬 파일 기반의 마크다운 노트 앱</strong>입니다. 모든 노트가 내 기기에 <code style="font-family: &quot;JetBrains Mono&quot;, monospace; color: rgb(124, 140, 248); font-size: 13px;">.md</code> 파일로 저장되며, 노트 간 링크로 <strong style="color: rgb(232, 234, 240);">지식의 네트워크</strong>를 만들 수 있습니다.</p><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;"><div style="background: rgb(28, 32, 48); border: 1px solid rgba(124, 140, 248, 0.125); border-radius: 12px; padding: 16px; text-align: center; animation: 0.5s ease 0s 1 normal both running springIn; cursor: default; transform: scale(1); transition: transform 0.2s;"><div style="font-size: 28px; margin-bottom: 6px; animation: 2.5s ease-in-out 0s infinite normal none running float;">🔒</div><div style="font-weight: 600; margin-bottom: 4px; font-size: 14px; color: rgb(124, 140, 248);">데이터 주권</div><div style="font-size: 12px; color: rgb(123, 128, 144);">내 기기에 저장</div></div><div style="background: rgb(28, 32, 48); border: 1px solid rgba(52, 211, 153, 0.125); border-radius: 12px; padding: 16px; text-align: center; animation: 0.5s ease 0.1s 1 normal both running springIn; cursor: default; transform: scale(1); transition: transform 0.2s;"><div style="font-size: 28px; margin-bottom: 6px; animation: 2.8s ease-in-out 0s infinite normal none running float;">📡</div><div style="font-weight: 600; margin-bottom: 4px; font-size: 14px; color: rgb(52, 211, 153);">오프라인 사용</div><div style="font-size: 12px; color: rgb(123, 128, 144);">인터넷 불필요</div></div><div style="background: rgb(28, 32, 48); border: 1px solid rgba(245, 158, 11, 0.125); border-radius: 12px; padding: 16px; text-align: center; animation: 0.5s ease 0.2s 1 normal both running springIn; cursor: default; transform: scale(1); transition: transform 0.2s;"><div style="font-size: 28px; margin-bottom: 6px; animation: 3.1s ease-in-out 0s infinite normal none running float;">🔗</div><div style="font-weight: 600; margin-bottom: 4px; font-size: 14px; color: rgb(245, 158, 11);">노트 연결</div><div style="font-size: 12px; color: rgb(123, 128, 144);">지식 네트워크</div></div><div style="background: rgb(28, 32, 48); border: 1px solid rgba(248, 113, 113, 0.125); border-radius: 12px; padding: 16px; text-align: center; animation: 0.5s ease 0.3s 1 normal both running springIn; cursor: default; transform: scale(1); transition: transform 0.2s;"><div style="font-size: 28px; margin-bottom: 6px; animation: 3.4s ease-in-out 0s infinite normal none running float;">⚡</div><div style="font-weight: 600; margin-bottom: 4px; font-size: 14px; color: rgb(248, 113, 113);">무한 확장</div><div style="font-size: 12px; color: rgb(123, 128, 144);">수백 개 플러그인</div></div></div></div></div><div style="opacity: 1; transform: translateY(0px); transition: opacity 0.65s 0.1s, transform 0.65s 0.1s;"><div style="background: rgb(20, 23, 32); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 24px; transition: transform 0.2s; margin-bottom: 20px;"><h2 style="font-size: 20px; font-weight: 700; margin-bottom: 16px;">🗺️ 학습 로드맵</h2><div style="display: flex; gap: 14px; position: relative;"><div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; background: rgba(16, 185, 129, 0.125); color: rgb(16, 185, 129); border: 2px solid rgba(16, 185, 129, 0.25);">1</div><div style="width: 2px; flex: 1 1 0%; background: rgba(255, 255, 255, 0.07); margin: 4px 0px; min-height: 28px;"></div></div><div style="flex: 1 1 0%; padding-bottom: 20px;"><div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;"><span style="color: rgb(16, 185, 129); font-weight: 700;">📦 보관소</span><span style="font-size: 12px; color: rgb(123, 128, 144);">1주차</span></div><div style="display: flex; gap: 8px; flex-wrap: wrap;"><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(16, 185, 129, 0.133); color: rgb(16, 185, 129); border: 1px solid rgba(16, 185, 129, 0.267);">보관소 개념</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(16, 185, 129, 0.133); color: rgb(16, 185, 129); border: 1px solid rgba(16, 185, 129, 0.267);">파일 저장 위치</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(16, 185, 129, 0.133); color: rgb(16, 185, 129); border: 1px solid rgba(16, 185, 129, 0.267);">동기화 방법</span></div></div></div><div style="display: flex; gap: 14px; position: relative;"><div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; background: rgba(52, 211, 153, 0.125); color: rgb(52, 211, 153); border: 2px solid rgba(52, 211, 153, 0.25);">2</div><div style="width: 2px; flex: 1 1 0%; background: rgba(255, 255, 255, 0.07); margin: 4px 0px; min-height: 28px;"></div></div><div style="flex: 1 1 0%; padding-bottom: 20px;"><div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;"><span style="color: rgb(52, 211, 153); font-weight: 700;">🌱 초급</span><span style="font-size: 12px; color: rgb(123, 128, 144);">1-2주차</span></div><div style="display: flex; gap: 8px; flex-wrap: wrap;"><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(52, 211, 153, 0.133); color: rgb(52, 211, 153); border: 1px solid rgba(52, 211, 153, 0.267);">마크다운 문법</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(52, 211, 153, 0.133); color: rgb(52, 211, 153); border: 1px solid rgba(52, 211, 153, 0.267);">편집/읽기 모드</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(52, 211, 153, 0.133); color: rgb(52, 211, 153); border: 1px solid rgba(52, 211, 153, 0.267);">단축키</span></div></div></div><div style="display: flex; gap: 14px; position: relative;"><div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; background: rgba(245, 158, 11, 0.125); color: rgb(245, 158, 11); border: 2px solid rgba(245, 158, 11, 0.25);">3</div><div style="width: 2px; flex: 1 1 0%; background: rgba(255, 255, 255, 0.07); margin: 4px 0px; min-height: 28px;"></div></div><div style="flex: 1 1 0%; padding-bottom: 20px;"><div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;"><span style="color: rgb(245, 158, 11); font-weight: 700;">🔗 중급</span><span style="font-size: 12px; color: rgb(123, 128, 144);">2-3주차</span></div><div style="display: flex; gap: 8px; flex-wrap: wrap;"><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(245, 158, 11, 0.133); color: rgb(245, 158, 11); border: 1px solid rgba(245, 158, 11, 0.267);">내부 링크</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(245, 158, 11, 0.133); color: rgb(245, 158, 11); border: 1px solid rgba(245, 158, 11, 0.267);">태그 시스템</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(245, 158, 11, 0.133); color: rgb(245, 158, 11); border: 1px solid rgba(245, 158, 11, 0.267);">그래프 뷰</span></div></div></div><div style="display: flex; gap: 14px; position: relative;"><div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; background: rgba(236, 72, 153, 0.125); color: rgb(236, 72, 153); border: 2px solid rgba(236, 72, 153, 0.25);">4</div><div style="width: 2px; flex: 1 1 0%; background: rgba(255, 255, 255, 0.07); margin: 4px 0px; min-height: 28px;"></div></div><div style="flex: 1 1 0%; padding-bottom: 20px;"><div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;"><span style="color: rgb(236, 72, 153); font-weight: 700;">🎨 꾸미기</span><span style="font-size: 12px; color: rgb(123, 128, 144);">3-4주차</span></div><div style="display: flex; gap: 8px; flex-wrap: wrap;"><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(236, 72, 153, 0.133); color: rgb(236, 72, 153); border: 1px solid rgba(236, 72, 153, 0.267);">콜아웃 블록</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(236, 72, 153, 0.133); color: rgb(236, 72, 153); border: 1px solid rgba(236, 72, 153, 0.267);">하이라이트</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(236, 72, 153, 0.133); color: rgb(236, 72, 153); border: 1px solid rgba(236, 72, 153, 0.267);">CSS 스니펫</span></div></div></div><div style="display: flex; gap: 14px; position: relative;"><div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; background: rgba(248, 113, 113, 0.125); color: rgb(248, 113, 113); border: 2px solid rgba(248, 113, 113, 0.25);">5</div></div><div style="flex: 1 1 0%; padding-bottom: 0px;"><div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;"><span style="color: rgb(248, 113, 113); font-weight: 700;">⚡ 고급</span><span style="font-size: 12px; color: rgb(123, 128, 144);">1개월+</span></div><div style="display: flex; gap: 8px; flex-wrap: wrap;"><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(248, 113, 113, 0.133); color: rgb(248, 113, 113); border: 1px solid rgba(248, 113, 113, 0.267);">플러그인 5종</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(248, 113, 113, 0.133); color: rgb(248, 113, 113); border: 1px solid rgba(248, 113, 113, 0.267);">Templater</span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; background: rgba(248, 113, 113, 0.133); color: rgb(248, 113, 113); border: 1px solid rgba(248, 113, 113, 0.267);">Dataview</span></div></div></div></div></div></div></div><div style="border-top: 1px solid rgba(255, 255, 255, 0.07); padding: 28px 24px; text-align: center;"><div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px;"><button style="padding: 7px 18px; border-radius: 999px; border: 1px solid rgba(16, 185, 129, 0.25); background: rgba(16, 185, 129, 0.063); color: rgb(16, 185, 129); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;">📦 보관소 →</button><button style="padding: 7px 18px; border-radius: 999px; border: 1px solid rgba(52, 211, 153, 0.25); background: rgba(52, 211, 153, 0.063); color: rgb(52, 211, 153); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;">🌱 초급 →</button><button style="padding: 7px 18px; border-radius: 999px; border: 1px solid rgba(245, 158, 11, 0.25); background: rgba(245, 158, 11, 0.063); color: rgb(245, 158, 11); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;">🔗 중급 →</button><button style="padding: 7px 18px; border-radius: 999px; border: 1px solid rgba(236, 72, 153, 0.25); background: rgba(236, 72, 153, 0.063); color: rgb(236, 72, 153); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;">🎨 꾸미기 →</button><button style="padding: 7px 18px; border-radius: 999px; border: 1px solid rgba(248, 113, 113, 0.25); background: rgba(248, 113, 113, 0.063); color: rgb(248, 113, 113); font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;">⚡ 고급 →</button></div><div style="color: rgb(123, 128, 144); font-size: 12px;">옵시디언 완전 정복 강의 가이드 | 소개 → 보관소 → 초급 → 중급 → 꾸미기 → 고급</div></div></div></div>
+<script crossorigin="" src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script crossorigin="" src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+function seededRandom(seed) {
+  const x = Math.sin(seed * 9301 + 49297) * 49297;
+  return x - Math.floor(x);
+}
+
+const C = {
+  bg:  "#0D0F14", bg2: "#141720", bg3: "#1C2030",
+  border: "rgba(255,255,255,0.07)",
+  text: "#E8EAF0", muted: "#7B8090",
+  blue: "#7C8CF8", green: "#34D399", amber: "#F59E0B",
+  red: "#F87171", purple: "#A78BFA", pink: "#EC4899", teal: "#10B981",
+  font: '-apple-system,"Segoe UI","Noto Sans KR",sans-serif',
+  mono: '"JetBrains Mono",monospace',
+};
+
+const LEVELS = [
+  { id:"intro",        label:"🏠 소개",   color:"#7C8CF8" },
+  { id:"vault",        label:"📦 보관소",  color:"#10B981" },
+  { id:"basic",        label:"🌱 초급",   color:"#34D399" },
+  { id:"intermediate", label:"🔗 중급",   color:"#F59E0B" },
+  { id:"decorate",     label:"🎨 꾸미기",  color:"#EC4899" },
+  { id:"advanced",     label:"⚡ 고급",   color:"#F87171" },
+];
+
+const MARKDOWN_EXAMPLES = [
+  { syntax:"# 제목 1",   result:"가장 큰 제목",  type:"heading1" },
+  { syntax:"## 제목 2",  result:"중간 제목",     type:"heading2" },
+  { syntax:"**굵게**",   result:"굵은 텍스트",   type:"bold" },
+  { syntax:"*기울임*",   result:"기울인 텍스트",  type:"italic" },
+  { syntax:"- 항목",     result:"리스트 항목",   type:"list" },
+  { syntax:"> 인용문",   result:"인용 블록",     type:"blockquote" },
+  { syntax:"`코드`",     result:"인라인 코드",   type:"code" },
+];
+
+const GRAPH_NODES = [
+  { id:0, x:50, y:50, label:"📅 오늘 일기",  color:"#7C8CF8", size:18 },
+  { id:1, x:20, y:30, label:"💡 아이디어",   color:"#34D399", size:14 },
+  { id:2, x:75, y:25, label:"📚 독서 노트",  color:"#F59E0B", size:16 },
+  { id:3, x:85, y:65, label:"🚀 프로젝트",   color:"#F87171", size:20 },
+  { id:4, x:35, y:70, label:"📝 개념 정리",  color:"#A78BFA", size:14 },
+  { id:5, x:60, y:80, label:"✅ 할 일",      color:"#34D399", size:12 },
+  { id:6, x:15, y:60, label:"🎯 목표",       color:"#F59E0B", size:13 },
+  { id:7, x:90, y:40, label:"🔬 연구",       color:"#7C8CF8", size:11 },
+];
+const GRAPH_EDGES = [[0,1],[0,2],[0,3],[0,4],[0,5],[1,4],[1,6],[2,7],[3,5],[3,7],[4,6],[2,3]];
+
+const SHORTCUTS = [
+  { key:"Cmd + N",         desc:"새 노트 생성" },
+  { key:"Cmd + O",         desc:"파일 빠른 열기" },
+  { key:"Cmd + G",         desc:"그래프 뷰 열기" },
+  { key:"Cmd + E",         desc:"읽기/편집 모드 전환" },
+  { key:"Cmd + P",         desc:"명령 팔레트" },
+  { key:"Cmd + Shift + F", desc:"전체 검색" },
+  { key:"Shift + 1",       desc:"데일리 노트 열기" },
+];
+
+const CALLOUT_TYPES = [
+  { type:"note",    color:"#7C8CF8", icon:"📌", label:"NOTE",    desc:"일반 참고 사항" },
+  { type:"tip",     color:"#34D399", icon:"💡", label:"TIP",     desc:"유용한 팁" },
+  { type:"warning", color:"#F59E0B", icon:"⚠️", label:"WARNING", desc:"주의할 내용" },
+  { type:"danger",  color:"#F87171", icon:"🚨", label:"DANGER",  desc:"중요한 경고" },
+  { type:"quote",   color:"#A78BFA", icon:"💬", label:"QUOTE",   desc:"인용문" },
+  { type:"success", color:"#10B981", icon:"✅", label:"SUCCESS", desc:"성공/완료" },
+];
+
+const COMMUNITY_PLUGINS = [
+  { name:"Excalidraw", icon:"✏️", color:"#EC4899", level:"중급", tagline:"손으로 그린 듯한 다이어그램", desc:"마우스로 자유롭게 그림을 그리고 노트에 삽입합니다. 플로우차트, 와이어프레임, 마인드맵을 옵시디언 안에서 바로 만들 수 있어요.", use:"아이디어 스케치, UI 와이어프레임, 마인드맵, 개념 다이어그램", stars:"★★★★★" },
+  { name:"Kanban", icon:"📋", color:"#7C8CF8", level:"중급", tagline:"칸반 보드로 프로젝트 관리", desc:"Trello처럼 카드 형태의 칸반 보드를 옵시디언 안에서 만들 수 있습니다.", use:"프로젝트 관리, 콘텐츠 파이프라인, 습관 추적", stars:"★★★★☆" },
+  { name:"Tasks", icon:"✅", color:"#34D399", level:"중급", tagline:"마감일·반복·우선순위 할 일 관리", desc:"기본 체크박스를 훨씬 강력하게 만들어줍니다. 마감일, 예정일, 반복 주기, 우선순위를 할 일에 붙이고 어디서든 쿼리로 모아볼 수 있어요.", use:"개인 GTD 시스템, 프로젝트 마감 추적, 반복 업무 관리", stars:"★★★★★" },
+  { name:"Obsidian Git", icon:"🔄", color:"#F59E0B", level:"고급", tagline:"Git으로 자동 백업 & 버전 관리", desc:"보관소를 Git 저장소로 관리합니다. 일정 시간마다 자동 커밋·푸시하여 GitHub에 백업합니다.", use:"노트 자동 백업, 변경 이력 추적, 무료 기기 간 동기화", stars:"★★★★☆" },
+  { name:"QuickAdd", icon:"⚡", color:"#A78BFA", level:"고급", tagline:"빠른 노트 캡처 & 매크로 자동화", desc:"단축키 하나로 특정 폴더에 특정 템플릿으로 노트를 즉시 생성합니다.", use:"아이디어 즉시 캡처, 노트 생성 자동화, 매일 루틴 실행", stars:"★★★★★" },
+  { name:"Calendar", icon:"📅", color:"#10B981", level:"초급", tagline:"사이드바 달력으로 데일리 노트 관리", desc:"사이드바에 깔끔한 달력을 추가합니다. 날짜를 클릭하면 해당 데일리 노트가 열립니다.", use:"데일리 노트 탐색, 습관 추적 확인, 일기 작성 루틴", stars:"★★★★★" },
+  { name:"Periodic Notes", icon:"📆", color:"#34D399", level:"중급", tagline:"주간·월간·분기·연간 정기 노트 자동화", desc:"데일리 노트를 넘어 주간·월간·분기·연간 단위의 정기 노트를 자동으로 생성합니다.", use:"주간 회고, 월간 목표 설정, 분기 리뷰, 연간 계획", stars:"★★★★☆" },
+  { name:"Outliner", icon:"📑", color:"#F87171", level:"중급", tagline:"리스트와 아웃라인을 Roam처럼 강력하게", desc:"리스트 항목을 Tab/Shift+Tab으로 자유롭게 들여쓰기하고, 항목 단위로 접기/펼치기가 가능해집니다.", use:"회의록 실시간 정리, 브레인스토밍, 계층적 노트 작성", stars:"★★★★☆" },
+  { name:"Style Settings", icon:"🎛️", color:"#EC4899", level:"중급", tagline:"테마를 GUI로 세밀하게 커스터마이징", desc:"지원 테마의 색상, 폰트, 간격 등을 코드 없이 슬라이더와 컬러 피커로 조정합니다.", use:"테마 색상 변경, 폰트 커스텀, 레이아웃 미세 조정", stars:"★★★★★" },
+  { name:"Linter", icon:"🧹", color:"#7C8CF8", level:"초급", tagline:"마크다운 자동 포맷팅 & 정리", desc:"저장할 때마다 마크다운 문서를 자동으로 정리합니다. 50가지 이상의 규칙을 설정할 수 있어요.", use:"문서 포맷 자동 통일, YAML 자동 정리, 깔끔한 마크다운 유지", stars:"★★★★☆" },
+];
+
+/* ───── 공통 컴포넌트 ───── */
+
+function ObsidianLogo({ size = 24 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
+      <polygon points="50,4 82,22 82,58 50,96 18,58 18,22" fill="#7C3AED" opacity="0.15"/>
+      <polygon points="50,4 82,22 66,40 34,40 18,22" fill="#A78BFA" opacity="0.9"/>
+      <polygon points="34,40 50,96 18,58" fill="#7C3AED" opacity="0.85"/>
+      <polygon points="66,40 82,58 50,96" fill="#6D28D9" opacity="0.9"/>
+      <polygon points="34,40 66,40 50,96" fill="#8B5CF6" opacity="0.8"/>
+      <polygon points="50,4 66,40 34,40" fill="#C4B5FD" opacity="0.95"/>
+    </svg>
+  );
+}
+
+function ShimmerBtn({ children, style, ...props }) {
+  return (
+    <button style={{ ...style, position:"relative", overflow:"hidden" }} {...props}>
+      <span style={{
+        position:"absolute", top:0, left:0, width:"40%", height:"100%",
+        background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)",
+        animation:"shimmer 2s infinite", pointerEvents:"none",
+      }} />
+      {children}
+    </button>
+  );
+}
+
+function VaultBox({ children, style }) {
+  return (
+    <div style={{
+      background:"linear-gradient(135deg,rgba(124,140,248,0.05),rgba(167,139,250,0.05))",
+      border:"2px solid rgba(124,140,248,0.25)", borderRadius:20, padding:28,
+      position:"relative", overflow:"hidden", ...style
+    }}>
+      <div style={{ position:"absolute", top:0, left:0, right:0, height:2,
+        background:"linear-gradient(90deg,transparent,#7C8CF8,#A78BFA,transparent)" }} />
+      {children}
+    </div>
+  );
+}
+
+function Tag({ children, color }) {
+  const isVar = color && color.startsWith("var(");
+  return (
+    <span style={{
+      display:"inline-flex", alignItems:"center", gap:5,
+      padding:"4px 11px", borderRadius:"999px", fontSize:12, fontWeight:600,
+      fontFamily: C.font,
+      background: isVar ? "rgba(255,255,255,0.08)" : color + "22",
+      color,
+      border: `1px solid ${isVar ? "rgba(255,255,255,0.15)" : color + "44"}`,
+    }}>{children}</span>
+  );
+}
+
+function TipBox({ type = "tip", children }) {
+  const cfg = {
+    tip:  { icon:"💡", color:"#7C8CF8", label:"팁" },
+    warn: { icon:"⚠️", color:"#F59E0B", label:"주의" },
+    key:  { icon:"🎯", color:"#34D399", label:"핵심" },
+    info: { icon:"ℹ️",  color:"#A78BFA", label:"참고" },
+  }[type];
+  return (
+    <div style={{ borderRadius:12, padding:"16px 20px", border:`1px solid ${cfg.color}44`, background:`${cfg.color}11` }}>
+      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+        <span>{cfg.icon}</span>
+        <span style={{ color:cfg.color, fontWeight:700, fontSize:13 }}>{cfg.label}</span>
+      </div>
+      <div style={{ color:"#c0c8d8", fontSize:14, lineHeight:1.7 }}>{children}</div>
+    </div>
+  );
+}
+
+function useIntersection(ref) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.08 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  return visible;
+}
+
+function SectionReveal({ children, delay = 0 }) {
+  const ref = useRef(null);
+  const visible = useIntersection(ref);
+  return (
+    <div ref={ref} style={{
+      opacity: visible ? 1 : 0,
+      transform: visible ? "translateY(0)" : "translateY(30px)",
+      transition: `opacity 0.65s ${delay}s, transform 0.65s ${delay}s`,
+    }}>{children}</div>
+  );
+}
+
+function useTypewriter(text, speed = 40, active = true) {
+  const [displayed, setDisplayed] = useState("");
+  useEffect(() => {
+    if (!active) return;
+    setDisplayed("");
+    let i = 0;
+    const id = setInterval(() => {
+      setDisplayed(text.slice(0, i + 1));
+      i++;
+      if (i >= text.length) clearInterval(id);
+    }, speed);
+    return () => clearInterval(id);
+  }, [text, speed, active]);
+  return displayed;
+}
+
+/* ───── 파티클 컴포넌트 ───── */
+
+function Confetti({ active, onDone }) {
+  const colors = ["#7C8CF8","#34D399","#F59E0B","#F87171","#A78BFA","#EC4899","#FCD34D","#67E8F9"];
+  useEffect(() => {
+    if (active) { const t = setTimeout(onDone, 3200); return () => clearTimeout(t); }
+  }, [active, onDone]);
+  if (!active) return null;
+  return (
+    <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:9999, overflow:"hidden" }}>
+      {Array.from({ length: 72 }).map((_, i) => (
+        <div key={i} style={{
+          position:"absolute",
+          left:`${seededRandom(i*5)*100}%`,
+          top:"-20px",
+          width: 5 + seededRandom(i*5+1)*9,
+          height: seededRandom(i*5+2) > 0.5 ? (5+seededRandom(i*5+3)*9)*0.5 : 5+seededRandom(i*5+3)*9,
+          background: colors[i % colors.length],
+          borderRadius: seededRandom(i*5+4) > 0.5 ? 2 : "50%",
+          animation: `confettiFall ${1.8+seededRandom(i*5+5)*1.6}s ease-in forwards`,
+          animationDelay: `${seededRandom(i*5+6)*0.9}s`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+function Firework({ x, y, active }) {
+  const colors = ["#7C8CF8","#34D399","#F59E0B","#F87171","#A78BFA","#EC4899","#FCD34D"];
+  if (!active) return null;
+  return (
+    <div style={{ position:"fixed", left:x, top:y, pointerEvents:"none", zIndex:9998 }}>
+      {Array.from({ length: 18 }).map((_, i) => {
+        const angle = (i / 18) * 360;
+        const dist = 55 + seededRandom(i+200) * 65;
+        return (
+          <div key={i} style={{
+            position:"absolute", width:7, height:7, borderRadius:"50%",
+            background: colors[i % colors.length], top:-3, left:-3,
+            "--tx":`${Math.cos((angle*Math.PI)/180)*dist}px`,
+            "--ty":`${Math.sin((angle*Math.PI)/180)*dist}px`,
+            animation:"fireworkP 0.85s ease-out forwards",
+            animationDelay:`${seededRandom(i+300)*0.12}s`,
+          }} />
+        );
+      })}
+    </div>
+  );
+}
+
+function Sparkles({ count = 6, color = "#7C8CF8" }) {
+  return (
+    <div style={{ position:"absolute", inset:0, pointerEvents:"none", overflow:"hidden" }}>
+      {Array.from({ length: count }).map((_,i) => (
+        <div key={i} style={{
+          position:"absolute", left:`${10+(i/count)*80}%`, top:`${20+(i%3)*25}%`,
+          width:7, height:7, background:color, borderRadius:"50%",
+          animation:`twinkle ${1.4+i*0.3}s ease-in-out infinite`,
+          animationDelay:`${i*0.22}s`, opacity:0,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+function useFireworks() {
+  const [fws, setFws] = useState([]);
+  let counter = 0;
+  const trigger = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const fw = { id: Date.now() + (++counter), x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, active: true };
+    setFws(f => [...f, fw]);
+    setTimeout(() => setFws(f => f.filter(x => x.id !== fw.id)), 1000);
+  };
+  const render = () => fws.map(fw => <Firework key={fw.id} {...fw} />);
+  return { trigger, render };
+}
+
+/* ───── 공통 스타일 상수 ───── */
+
+const S = {
+  card: {
+    background: C.bg2,
+    border: `1px solid ${C.border}`,
+    borderRadius: 16,
+    padding: 24,
+    transition: "transform 0.2s",
+  },
+  cardSm: {
+    background: C.bg3,
+    border: `1px solid ${C.border}`,
+    borderRadius: 12,
+    padding: 16,
+  },
+  mdEditor: {
+    background:"#0a0c10",
+    border:"1px solid rgba(124,140,248,0.3)",
+    borderRadius:12,
+    overflow:"hidden",
+  },
+  mdTopbar: {
+    background:"#1a1d2e",
+    padding:"10px 16px",
+    display:"flex",
+    alignItems:"center",
+    gap:8,
+    borderBottom:`1px solid ${C.border}`,
+  },
+  dot: { width:10, height:10, borderRadius:"50%" },
+  kbd: {
+    background:"#1a1d2e",
+    border:"1px solid rgba(255,255,255,0.15)",
+    borderBottom:"3px solid rgba(255,255,255,0.1)",
+    borderRadius:6, padding:"3px 8px",
+    fontFamily: C.mono, fontSize:12, color:"#c0caf5",
+    whiteSpace:"nowrap",
+  },
+  section: { maxWidth:960, margin:"0 auto", padding:"56px 24px" },
+  folderTree: { background:"#08090e", borderRadius:12, padding:20, fontFamily:C.mono, fontSize:13, lineHeight:2 },
+};
+
+/* ───── 에디터 미리보기 컴포넌트 ───── */
+
+function MdEditor({ topbarLabel, children }) {
+  return (
+    <div style={S.mdEditor}>
+      <div style={S.mdTopbar}>
+        <div style={{...S.dot, background:"#FF5F57"}}/>
+        <div style={{...S.dot, background:"#FEBC2E"}}/>
+        <div style={{...S.dot, background:"#28C840"}}/>
+        {topbarLabel && <span style={{color:C.muted,fontSize:13,marginLeft:8}}>{topbarLabel}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/* ───── VaultExplainer ───── */
+
+function VaultExplainer() {
+  const [step, setStep] = useState(0);
+  const [confetti, setConfetti] = useState(false);
+  const fw = useFireworks();
+
+  const steps = [
+    {
+      title:"보관소(Vault)란?", icon:"📦", color:"#7C8CF8",
+      content:"옵시디언의 '보관소'는 여러분 컴퓨터의 일반 폴더입니다. 특별한 클라우드 서버도, 독점 파일 포맷도 없어요. 내 하드 디스크 어딘가의 폴더를 '이 폴더를 옵시디언 보관소로 쓸게요' 라고 지정하면 됩니다.",
+      visual: (
+        <div style={{ textAlign:"center", padding:"20px 0" }}>
+          <div style={{ fontSize:56, animation:"float 2s ease-in-out infinite", marginBottom:12 }}>📁</div>
+          <div style={{ background:"rgba(124,140,248,0.1)", border:"1px solid rgba(124,140,248,0.3)", borderRadius:10, padding:"8px 20px", fontSize:14, color:"#7C8CF8", fontFamily:C.mono, display:"inline-block" }}>
+            ~/Documents/MyVault/
+          </div>
+          <div style={{ color:C.muted, fontSize:13, marginTop:10 }}>← 그냥 폴더예요. 이게 전부입니다!</div>
+        </div>
+      ),
+    },
+    {
+      title:"옵시디언이 하는 일", icon:"🔍", color:"#34D399",
+      content:"보관소 폴더 안의 모든 .md 파일을 찾아 노트로 인식합니다. 설정·플러그인·테마는 .obsidian 숨김 폴더에 자동 저장됩니다. 앱을 지워도 노트 파일은 그대로 남아요.",
+      visual: (
+        <div style={{ background:"#08090e", borderRadius:12, padding:16, fontFamily:C.mono, fontSize:13, lineHeight:2.2, position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:"rgba(52,211,153,0.7)", animation:"scanline 2s linear infinite" }} />
+          {["📄 오늘일기.md","📄 독서노트.md","📄 아이디어.md","⚙️ .obsidian/","  └ config","  └ plugins/"].map((f,i) => (
+            <div key={f} style={{ color: f.includes(".obsidian")||f.includes("└") ? C.muted : "#7dcfff", animation:`fileSlide 0.4s ease ${i*0.08}s both` }}>{f}</div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      title:".obsidian 폴더", icon:"⚙️", color:"#F59E0B",
+      content:".obsidian 폴더에는 설정·플러그인·테마·단축키 등 앱 설정 전체가 담깁니다. 이 폴더를 다른 기기 보관소에 복사하면 완전히 같은 환경으로 세팅됩니다. 절대 직접 수정하지 마세요.",
+      visual: (
+        <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+          {[
+            [".obsidian/","앱 설정 폴더 (숨김 폴더)","#F59E0B"],
+            ["  config","전체 설정 JSON 파일",C.muted],
+            ["  plugins/","설치된 커뮤니티 플러그인",C.muted],
+            ["  themes/","설치된 테마 CSS",C.muted],
+            ["  snippets/","커스텀 CSS 스니펫",C.muted],
+          ].map(([n,d,col]) => (
+            <div key={n} style={{ display:"flex", alignItems:"center", gap:12, padding:"7px 12px", background:"rgba(245,158,11,0.06)", borderRadius:8 }}>
+              <code style={{ fontFamily:C.mono, fontSize:12, color:col, minWidth:130 }}>{n}</code>
+              <span style={{ fontSize:13, color:C.muted }}>{d}</span>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      title:"여러 보관소 사용", icon:"🗂️", color:"#A78BFA",
+      content:"옵시디언은 여러 보관소를 만들 수 있습니다. 업무·개인·공부 보관소를 완전히 분리하세요. 각 보관소는 독립적인 설정·플러그인·테마를 가집니다.",
+      visual: (
+        <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
+          {[{icon:"💼",name:"업무",color:"#7C8CF8"},{icon:"🏠",name:"개인",color:"#34D399"},{icon:"📚",name:"공부",color:"#F59E0B"}].map((v,i) => (
+            <div key={v.name} style={{ background:`${v.color}15`, border:`1px solid ${v.color}44`, borderRadius:12, padding:"16px 20px", textAlign:"center", animation:`float ${2.5+i*0.4}s ease-in-out infinite` }}>
+              <div style={{ fontSize:32, marginBottom:6 }}>{v.icon}</div>
+              <div style={{ fontSize:13, color:v.color, fontWeight:600 }}>{v.name} 보관소</div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      title:"어디에 만들까?", icon:"📍", color:"#EC4899",
+      content:"로컬만 사용하면 어디든 상관없어요. 기기 간 동기화를 원한다면 iCloud Drive·Dropbox 같은 클라우드 폴더 안에 보관소를 만드세요.",
+      visual: (
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {[
+            {icon:"☁️",name:"iCloud Drive",path:"~/Library/…/iCloud/Obsidian/",rec:"추천",color:"#7C8CF8"},
+            {icon:"📦",name:"Dropbox",path:"~/Dropbox/Obsidian/",rec:"추천",color:"#34D399"},
+            {icon:"🔵",name:"Obsidian Sync (유료)",path:"공식 서비스",rec:"최강",color:"#A78BFA"},
+            {icon:"💾",name:"로컬만",path:"~/Documents/MyVault/",rec:"기본",color:C.muted},
+          ].map((l,i) => (
+            <div key={l.name} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 14px", background:C.bg3, borderRadius:10, animation:`slideRight 0.4s ease ${i*0.1}s both` }}>
+              <span style={{ fontSize:22 }}>{l.icon}</span>
+              <div style={{ flex:1 }}>
+                <div style={{ fontWeight:600, fontSize:14 }}>{l.name}</div>
+                <code style={{ fontSize:11, color:C.muted, fontFamily:C.mono }}>{l.path}</code>
+              </div>
+              <span style={{ fontSize:11, padding:"2px 8px", borderRadius:999, background:`${l.color}22`, color:l.color, fontWeight:700 }}>{l.rec}</span>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+
+  const s = steps[step];
+  const advance = (e) => {
+    fw.trigger(e);
+    if (step < steps.length - 1) setStep(st => st + 1);
+    else setConfetti(true);
+  };
+
+  return (
+    <div>
+      {fw.render()}
+      <Confetti active={confetti} onDone={() => setConfetti(false)} />
+      <div style={{ display:"flex", gap:6, marginBottom:20 }}>
+        {steps.map((ss,i) => (
+          <div key={i} onClick={() => setStep(i)} style={{ flex:1, height:4, borderRadius:999, background:i<=step?ss.color:C.bg3, cursor:"pointer", transition:"background 0.3s" }} />
+        ))}
+      </div>
+      <VaultBox key={step} style={{ animation:"vaultOpen 0.45s ease" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+          <span style={{ fontSize:34 }}>{s.icon}</span>
+          <div>
+            <div style={{ fontWeight:800, fontSize:18, color:s.color }}>{s.title}</div>
+            <div style={{ fontSize:12, color:C.muted }}>단계 {step+1} / {steps.length}</div>
+          </div>
+        </div>
+        <p style={{ color:"#c0c8d8", lineHeight:1.8, marginBottom:20, fontSize:14 }}>{s.content}</p>
+        {s.visual}
+      </VaultBox>
+      <div style={{ display:"flex", gap:10, marginTop:14 }}>
+        {step > 0 && (
+          <button onClick={() => setStep(st => st-1)} style={{ padding:"10px 20px", borderRadius:10, border:`1px solid ${C.border}`, background:"transparent", color:C.muted, fontFamily:C.font, fontSize:14, cursor:"pointer" }}>← 이전</button>
+        )}
+        <ShimmerBtn onClick={advance} style={{ flex:1, padding:"12px", borderRadius:10, border:"none", background:`linear-gradient(135deg,${s.color},${s.color}aa)`, color:"#fff", fontFamily:C.font, fontSize:15, fontWeight:700, cursor:"pointer" }}>
+          {step < steps.length-1 ? `다음: ${steps[step+1].title} →` : "🎉 완료! 폭죽 터뜨리기!"}
+        </ShimmerBtn>
+      </div>
+    </div>
+  );
+}
+
+/* ───── MarkdownSimulator ───── */
+
+function MarkdownSimulator() {
+  const [selected, setSelected] = useState(0);
+  const [mode, setMode] = useState("split");
+  const ex = MARKDOWN_EXAMPLES[selected];
+
+  const renderPreview = (ex) => ({
+    heading1:   <div style={{ fontSize:24, fontWeight:700, color:"#fff", marginBottom:8 }}>제목 1</div>,
+    heading2:   <div style={{ fontSize:18, fontWeight:600, color:"#e0e0ff", marginBottom:6 }}>제목 2</div>,
+    bold:       <span style={{ fontWeight:700, color:"#fff" }}>굵은 텍스트</span>,
+    italic:     <span style={{ fontStyle:"italic", color:"#a9b1d6" }}>기울인 텍스트</span>,
+    list:       <ul style={{ color:"#a9b1d6", paddingLeft:20 }}><li>항목 1</li><li>항목 2</li></ul>,
+    blockquote: <div style={{ borderLeft:"3px solid #7C8CF8", paddingLeft:12, color:C.muted, fontStyle:"italic" }}>인용 블록입니다.</div>,
+    code:       <span style={{ background:"#1a1d2e", padding:"2px 6px", borderRadius:4, fontFamily:C.mono, fontSize:13, color:"#7dcfff" }}>인라인 코드</span>,
+  })[ex.type];
+
+  return (
+    <div>
+      <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:14 }}>
+        {MARKDOWN_EXAMPLES.map((e,i) => (
+          <button key={i} onClick={() => setSelected(i)} style={{ padding:"6px 12px", borderRadius:999, border:`1px solid ${selected===i?"#7C8CF8":C.border}`, background:selected===i?"rgba(124,140,248,0.15)":"transparent", color:selected===i?"#7C8CF8":C.muted, cursor:"pointer", fontSize:13, fontFamily:C.font, transition:"all 0.2s" }}>
+            {e.syntax}
+          </button>
+        ))}
+      </div>
+      <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+        {["split","edit","preview"].map(m => (
+          <button key={m} onClick={() => setMode(m)} style={{ padding:"4px 12px", borderRadius:6, border:`1px solid ${mode===m?"rgba(124,140,248,0.5)":C.border}`, background:mode===m?"rgba(124,140,248,0.1)":"transparent", color:mode===m?"#7C8CF8":C.muted, cursor:"pointer", fontSize:12, fontFamily:C.font, fontWeight:600, transition:"all 0.2s" }}>
+            {m==="split"?"⬛ 분할":m==="edit"?"✏️ 편집":"👁 미리보기"}
+          </button>
+        ))}
+      </div>
+      <MdEditor topbarLabel="📝 노트.md">
+        <div style={{ display:"grid", gridTemplateColumns:mode==="split"?"1fr 1fr":"1fr" }}>
+          {(mode==="split"||mode==="edit") && (
+            <div style={{ padding:20, fontFamily:C.mono, fontSize:14, lineHeight:1.8, color:"#c0caf5", borderRight:mode==="split"?`1px solid ${C.border}`:"none" }}>
+              <span style={{color:"#7dcfff"}}>{ex.syntax}</span>
+              <span style={{ color:"#7C8CF8", marginLeft:2, animation:"blink 1s ease-in-out infinite" }}>|</span>
+            </div>
+          )}
+          {(mode==="split"||mode==="preview") && (
+            <div style={{ padding:20, fontSize:15, lineHeight:1.8, color:C.text, animation:"fadeIn 0.3s ease" }}>
+              {renderPreview(ex)}
+              <p style={{color:C.muted, fontSize:13, marginTop:10}}>← 렌더링된 결과</p>
+            </div>
+          )}
+        </div>
+      </MdEditor>
+    </div>
+  );
+}
+
+/* ───── VaultSimulator ───── */
+
+function VaultSimulator() {
+  const [expanded, setExpanded] = useState({ Daily:true, Weekly:false, Notes:false });
+  const [creatingIn, setCreatingIn] = useState(null);
+  const [newFileName, setNewFileName] = useState("");
+  const [files, setFiles] = useState({ Daily:["2024-01-15.md","2024-01-16.md"], Weekly:["2024-W03.md"], Notes:["독서노트.md","아이디어.md"] });
+  const toggle = f => setExpanded(e => ({...e,[f]:!e[f]}));
+  const handleCreate = folder => {
+    if (!newFileName.trim()) return;
+    const name = newFileName.endsWith(".md") ? newFileName : newFileName+".md";
+    setFiles(f => ({...f,[folder]:[...f[folder],name]}));
+    setCreatingIn(null); setNewFileName("");
+  };
+  return (
+    <div style={S.folderTree}>
+      <div style={{color:C.muted,fontSize:12,marginBottom:10,letterSpacing:"0.08em"}}>📦 MY VAULT</div>
+      {Object.entries(files).map(([folder,ffiles]) => (
+        <div key={folder} style={{marginBottom:4}}>
+          <div onClick={() => toggle(folder)} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",padding:"3px 0",userSelect:"none"}}>
+            <span style={{color:C.muted,fontSize:12,width:12}}>{expanded[folder]?"▾":"▸"}</span>
+            <span style={{color:C.amber}}>📁 {folder}</span>
+            <button onClick={e=>{e.stopPropagation();setCreatingIn(folder);setNewFileName("");}} style={{marginLeft:"auto",background:"rgba(124,140,248,0.15)",border:"none",color:"#7C8CF8",borderRadius:4,padding:"1px 6px",cursor:"pointer",fontSize:11}}>+ 새 노트</button>
+          </div>
+          {expanded[folder] && (
+            <div style={{paddingLeft:20,borderLeft:`1px solid rgba(255,255,255,0.08)`,marginLeft:8,animation:"fadeIn 0.2s ease"}}>
+              {ffiles.map(f => <div key={f} style={{padding:"2px 0"}}><span style={{color:"#7dcfff"}}>📄 {f}</span></div>)}
+              {creatingIn===folder && (
+                <div style={{display:"flex",gap:6,alignItems:"center",marginTop:4}}>
+                  <span style={{color:C.muted}}>📄</span>
+                  <input autoFocus value={newFileName} onChange={e => setNewFileName(e.target.value)}
+                    onKeyDown={e => {if(e.key==="Enter") handleCreate(folder);if(e.key==="Escape") setCreatingIn(null);}}
+                    placeholder="파일명 입력 후 Enter"
+                    style={{background:"rgba(124,140,248,0.1)",border:"1px solid rgba(124,140,248,0.4)",borderRadius:4,padding:"2px 8px",color:"#7C8CF8",fontFamily:C.mono,fontSize:13,outline:"none",width:200}} />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ───── GraphView ───── */
+
+function GraphView() {
+  const [hovered, setHovered] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [time, setTime] = useState(0);
+  useEffect(() => { const id = setInterval(() => setTime(t => t+1), 50); return () => clearInterval(id); }, []);
+  const W=500, H=300;
+  const px = n => (n.x/100)*W;
+  const py = n => (n.y/100)*H;
+  const connectedIds = selected!==null ? new Set(GRAPH_EDGES.filter(([a,b]) => a===selected||b===selected).flatMap(e => e)) : null;
+  return (
+    <div style={{ background:"#08090e", borderRadius:16, border:`1px solid ${C.border}`, overflow:"hidden" }}>
+      <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:8}}>
+        <span style={{color:C.muted,fontSize:13}}>🌐 그래프 뷰</span>
+        {selected!==null && (
+          <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:8}}>
+            <Tag color={GRAPH_NODES[selected].color}>{GRAPH_NODES[selected].label}</Tag>
+            <button onClick={() => setSelected(null)} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:16}}>×</button>
+          </div>
+        )}
+      </div>
+      <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{display:"block"}}>
+        <defs>
+          {GRAPH_NODES.map(n => (
+            <radialGradient key={n.id} id={`grd${n.id}`} cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor={n.color} stopOpacity="0.9"/>
+              <stop offset="100%" stopColor={n.color} stopOpacity="0.3"/>
+            </radialGradient>
+          ))}
+        </defs>
+        {GRAPH_EDGES.map(([a,b],i) => {
+          const na=GRAPH_NODES[a],nb=GRAPH_NODES[b];
+          const active=selected!==null&&(a===selected||b===selected);
+          return <line key={i} x1={px(na)} y1={py(na)} x2={px(nb)} y2={py(nb)} stroke={active?na.color:"rgba(255,255,255,0.12)"} strokeWidth={active?2:1} opacity={selected!==null&&!active?0.1:1} style={{transition:"all 0.3s"}}/>;
+        })}
+        {GRAPH_NODES.map(n => {
+          const dim=connectedIds&&!connectedIds.has(n.id);
+          const pulse=Math.sin(time*0.04+n.id)*2;
+          return (
+            <g key={n.id} style={{cursor:"pointer"}} onClick={() => setSelected(s => s===n.id?null:n.id)} onMouseEnter={() => setHovered(n.id)} onMouseLeave={() => setHovered(null)}>
+              {(hovered===n.id||selected===n.id) && <circle cx={px(n)} cy={py(n)} r={n.size+10} fill={n.color} opacity={0.15}/>}
+              <circle cx={px(n)} cy={py(n)} r={n.size/2+(selected===n.id?pulse:0)} fill={`url(#grd${n.id})`} opacity={dim?0.2:1} style={{transition:"opacity 0.3s"}}/>
+              <text x={px(n)} y={py(n)+n.size/2+12} textAnchor="middle" fontFamily={C.font} fontSize={11} fill="#9aa2b0" pointerEvents="none" opacity={dim?0.2:1}>{n.label}</text>
+            </g>
+          );
+        })}
+      </svg>
+      <div style={{padding:"10px 16px",borderTop:`1px solid ${C.border}`,color:C.muted,fontSize:12}}>💡 노드를 클릭하면 해당 노트의 연결만 강조됩니다</div>
+    </div>
+  );
+}
+
+/* ───── LinkSimulator ───── */
+
+function LinkSimulator() {
+  const [input, setInput] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [links, setLinks] = useState([]);
+  const [show, setShow] = useState(false);
+  const notes = ["독서 노트","아이디어 모음","프로젝트 A","오늘 일기","개념 정리","할 일 목록","목표 설정","팀 회의록"];
+  const handleChange = v => {
+    setInput(v);
+    const m = v.match(/\[\[([^\]]*)/);
+    if (m) { setSuggestions(notes.filter(n => n.includes(m[1]))); setShow(true); }
+    else setShow(false);
+  };
+  const pick = note => {
+    setInput(input.replace(/\[\[[^\]]*/,`[[${note}]]`));
+    if (!links.includes(note)) setLinks(l => [...l,note]);
+    setShow(false);
+  };
+  const renderText = text => text.split(/(\[\[[^\]]+\]\])/).map((p,i) => {
+    const m = p.match(/^\[\[([^\]]+)\]\]$/);
+    if (m) return <span key={i} style={notes.includes(m[1])?{color:"#7C8CF8",textDecoration:"underline",cursor:"pointer",fontWeight:500}:{color:C.muted,borderBottom:`1px dashed ${C.muted}`,cursor:"pointer"}}>{notes.includes(m[1])?"🔗 ":"📝 "}{m[1]}</span>;
+    return <span key={i}>{p}</span>;
+  });
+  return (
+    <div>
+      <MdEditor topbarLabel="📝 [[ 를 입력해보세요">
+        <div style={{padding:16,position:"relative"}}>
+          <textarea value={input} onChange={e => handleChange(e.target.value)} placeholder="오늘은 [[독서 노트]] 를 보고 [[아이디어 모음]] 에 정리했다." style={{width:"100%",minHeight:70,background:"transparent",border:"none",outline:"none",color:"#c0caf5",fontFamily:C.mono,fontSize:14,lineHeight:1.8,resize:"none"}}/>
+          {show && suggestions.length>0 && (
+            <div style={{background:"#1a1d2e",border:"1px solid rgba(124,140,248,0.4)",borderRadius:8,overflow:"hidden",boxShadow:"0 8px 24px rgba(0,0,0,0.4)",animation:"fadeIn 0.15s ease"}}>
+              {suggestions.map(s => (
+                <div key={s} onClick={() => pick(s)} style={{padding:"10px 14px",cursor:"pointer",display:"flex",alignItems:"center",gap:8,fontSize:14}} onMouseEnter={e => e.currentTarget.style.background="rgba(124,140,248,0.1)"} onMouseLeave={e => e.currentTarget.style.background="transparent"}>
+                  <span style={{color:"#7C8CF8"}}>🔗</span><span style={{color:C.text}}>{s}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </MdEditor>
+      {input && <div style={{...S.cardSm,fontSize:15,lineHeight:1.8,animation:"fadeIn 0.3s ease",marginTop:14}}>{renderText(input)}</div>}
+      {links.length>0 && <div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}>{links.map(l => <Tag key={l} color="#7C8CF8">{l}</Tag>)}</div>}
+    </div>
+  );
+}
+
+/* ───── TagSimulator ───── */
+
+function TagSimulator() {
+  const allTags = ["#할일","#아이디어","#독서","#project/팀A","#project/팀B","#중요","#회의","#완료"];
+  const [sel, setSel] = useState([]);
+  const noteDB = [
+    {title:"팀 스프린트 회의록",tags:["#회의","#project/팀A","#할일"]},
+    {title:"데이터베이스 개념 정리",tags:["#독서","#중요"]},
+    {title:"이번 주 할 일",tags:["#할일","#중요"]},
+    {title:"새로운 기능 아이디어",tags:["#아이디어","#project/팀B"]},
+    {title:"완료된 프로젝트",tags:["#완료","#project/팀A"]},
+  ];
+  const toggle = t => setSel(s => s.includes(t)?s.filter(x=>x!==t):[...s,t]);
+  const filtered = sel.length===0 ? noteDB : noteDB.filter(n => sel.every(t => n.tags.includes(t)));
+  const tc = t => t.includes("project")?"#F59E0B":t==="#중요"?"#F87171":t==="#완료"?"#34D399":"#7C8CF8";
+  return (
+    <div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
+        {allTags.map(t => (
+          <button key={t} onClick={() => toggle(t)} style={{padding:"5px 12px",borderRadius:999,border:`1px solid ${sel.includes(t)?tc(t):C.border}`,background:sel.includes(t)?`${tc(t)}20`:"transparent",color:sel.includes(t)?tc(t):C.muted,cursor:"pointer",fontSize:13,fontFamily:C.font,transition:"all 0.2s"}}>
+            {t}
+          </button>
+        ))}
+      </div>
+      <div style={{fontSize:12,color:C.muted,marginBottom:8,fontWeight:600}}>결과 {filtered.length}개</div>
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {filtered.map(note => (
+          <div key={note.title} style={{...S.cardSm,display:"flex",alignItems:"center",gap:12,animation:"slideIn 0.2s ease"}}>
+            <span style={{fontSize:18}}>📄</span>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:500,fontSize:14}}>{note.title}</div>
+              <div style={{display:"flex",gap:6,marginTop:4,flexWrap:"wrap"}}>{note.tags.map(t => <Tag key={t} color={tc(t)}>{t}</Tag>)}</div>
+            </div>
+          </div>
+        ))}
+        {filtered.length===0 && <div style={{textAlign:"center",padding:28,color:C.muted,fontSize:14}}>해당 태그 조합의 노트가 없습니다</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ───── NoteDecorationDemo ───── */
+
+function NoteDecorationDemo() {
+  const [tab, setTab] = useState("callout");
+  const [selCallout, setSelCallout] = useState(0);
+  const [confetti, setConfetti] = useState(false);
+  const fw = useFireworks();
+
+  const tabs = [
+    {id:"callout",     icon:"📌", label:"콜아웃 블록"},
+    {id:"highlight",   icon:"🖊️", label:"강조 & 하이라이트"},
+    {id:"frontmatter", icon:"📋", label:"프론트매터(YAML)"},
+    {id:"css",         icon:"🎨", label:"CSS 스니펫"},
+  ];
+
+  const ct = CALLOUT_TYPES[selCallout];
+
+  const renderCallout = () => (
+    <div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:18}}>
+        {CALLOUT_TYPES.map((c,i) => (
+          <button key={c.type} onClick={e => {setSelCallout(i);fw.trigger(e);}} style={{padding:"6px 13px",borderRadius:8,border:`1px solid ${selCallout===i?c.color+"80":C.border}`,background:selCallout===i?c.color+"15":"transparent",color:selCallout===i?c.color:C.muted,cursor:"pointer",fontSize:13,fontFamily:C.font,transition:"all 0.2s"}}>
+            {c.icon} {c.label}
+          </button>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        <div>
+          <div style={{fontSize:12,color:C.muted,marginBottom:8,fontWeight:600}}>✏️ 마크다운 입력</div>
+          <MdEditor>
+            <pre style={{padding:16,fontSize:13,fontFamily:C.mono,color:"#c0caf5",lineHeight:1.7,whiteSpace:"pre-wrap"}}>
+              <span style={{color:C.muted}}>{"> [!"}</span><span style={{color:ct.color,fontWeight:700}}>{ct.label}</span><span style={{color:C.muted}}>{"]"}</span>{"\n> 제목\n> 본문 내용을 여기에 씁니다."}
+            </pre>
+          </MdEditor>
+        </div>
+        <div>
+          <div style={{fontSize:12,color:C.muted,marginBottom:8,fontWeight:600}}>👁 렌더링 결과</div>
+          <div key={ct.type} style={{borderRadius:10,padding:"14px 18px",border:`1px solid ${ct.color}44`,background:`${ct.color}0d`,position:"relative",overflow:"hidden",animation:"popIn 0.35s ease"}}>
+            <div style={{position:"absolute",top:0,left:0,width:4,height:"100%",background:ct.color,borderRadius:"10px 0 0 10px"}}/>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,paddingLeft:4}}>
+              <span style={{fontSize:18}}>{ct.icon}</span>
+              <span style={{color:ct.color,fontWeight:700,fontSize:14}}>{ct.label}</span>
+            </div>
+            <div style={{color:C.text,fontSize:14,lineHeight:1.7,paddingLeft:4}}>본문 내용을 여기에 씁니다!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderHighlight = () => (
+    <div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        {[
+          {label:"==하이라이트==", preview:<span style={{background:"rgba(245,158,11,0.3)",color:C.text,padding:"1px 4px",borderRadius:3}}>형광펜 효과</span>, desc:"중요한 내용 강조"},
+          {label:"~~취소선~~", preview:<span style={{textDecoration:"line-through",color:C.muted}}>취소된 텍스트</span>, desc:"완료/삭제 표시"},
+          {label:"**굵게** *기울임*", preview:<span><strong style={{color:"#fff"}}>굵게</strong> <em style={{color:"#a9b1d6"}}>기울임</em></span>, desc:"조합 강조"},
+          {label:"---", preview:<hr style={{border:"none",borderTop:"1px solid rgba(255,255,255,0.15)"}}/>, desc:"수평 구분선"},
+        ].map(item => (
+          <div key={item.label} style={S.cardSm}>
+            <code style={{fontFamily:C.mono,color:"#7C8CF8",fontSize:13,display:"block",marginBottom:10}}>{item.label}</code>
+            <div style={{padding:"8px 12px",background:C.bg,borderRadius:6,marginBottom:8,fontSize:14}}>{item.preview}</div>
+            <div style={{fontSize:12,color:C.muted}}>{item.desc}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderFrontmatter = () => (
+    <div>
+      <p style={{color:C.muted,fontSize:14,lineHeight:1.7,marginBottom:14}}>노트 최상단 <code style={{fontFamily:C.mono,color:"#F59E0B"}}>---</code> 사이에 YAML 메타데이터를 정의합니다.</p>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        <div>
+          <div style={{fontSize:12,color:"#F59E0B",fontWeight:600,marginBottom:8}}>📋 입력 예시</div>
+          <pre style={{background:"#08090e",borderRadius:12,padding:20,fontFamily:C.mono,fontSize:13,color:"#c0caf5",lineHeight:1.9,overflowX:"auto",whiteSpace:"pre-wrap"}}>{"---\n"}<span style={{color:"#7C8CF8"}}>{"title"}</span>{`: "독서 노트"\n`}<span style={{color:"#7C8CF8"}}>{"date"}</span>{`: 2024-01-15\n`}<span style={{color:"#7C8CF8"}}>{"tags"}</span>{`: [독서]\n`}<span style={{color:"#7C8CF8"}}>{"status"}</span>{`: 읽는중\n---`}</pre>
+        </div>
+        <div>
+          <div style={{fontSize:12,color:"#34D399",fontWeight:600,marginBottom:8}}>📊 Dataview에서 활용</div>
+          <div style={S.cardSm}>
+            {[{k:"status",v:"읽는중",c:"#F59E0B"},{k:"date",v:"2024-01-15",c:C.muted},{k:"tags",v:"독서",c:"#7C8CF8"}].map(r => (
+              <div key={r.k} style={{display:"flex",gap:12,marginBottom:6,fontSize:13}}>
+                <span style={{color:C.muted,minWidth:60}}>{r.k}:</span>
+                <span style={{color:r.c}}>{r.v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderCSS = () => (
+    <div>
+      <p style={{color:C.muted,fontSize:14,lineHeight:1.7,marginBottom:14}}>
+        <code style={{fontFamily:C.mono,color:"#F59E0B"}}>설정 → 외관 → CSS 스니펫</code>에서 .css 파일을 활성화합니다.
+      </p>
+      {[
+        {
+          name:"컬러풀 헤딩",
+          code:`.cm-header-1 { color: #7C8CF8; }\n.cm-header-2 { color: #34D399; }`,
+          preview: <div><div style={{fontSize:20,fontWeight:700,color:"#7C8CF8"}}>H1 제목</div><div style={{fontSize:17,fontWeight:600,color:"#34D399"}}>H2 제목</div></div>,
+        },
+      ].map(item => (
+        <div key={item.name} style={{...S.cardSm,marginBottom:10,display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+          <div>
+            <div style={{fontSize:13,color:"#EC4899",fontWeight:600,marginBottom:8}}>🎨 {item.name}</div>
+            <pre style={{background:"#08090e",borderRadius:8,padding:12,fontSize:11,fontFamily:C.mono,color:"#a0aec0",lineHeight:1.7,whiteSpace:"pre-wrap"}}>{item.code}</pre>
+          </div>
+          <div>
+            <div style={{fontSize:12,color:C.muted,marginBottom:8,fontWeight:600}}>미리보기</div>
+            <div style={{padding:16,background:"#08090e",borderRadius:8}}>{item.preview}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const tabContent = { callout:renderCallout, highlight:renderHighlight, frontmatter:renderFrontmatter, css:renderCSS };
+
+  return (
+    <div>
+      {fw.render()}
+      <Confetti active={confetti} onDone={() => setConfetti(false)} />
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{padding:"8px 18px",borderRadius:10,border:`1px solid ${tab===t.id?"#EC4899":C.border}`,background:tab===t.id?"rgba(236,72,153,0.12)":"transparent",color:tab===t.id?"#EC4899":C.muted,cursor:"pointer",fontSize:14,fontFamily:C.font,fontWeight:500,transition:"all 0.2s"}}>
+            {t.icon} {t.label}
+          </button>
+        ))}
+      </div>
+      <div key={tab} style={{animation:"fadeUp 0.3s ease"}}>{tabContent[tab]()}</div>
+      <div style={{marginTop:24,textAlign:"center"}}>
+        <ShimmerBtn onClick={() => setConfetti(true)} style={{padding:"12px 32px",borderRadius:12,border:"none",background:"linear-gradient(135deg,#EC4899,#A78BFA)",color:"#fff",fontFamily:C.font,fontSize:15,fontWeight:700,cursor:"pointer"}}>
+          🎉 노트 꾸미기 마스터! 폭죽!
+        </ShimmerBtn>
+      </div>
+    </div>
+  );
+}
+
+/* ───── PluginShowcase ───── */
+
+function PluginShowcase() {
+  const [selected, setSelected] = useState(null);
+  const [confetti, setConfetti] = useState(false);
+  const [explored, setExplored] = useState(new Set());
+  const fw = useFireworks();
+
+  const handleClick = (e, name) => {
+    fw.trigger(e);
+    setSelected(sel => sel===name ? null : name);
+    setExplored(s => {
+      const next = new Set([...s, name]);
+      if (next.size >= COMMUNITY_PLUGINS.length) setConfetti(true);
+      return next;
+    });
+  };
+
+  const sel = COMMUNITY_PLUGINS.find(p => p.name===selected);
+
+  return (
+    <div>
+      {fw.render()}
+      <Confetti active={confetti} onDone={() => setConfetti(false)} />
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:10,marginBottom:20}}>
+        {COMMUNITY_PLUGINS.map((p,i) => (
+          <PluginCard key={p.name} p={p} i={i} selected={selected===p.name} explored={explored.has(p.name)} onClick={e => handleClick(e, p.name)} />
+        ))}
+      </div>
+      {sel && (
+        <div style={{...S.card,borderColor:`${sel.color}40`,animation:"fadeUp 0.35s ease"}}>
+          <div style={{display:"flex",gap:16,alignItems:"flex-start",flexWrap:"wrap"}}>
+            <div style={{fontSize:48}}>{sel.icon}</div>
+            <div style={{flex:1,minWidth:200}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8,flexWrap:"wrap"}}>
+                <span style={{fontSize:22,fontWeight:800,color:sel.color}}>{sel.name}</span>
+                <span style={{fontSize:14,color:"#FCD34D"}}>{sel.stars}</span>
+                <Tag color={sel.color}>{sel.level}</Tag>
+              </div>
+              <p style={{color:"#c0c8d8",lineHeight:1.8,marginBottom:12,fontSize:14}}>{sel.desc}</p>
+              <div style={{background:`${sel.color}10`,border:`1px solid ${sel.color}30`,borderRadius:10,padding:"10px 14px"}}>
+                <div style={{fontSize:12,color:sel.color,fontWeight:700,marginBottom:6}}>🎯 활용 예시</div>
+                <div style={{fontSize:13,color:C.muted}}>{sel.use}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {explored.size < COMMUNITY_PLUGINS.length && (
+        <div style={{marginTop:14,textAlign:"center",fontSize:13,color:C.muted}}>
+          {COMMUNITY_PLUGINS.length - explored.size}개 더 탐색하면 폭죽이 터집니다! 🎆
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PluginCard({ p, i, selected, explored, onClick }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: C.bg2,
+        border: `1px solid ${selected ? p.color+"60" : C.border}`,
+        borderRadius:16, padding:18, cursor:"pointer",
+        transition:"all 0.3s", position:"relative", overflow:"hidden",
+        boxShadow: selected ? `0 0 24px ${p.color}25` : hovered ? "0 8px 24px rgba(0,0,0,0.3)" : "none",
+        transform: hovered ? "translateY(-4px)" : "none",
+        animation:`springIn 0.5s ease ${i*0.06}s both`,
+      }}>
+      {selected && <Sparkles count={5} color={p.color} />}
+      {explored && <div style={{position:"absolute",top:10,right:10,fontSize:14,color:p.color}}>✓</div>}
+      <div style={{fontSize:32,marginBottom:8}}>{p.icon}</div>
+      <div style={{fontWeight:700,marginBottom:4,fontSize:14}}>{p.name}</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:8,lineHeight:1.5}}>{p.tagline}</div>
+      <Tag color={p.color}>{p.level}</Tag>
+    </div>
+  );
+}
+
+/* ───── TemplaterSimulator ───── */
+
+function TemplaterSimulator() {
+  const [generated, setGenerated] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const now = new Date();
+  const ds = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+  const ts = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+  const dayS = ["일","월","화","수","목","금","토"][now.getDay()];
+  const tCode = `---\ndate: <% tp.date.now("YYYY-MM-DD") %>\ntime: <% tp.date.now("HH:mm") %>\ntags: [daily]\n---\n\n# 📅 <% tp.date.now("MM월 DD일") %> 기록\n\n## 🎯 오늘의 목표\n- [ ] \n\n## 📝 오늘 한 일\n- `;
+  const gContent = `---\ndate: ${ds}\ntime: ${ts}\nday: ${dayS}\ntags: [daily]\n---\n\n# 📅 ${String(now.getMonth()+1).padStart(2,"0")}월 ${String(now.getDate()).padStart(2,"0")}일 기록\n\n## 🎯 오늘의 목표\n- [ ] \n\n## 📝 오늘 한 일\n- `;
+  return (
+    <div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        <div>
+          <div style={{fontSize:12,color:"#F59E0B",fontWeight:600,marginBottom:8}}>⚙️ 템플릿 파일</div>
+          <MdEditor topbarLabel="Daily Template.md">
+            <pre style={{padding:16,fontSize:12,fontFamily:C.mono,color:"#c0caf5",lineHeight:1.7,whiteSpace:"pre-wrap"}}>
+              {tCode.split("\n").map((line,i) => (
+                <div key={i}>{line.includes("tp.") ? line.split(/(<% .+? %>)/g).map((p,j) => p.match(/^<% .+ %>$/) ? <span key={j} style={{color:"#F59E0B",background:"rgba(245,158,11,0.1)",borderRadius:3,padding:"0 2px"}}>{p}</span> : <span key={j}>{p}</span>) : line}</div>
+              ))}
+            </pre>
+          </MdEditor>
+        </div>
+        <div>
+          <div style={{fontSize:12,color:"#34D399",fontWeight:600,marginBottom:8}}>✨ 생성된 노트</div>
+          <MdEditor topbarLabel={`${ds}.md`}>
+            <div style={{padding:16,minHeight:190,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              {loading ? (
+                <div style={{textAlign:"center"}}>
+                  <div style={{width:32,height:32,border:`2px solid ${C.border}`,borderTop:"2px solid #F59E0B",borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto 12px"}}/>
+                  <div style={{color:C.muted,fontSize:13}}>처리 중...</div>
+                </div>
+              ) : generated ? (
+                <pre style={{fontSize:12,fontFamily:C.mono,color:"#c0caf5",lineHeight:1.7,whiteSpace:"pre-wrap",animation:"fadeUp 0.4s ease"}}>{gContent}</pre>
+              ) : (
+                <div style={{textAlign:"center",color:C.muted,fontSize:14}}><div style={{fontSize:32,marginBottom:12}}>📄</div>버튼을 눌러 생성하세요</div>
+              )}
+            </div>
+          </MdEditor>
+        </div>
+      </div>
+      <button onClick={() => {setLoading(true);setTimeout(()=>{setLoading(false);setGenerated(true);},1200);}} disabled={loading} style={{marginTop:14,width:"100%",padding:"12px",borderRadius:12,border:"none",background:generated?"rgba(52,211,153,0.15)":"linear-gradient(135deg,#F59E0B,#F97316)",color:generated?"#34D399":"#fff",fontFamily:C.font,fontSize:15,fontWeight:700,cursor:"pointer",opacity:loading?0.7:1}}>
+        {loading?"⚙️ 생성 중...":generated?"✅ 오늘의 데일리 노트 생성 완료!":"⚡ 데일리 노트 생성하기"}
+      </button>
+    </div>
+  );
+}
+
+/* ───── DataviewSimulator ───── */
+
+function DataviewSimulator() {
+  const [qi, setQi] = useState(0);
+  const qs = [
+    {code:"TABLE file.name AS 노트, tags AS 태그\nFROM #할일\nWHERE !contains(tags, \"#완료\")\nSORT file.name ASC",label:"미완료 할 일",result:[{노트:"이번 주 할 일",태그:"#할일 #중요"},{노트:"리딩 리스트",태그:"#할일 #독서"}]},
+    {code:"LIST\nFROM #아이디어\nSORT file.ctime DESC\nLIMIT 5",label:"최근 아이디어",result:[{노트:"새로운 기능 아이디어"},{노트:"마케팅 아이디어"}]},
+    {code:"CALENDAR file.day\nFROM \"Daily\"\nWHERE file.day >= date(today) - dur(7 days)",label:"이번 주 달력",result:"calendar"},
+  ];
+  const q = qs[qi];
+  return (
+    <div>
+      <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
+        {qs.map((qq,i) => (
+          <button key={i} onClick={() => setQi(i)} style={{padding:"6px 14px",borderRadius:8,border:`1px solid ${qi===i?"#F87171":C.border}`,background:qi===i?"rgba(248,113,113,0.1)":"transparent",color:qi===i?"#F87171":C.muted,cursor:"pointer",fontSize:13,fontFamily:C.font,transition:"all 0.2s"}}>
+            {qq.label}
+          </button>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        <div>
+          <div style={{fontSize:12,color:"#F87171",fontWeight:600,marginBottom:8}}>🗄️ DQL 쿼리</div>
+          <MdEditor topbarLabel="dataview">
+            <pre style={{padding:16,fontSize:13,fontFamily:C.mono,color:"#c0caf5",lineHeight:1.7,whiteSpace:"pre-wrap"}}>
+              {q.code.split("\n").map((line,i) => {
+                const kw = ["TABLE","LIST","CALENDAR","FROM","WHERE","SORT","LIMIT"].find(k => line.startsWith(k));
+                return <div key={i}>{kw ? <><span style={{color:"#7C8CF8",fontWeight:700}}>{kw}</span><span>{line.slice(kw.length)}</span></> : line}</div>;
+              })}
+            </pre>
+          </MdEditor>
+        </div>
+        <div>
+          <div style={{fontSize:12,color:"#34D399",fontWeight:600,marginBottom:8}}>📊 결과</div>
+          <div style={{...S.cardSm,minHeight:130,animation:"fadeIn 0.3s ease"}} key={qi}>
+            {q.result==="calendar" ? (
+              <div style={{display:"flex",flexDirection:"column",gap:7}}>
+                {["월","화","수","목","금","토","일"].map((d,i) => (
+                  <div key={d} style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{color:C.muted,fontSize:12,width:16}}>{d}</span>
+                    <div style={{flex:1,height:6,background:C.bg,borderRadius:3,overflow:"hidden"}}>
+                      <div style={{height:"100%",background:"#F87171",borderRadius:3,width:[80,60,100,40,90,30,70][i]+"%"}}/>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <table style={{width:"100%",borderCollapse:"collapse",fontSize:14}}>
+                <thead><tr>{Object.keys(q.result[0]).map(k => <th key={k} style={{background:C.bg3,padding:"10px 14px",textAlign:"left",color:C.muted,fontWeight:600,fontSize:12}}>{k}</th>)}</tr></thead>
+                <tbody>{q.result.map((r,i) => <tr key={i}>{Object.values(r).map((v,j) => <td key={j} style={{padding:"10px 14px",borderBottom:`1px solid ${C.border}`,color:j===0?"#7C8CF8":C.muted,fontSize:13}}>{v}</td>)}</tr>)}</tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ───── ShortcutTrainer ───── */
+
+function ShortcutTrainer() {
+  const [current, setCurrent] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const [score, setScore] = useState(0);
+  const [confetti, setConfetti] = useState(false);
+  const sc = SHORTCUTS[current];
+  const next = (correct) => {
+    if (correct) setScore(s => s+1);
+    setRevealed(false);
+    const nextIdx = (current+1) % SHORTCUTS.length;
+    setTimeout(() => setCurrent(nextIdx), 300);
+    if (current===SHORTCUTS.length-1 && correct) setConfetti(true);
+  };
+  return (
+    <div>
+      <Confetti active={confetti} onDone={() => setConfetti(false)} />
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <span style={{color:C.muted,fontSize:14}}>단축키 퀴즈</span>
+        <span><span style={{color:"#34D399",fontWeight:700}}>✅ {score}</span><span style={{color:C.muted}}> / {SHORTCUTS.length}</span></span>
+      </div>
+      <div style={{display:"flex",gap:6,marginBottom:20}}>
+        {SHORTCUTS.map((_,i) => <div key={i} style={{flex:1,height:4,borderRadius:999,background:i<current?"#34D399":i===current?"#7C8CF8":C.bg3,transition:"background 0.3s"}}/>)}
+      </div>
+      <div style={{...S.card,textAlign:"center",padding:36,animation:"fadeIn 0.3s ease"}} key={current}>
+        <div style={{fontSize:13,color:C.muted,marginBottom:16}}>이 단축키는 무엇을 하나요?</div>
+        <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap",marginBottom:24}}>
+          {sc.key.split(" + ").map((k,i) => (
+            <span key={k}>{i>0&&<span style={{color:C.muted,margin:"0 4px"}}>+</span>}<span style={S.kbd}>{k}</span></span>
+          ))}
+        </div>
+        {!revealed ? (
+          <button onClick={() => setRevealed(true)} style={{padding:"10px 28px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bg3,color:C.text,fontFamily:C.font,fontSize:14,cursor:"pointer"}}>정답 확인하기</button>
+        ) : (
+          <div style={{animation:"fadeUp 0.3s ease"}}>
+            <div style={{fontSize:18,fontWeight:600,marginBottom:20}}>{sc.desc}</div>
+            <div style={{display:"flex",gap:12,justifyContent:"center"}}>
+              <button onClick={() => next(false)} style={{padding:"10px 24px",borderRadius:10,border:"1px solid rgba(248,113,113,0.4)",background:"rgba(248,113,113,0.1)",color:"#F87171",fontFamily:C.font,fontSize:14,fontWeight:600,cursor:"pointer"}}>😅 몰랐어요</button>
+              <button onClick={() => next(true)} style={{padding:"10px 24px",borderRadius:10,border:"1px solid rgba(52,211,153,0.4)",background:"rgba(52,211,153,0.1)",color:"#34D399",fontFamily:C.font,fontSize:14,fontWeight:600,cursor:"pointer"}}>✅ 알았어요!</button>
+            </div>
+          </div>
+        )}
+      </div>
+      <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:6}}>
+        {SHORTCUTS.map((s,i) => (
+          <div key={s.key} style={{...S.cardSm,display:"flex",alignItems:"center",gap:16,opacity:i===current?1:0.5,transition:"opacity 0.3s"}}>
+            <span style={S.kbd}>{s.key}</span>
+            <span style={{fontSize:14}}>{s.desc}</span>
+            {i<current && <span style={{marginLeft:"auto",color:"#34D399",fontSize:12}}>✅</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ───── 페이지 컴포넌트 ───── */
+
+function IntroPage() {
+  const displayed = useTypewriter("지식을 연결하고, 생각을 확장하는 노트 앱", 38, true);
+  const [confetti, setConfetti] = useState(false);
+  return (
+    <div style={S.section}>
+      <Confetti active={confetti} onDone={() => setConfetti(false)} />
+      <div style={{textAlign:"center",marginBottom:72}}>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:24,animation:"float 3s ease-in-out infinite"}}>
+          <ObsidianLogo size={88} />
+        </div>
+        <h1 style={{fontSize:"clamp(36px,6vw,64px)",fontWeight:800,lineHeight:1.1,marginBottom:20,fontFamily:C.font}}>
+          <span style={{background:"linear-gradient(135deg,#7C8CF8,#A78BFA,#34D399)",backgroundSize:"200%",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",animation:"gradShift 4s ease infinite"}}>옵시디언</span>
+          <br/><span>완전 정복</span>
+        </h1>
+        <div style={{fontSize:17,color:C.muted,height:28,marginBottom:36,fontFamily:C.font}}>
+          {displayed}<span style={{color:"#7C8CF8",animation:"blink 1s ease-in-out infinite"}}>|</span>
+        </div>
+        <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap",marginBottom:24}}>
+          {[["📦 보관소","#10B981"],["🌱 초급","#34D399"],["🔗 중급","#F59E0B"],["🎨 꾸미기","#EC4899"],["⚡ 고급","#F87171"]].map(([l,col]) => <Tag key={l} color={col}>{l}</Tag>)}
+        </div>
+        <ShimmerBtn onClick={() => setConfetti(true)} style={{padding:"12px 28px",borderRadius:12,border:"none",background:"linear-gradient(135deg,#7C8CF8,#A78BFA)",color:"#fff",fontFamily:C.font,fontSize:15,fontWeight:700,cursor:"pointer"}}>
+          🎉 학습 시작하기!
+        </ShimmerBtn>
+      </div>
+      <SectionReveal>
+        <div style={{...S.card,marginBottom:20,borderColor:"rgba(124,140,248,0.3)"}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:14}}>❓ 옵시디언이란?</h2>
+          <p style={{color:C.muted,lineHeight:1.8,marginBottom:20}}>
+            옵시디언은 <strong style={{color:C.text}}>로컬 파일 기반의 마크다운 노트 앱</strong>입니다. 모든 노트가 내 기기에 <code style={{fontFamily:C.mono,color:"#7C8CF8",fontSize:13}}>.md</code> 파일로 저장되며, 노트 간 링크로 <strong style={{color:C.text}}>지식의 네트워크</strong>를 만들 수 있습니다.
+          </p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:10}}>
+            {[{icon:"🔒",t:"데이터 주권",d:"내 기기에 저장",color:"#7C8CF8"},{icon:"📡",t:"오프라인 사용",d:"인터넷 불필요",color:"#34D399"},{icon:"🔗",t:"노트 연결",d:"지식 네트워크",color:"#F59E0B"},{icon:"⚡",t:"무한 확장",d:"수백 개 플러그인",color:"#F87171"}].map((f,i) => (
+              <HoverScale key={f.t} style={{...S.cardSm,textAlign:"center",animation:`springIn 0.5s ease ${i*0.1}s both`,cursor:"default",borderColor:`${f.color}20`}}>
+                <div style={{fontSize:28,marginBottom:6,animation:`float ${2.5+i*0.3}s ease-in-out infinite`}}>{f.icon}</div>
+                <div style={{fontWeight:600,marginBottom:4,fontSize:14,color:f.color}}>{f.t}</div>
+                <div style={{fontSize:12,color:C.muted}}>{f.d}</div>
+              </HoverScale>
+            ))}
+          </div>
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.1}>
+        <div style={{...S.card,marginBottom:20}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:16}}>🗺️ 학습 로드맵</h2>
+          {[
+            {week:"1주차",level:"📦 보관소",color:"#10B981",items:["보관소 개념","파일 저장 위치","동기화 방법"]},
+            {week:"1-2주차",level:"🌱 초급",color:"#34D399",items:["마크다운 문법","편집/읽기 모드","단축키"]},
+            {week:"2-3주차",level:"🔗 중급",color:"#F59E0B",items:["내부 링크","태그 시스템","그래프 뷰"]},
+            {week:"3-4주차",level:"🎨 꾸미기",color:"#EC4899",items:["콜아웃 블록","하이라이트","CSS 스니펫"]},
+            {week:"1개월+",level:"⚡ 고급",color:"#F87171",items:["플러그인 5종","Templater","Dataview"]},
+          ].map((phase,i,arr) => (
+            <div key={phase.week} style={{display:"flex",gap:14,position:"relative"}}>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+                <div style={{width:32,height:32,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,flexShrink:0,background:`${phase.color}20`,color:phase.color,border:`2px solid ${phase.color}40`}}>{i+1}</div>
+                {i<arr.length-1 && <div style={{width:2,flex:1,background:C.border,margin:"4px 0",minHeight:28}}/>}
+              </div>
+              <div style={{flex:1,paddingBottom:i<arr.length-1?20:0}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                  <span style={{color:phase.color,fontWeight:700}}>{phase.level}</span>
+                  <span style={{fontSize:12,color:C.muted}}>{phase.week}</span>
+                </div>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  {phase.items.map(item => <Tag key={item} color={phase.color}>{item}</Tag>)}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </SectionReveal>
+    </div>
+  );
+}
+
+function HoverScale({ children, style, ...props }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div style={{...style,transform:hovered?"scale(1.05)":"scale(1)",transition:"transform 0.2s"}}
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} {...props}>
+      {children}
+    </div>
+  );
+}
+
+function VaultPage() {
+  return (
+    <div style={S.section}>
+      <SectionReveal>
+        <div style={{marginBottom:40}}>
+          <Tag color="#10B981">📦 보관소</Tag>
+          <h1 style={{fontSize:"clamp(26px,4vw,40px)",fontWeight:800,marginTop:10,marginBottom:10,fontFamily:C.font}}>보관소(Vault) 완전 이해</h1>
+          <p style={{color:C.muted,fontSize:15,lineHeight:1.7}}>옵시디언의 핵심 개념 — 보관소가 무엇인지, 어디에 만들고, 어떻게 파일이 저장되는지 단계별로 알아봅니다.</p>
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.05}>
+        <div style={{...S.card,marginBottom:24,borderColor:"rgba(16,185,129,0.3)"}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:8}}>🧭 단계별 보관소 이해</h2>
+          <p style={{color:C.muted,fontSize:14,lineHeight:1.7,marginBottom:20}}>각 단계를 클릭하며 순서대로 익혀보세요!</p>
+          <VaultExplainer />
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.15}>
+        <div style={{...S.card,marginBottom:24}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:16}}>🔄 보관소 직접 체험</h2>
+          <VaultSimulator />
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.2}>
+        <TipBox type="key">
+          <strong>보관소 핵심 요약</strong><br/>
+          📦 보관소 = 그냥 폴더<br/>
+          📄 노트 = .md 파일<br/>
+          ⚙️ .obsidian/ = 앱 설정 자동 관리<br/>
+          ☁️ 동기화 = 클라우드 폴더에 보관소 만들기
+        </TipBox>
+      </SectionReveal>
+    </div>
+  );
+}
+
+function BasicPage() {
+  return (
+    <div style={S.section}>
+      <SectionReveal>
+        <div style={{marginBottom:40}}>
+          <Tag color="#34D399">🌱 초급</Tag>
+          <h1 style={{fontSize:"clamp(26px,4vw,40px)",fontWeight:800,marginTop:10,marginBottom:10,fontFamily:C.font}}>옵시디언 시작하기</h1>
+          <p style={{color:C.muted,fontSize:15,lineHeight:1.7}}>마크다운 문법부터 단축키까지 — 첫 노트를 작성하는 모든 것</p>
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.05}>
+        <div style={{...S.card,marginBottom:24}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:14}}>🔄 편집 모드 vs 읽기 모드</h2>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12}}>
+            {[
+              {icon:"✏️",title:"편집 모드",color:"#7C8CF8",desc:"마크다운 문법이 그대로 보입니다.",key:"Cmd+E"},
+              {icon:"👁️",title:"읽기 모드",color:"#A78BFA",desc:"렌더링된 최종 결과를 봅니다.",key:"Cmd+E"},
+              {icon:"✨",title:"라이브 미리보기",color:"#34D399",desc:"편집하면서 동시에 렌더링! 추천",key:"설정에서 기본값"},
+            ].map(m => (
+              <div key={m.title} style={{...S.cardSm,borderColor:`${m.color}30`}}>
+                <span style={{fontSize:24}}>{m.icon}</span>
+                <div style={{fontWeight:700,color:m.color,margin:"6px 0 4px"}}>{m.title}</div>
+                <p style={{fontSize:13,color:C.muted,marginBottom:8,lineHeight:1.6}}>{m.desc}</p>
+                <code style={{fontSize:11,fontFamily:C.mono,color:C.muted}}>{m.key}</code>
+              </div>
+            ))}
+          </div>
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.1}>
+        <div style={{...S.card,marginBottom:24}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:16}}>📝 마크다운 문법 인터랙티브 연습</h2>
+          <MarkdownSimulator />
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.15}>
+        <div style={{...S.card,marginBottom:24}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:14}}>⌨️ 핵심 단축키</h2>
+          <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:12}}>
+            {[{key:"Cmd + N",desc:"새 노트 생성"},{key:"Cmd + O",desc:"파일 빠른 열기"},{key:"Cmd + E",desc:"편집/읽기 모드 전환"},{key:"Cmd + P",desc:"명령 팔레트"}].map(s => (
+              <div key={s.key} style={{...S.cardSm,display:"flex",alignItems:"center",gap:14}}>
+                <span style={S.kbd}>{s.key}</span>
+                <div style={{fontWeight:600,fontSize:14}}>{s.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </SectionReveal>
+    </div>
+  );
+}
+
+function IntermediatePage() {
+  return (
+    <div style={S.section}>
+      <SectionReveal>
+        <div style={{marginBottom:40}}>
+          <Tag color="#F59E0B">🔗 중급</Tag>
+          <h1 style={{fontSize:"clamp(26px,4vw,40px)",fontWeight:800,marginTop:10,marginBottom:10,fontFamily:C.font}}>노트 연결과 시각화</h1>
+          <p style={{color:C.muted,fontSize:15,lineHeight:1.7}}>단순 메모를 넘어 — 링크, 태그, 그래프로 지식 네트워크 만들기</p>
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.05}>
+        <div style={{...S.card,marginBottom:24,borderColor:"rgba(245,158,11,0.3)"}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:8}}>🔗 내부 링크</h2>
+          <p style={{color:C.muted,fontSize:14,lineHeight:1.7,marginBottom:16}}>[[ 를 입력하면 자동완성으로 노트를 연결합니다. 직접 입력해보세요!</p>
+          <LinkSimulator />
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.1}>
+        <div style={{...S.card,marginBottom:24}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:8}}>🏷️ 태그 시스템</h2>
+          <div style={{marginBottom:14}}><TipBox type="info">폴더는 "어디에 속하는가", 태그는 "어떤 성격인가"를 나타냅니다!</TipBox></div>
+          <TagSimulator />
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.15}>
+        <div style={{...S.card,marginBottom:24}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:16}}>🌐 그래프 뷰</h2>
+          <GraphView />
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.2}>
+        <div style={S.card}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:12}}>🔍 검색 연산자</h2>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:14}}>
+            <thead>
+              <tr>
+                {["방법","예시","설명"].map(h => <th key={h} style={{background:C.bg3,padding:"10px 14px",textAlign:"left",color:C.muted,fontWeight:600,fontSize:12,textTransform:"uppercase",letterSpacing:"0.05em"}}>{h}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {[["전문 검색","Cmd+Shift+F","전체 내용 검색"],["태그 검색","tag:#아이디어","특정 태그 모아보기"],["AND 검색","프로젝트 회의","두 단어 모두 포함"],["제외 검색","프로젝트 -완료","완료 제외 검색"],["파일명","file:회의록","파일명으로만 검색"]].map(([m,e,d]) => (
+                <tr key={m} onMouseEnter={ev => ev.currentTarget.querySelectorAll("td").forEach(td => td.style.background="rgba(255,255,255,0.02)")} onMouseLeave={ev => ev.currentTarget.querySelectorAll("td").forEach(td => td.style.background="transparent")}>
+                  <td style={{padding:"10px 14px",borderBottom:`1px solid ${C.border}`,fontWeight:600,color:"#F59E0B"}}>{m}</td>
+                  <td style={{padding:"10px 14px",borderBottom:`1px solid ${C.border}`}}><code style={{fontFamily:C.mono,color:"#7C8CF8",fontSize:12}}>{e}</code></td>
+                  <td style={{padding:"10px 14px",borderBottom:`1px solid ${C.border}`,color:C.muted,fontSize:13}}>{d}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </SectionReveal>
+    </div>
+  );
+}
+
+function DecoratePage() {
+  return (
+    <div style={S.section}>
+      <SectionReveal>
+        <div style={{marginBottom:40}}>
+          <Tag color="#EC4899">🎨 꾸미기</Tag>
+          <h1 style={{fontSize:"clamp(26px,4vw,40px)",fontWeight:800,marginTop:10,marginBottom:10,fontFamily:C.font}}>노트 꾸미기</h1>
+          <p style={{color:C.muted,fontSize:15,lineHeight:1.7}}>콜아웃 블록, 하이라이트, YAML 프론트매터, CSS 스니펫으로 나만의 아름다운 노트 만들기</p>
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.05}>
+        <div style={{...S.card,borderColor:"rgba(236,72,153,0.3)",marginBottom:24}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:16}}>✨ 노트 꾸미기 인터랙티브 가이드</h2>
+          <NoteDecorationDemo />
+        </div>
+      </SectionReveal>
+    </div>
+  );
+}
+
+function AdvancedPage() {
+  return (
+    <div style={S.section}>
+      <SectionReveal>
+        <div style={{marginBottom:40}}>
+          <Tag color="#F87171">⚡ 고급</Tag>
+          <h1 style={{fontSize:"clamp(26px,4vw,40px)",fontWeight:800,marginTop:10,marginBottom:10,fontFamily:C.font}}>플러그인 & 자동화</h1>
+          <p style={{color:C.muted,fontSize:15,lineHeight:1.7}}>추천 플러그인 10선 + Templater, Dataview, 단축키로 생산성 10배 높이기</p>
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.05}>
+        <div style={{...S.card,marginBottom:24,borderColor:"rgba(248,113,113,0.3)"}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:8}}>🧩 추천 커뮤니티 플러그인 10선</h2>
+          <p style={{color:C.muted,fontSize:14,lineHeight:1.7,marginBottom:20}}>카드를 클릭하면 상세 설명이 열립니다. 10개 모두 탐색하면 폭죽이 터집니다! 🎆</p>
+          <PluginShowcase />
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.1}>
+        <div style={{...S.card,marginBottom:24}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:8}}>⚙️ Templater — 템플릿 자동화</h2>
+          <p style={{color:C.muted,fontSize:14,lineHeight:1.7,marginBottom:20}}>tp.date.now() 같은 변수가 노트 생성 시 실제 값으로 자동 치환됩니다.</p>
+          <TemplaterSimulator />
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.15}>
+        <div style={{...S.card,marginBottom:24}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:8}}>🗄️ Dataview — 노트를 데이터베이스로</h2>
+          <p style={{color:C.muted,fontSize:14,lineHeight:1.7,marginBottom:20}}>DQL 쿼리로 태그·날짜·속성 기반 동적 목록을 자동 생성합니다.</p>
+          <DataviewSimulator />
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.2}>
+        <div style={{...S.card,marginBottom:24}}>
+          <h2 style={{fontSize:20,fontWeight:700,marginBottom:16}}>⌨️ 단축키 마스터 퀴즈</h2>
+          <ShortcutTrainer />
+        </div>
+      </SectionReveal>
+      <SectionReveal delay={0.25}>
+        <TipBox type="key">
+          <strong>고급 체크리스트</strong><br/>
+          ✅ 추천 플러그인 10종 파악 완료<br/>
+          ✅ Templater로 데일리 노트 자동화<br/>
+          ✅ Dataview로 태그 기반 대시보드 구성<br/>
+          ✅ 핵심 단축키 7개 숙달
+        </TipBox>
+      </SectionReveal>
+    </div>
+  );
+}
+
+/* ───── NavButton ───── */
+
+function NavButton({ level, current, onClick }) {
+  const [hovered, setHovered] = useState(false);
+  const isActive = current === level.id;
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding:"7px 15px", borderRadius:"999px",
+        border: isActive ? "1px solid transparent" : `1px solid ${hovered ? "rgba(255,255,255,0.2)" : C.border}`,
+        background: isActive ? `${level.color}20` : "transparent",
+        borderColor: isActive ? `${level.color}60` : hovered ? "rgba(255,255,255,0.2)" : C.border,
+        color: isActive ? level.color : hovered ? C.text : C.muted,
+        fontFamily: C.font, fontSize:13, fontWeight:500,
+        cursor:"pointer", transition:"all 0.25s", whiteSpace:"nowrap",
+      }}>
+      {level.label}
+    </button>
+  );
+}
+
+/* ───── App ───── */
+
+function App() {
+  const [current, setCurrent] = useState("intro");
+  const pageMap = { intro:IntroPage, vault:VaultPage, basic:BasicPage, intermediate:IntermediatePage, decorate:DecoratePage, advanced:AdvancedPage };
+  const Page = pageMap[current];
+  return (
+    <div style={{ background:C.bg, minHeight:"100vh", color:C.text, fontFamily:C.font, overflowX:"hidden" }}>
+      {/* Nav */}
+      <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(13,15,20,0.92)", backdropFilter:"blur(14px)", borderBottom:`1px solid ${C.border}`, padding:"10px 16px", display:"flex", alignItems:"center", gap:8, justifyContent:"center", flexWrap:"wrap" }}>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginRight:8,cursor:"pointer"}} onClick={() => setCurrent("intro")}>
+          <ObsidianLogo size={20}/>
+          <span style={{fontWeight:700,fontSize:13,color:C.text}}>옵시디언</span>
+        </div>
+        {LEVELS.map((l) => (
+          <NavButton key={l.id} level={l} current={current} onClick={() => setCurrent(l.id)} />
+        ))}
+      </nav>
+
+      {/* Page */}
+      <div key={current} style={{animation:"fadeUp 0.4s ease"}}>
+        <Page />
+      </div>
+
+      {/* Footer nav */}
+      <div style={{borderTop:`1px solid ${C.border}`,padding:"28px 24px",textAlign:"center"}}>
+        <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap",marginBottom:10}}>
+          {LEVELS.filter(l => l.id!==current).map(l => (
+            <button key={l.id} onClick={() => setCurrent(l.id)} style={{padding:"7px 18px",borderRadius:999,border:`1px solid ${l.color}40`,background:`${l.color}10`,color:l.color,fontFamily:C.font,fontSize:13,fontWeight:600,cursor:"pointer",transition:"all 0.2s"}}>
+              {l.label} →
+            </button>
+          ))}
+        </div>
+        <div style={{color:C.muted,fontSize:12}}>옵시디언 완전 정복 강의 가이드 | 소개 → 보관소 → 초급 → 중급 → 꾸미기 → 고급</div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+
+
+
+</body>
+</html>

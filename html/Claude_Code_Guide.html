@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Claude Code 완전 정복 - 초급부터 고급까지</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+  body { overflow-x: hidden; }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
+  ::selection { background: #c7d2fe; color: #312e81; }
+  @media (max-width: 768px) {
+    .floating-nav-wrap { display: none !important; }
+    .card-grid-responsive { grid-template-columns: 1fr !important; }
+    .hero-title { font-size: 32px !important; }
+    .hero-sub { font-size: 15px !important; }
+    .toc-grid { grid-template-columns: 1fr !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-type="module">
+const { useState, useEffect, useRef, useCallback, Children } = React;
+
+// ─── Hooks ───
+const useInView = (threshold = 0.15) => {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setInView(true); obs.unobserve(el); } }, { threshold });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return [ref, inView];
+};
+
+const useScrollY = () => {
+  const [y, setY] = useState(0);
+  useEffect(() => {
+    const h = () => setY(window.scrollY);
+    window.addEventListener('scroll', h, { passive: true });
+    return () => window.removeEventListener('scroll', h);
+  }, []);
+  return y;
+};
+
+const useTypewriter = (text, speed = 40, startDelay = 500) => {
+  const [displayed, setDisplayed] = useState('');
+  const [started, setStarted] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setStarted(true), startDelay); return () => clearTimeout(t); }, [startDelay]);
+  useEffect(() => {
+    if (!started) return;
+    let i = 0;
+    const iv = setInterval(() => { i++; setDisplayed(text.slice(0, i)); if (i >= text.length) clearInterval(iv); }, speed);
+    return () => clearInterval(iv);
+  }, [text, speed, started]);
+  return displayed;
+};
+
+// ─── Keyframes ───
+const keyframes = `
+@keyframes fadeInUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInLeft{from{opacity:0;transform:translateX(-50px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeInRight{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+@keyframes scaleInBounce{0%{opacity:0;transform:scale(.3)}60%{opacity:1;transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes bounceIn{0%{opacity:0;transform:scale(.3)}50%{transform:scale(1.05)}70%{transform:scale(.95)}100%{opacity:1;transform:scale(1)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 5px rgba(99,102,241,.3)}50%{box-shadow:0 0 25px rgba(99,102,241,.6)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes floatSlow{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-20px) rotate(3deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-4px)}20%,40%,60%,80%{transform:translateX(4px)}}
+@keyframes glow{0%,100%{text-shadow:0 0 5px rgba(99,102,241,.5)}50%{text-shadow:0 0 20px rgba(99,102,241,.8),0 0 40px rgba(139,92,246,.4)}}
+@keyframes morphBlob1{0%,100%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%}50%{border-radius:30% 60% 70% 40%/50% 60% 30% 60%}}
+@keyframes morphBlob2{0%,100%{border-radius:40% 60% 70% 30%/40% 50% 60% 50%}50%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%}}
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes typewriterCursor{0%,100%{border-right-color:transparent}50%{border-right-color:#6366f1}}
+@keyframes flipInX{from{opacity:0;transform:perspective(400px) rotateX(90deg)}to{opacity:1;transform:perspective(400px) rotateX(0)}}
+@keyframes flipInY{from{opacity:0;transform:perspective(400px) rotateY(90deg)}to{opacity:1;transform:perspective(400px) rotateY(0)}}
+@keyframes blurClear{from{opacity:0;filter:blur(12px)}to{opacity:1;filter:blur(0)}}
+@keyframes springPop{0%{transform:scale(0)}70%{transform:scale(1.15)}85%{transform:scale(.95)}100%{transform:scale(1)}}
+@keyframes tiltIn{from{opacity:0;transform:perspective(600px) rotateY(-15deg) rotateX(10deg) translateZ(-50px)}to{opacity:1;transform:perspective(600px) rotateY(0) rotateX(0) translateZ(0)}}
+@keyframes particleFloat{0%{transform:translateY(0) translateX(0) scale(1);opacity:.7}50%{opacity:.3}100%{transform:translateY(-600px) translateX(100px) scale(0);opacity:0}}
+@keyframes slideRight{from{width:0%}to{width:100%}}
+@keyframes rotateIn{from{opacity:0;transform:rotate(-200deg) scale(.5)}to{opacity:1;transform:rotate(0) scale(1)}}
+@keyframes reveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+`;
+
+// ─── Colors ───
+const C={bg:'#f8faff',bgCard:'#ffffff',bgCode:'#f1f5f9',bgHero:'linear-gradient(135deg,#e0e7ff 0%,#dbeafe 30%,#e0f2fe 60%,#f0f9ff 100%)',primary:'#6366f1',primaryLight:'#818cf8',primaryBg:'#eef2ff',secondary:'#06b6d4',secondaryBg:'#ecfeff',accent:'#8b5cf6',accentBg:'#f5f3ff',success:'#10b981',successBg:'#ecfdf5',warning:'#f59e0b',warningBg:'#fffbeb',danger:'#ef4444',dangerBg:'#fef2f2',text:'#1e293b',textSoft:'#475569',textMuted:'#94a3b8',border:'#e2e8f0',borderLight:'#f1f5f9',shadow:'0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -2px rgba(0,0,0,.05)',shadowLg:'0 10px 15px -3px rgba(0,0,0,.08),0 4px 6px -4px rgba(0,0,0,.05)',shadowXl:'0 20px 25px -5px rgba(0,0,0,.08),0 8px 10px -6px rgba(0,0,0,.04)',lvl:['#6366f1','#06b6d4','#10b981','#f59e0b','#ef4444'],lvlBg:['#eef2ff','#ecfeff','#ecfdf5','#fffbeb','#fef2f2']};
+
+const S={page:{fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",color:C.text,background:C.bg,lineHeight:1.7,minHeight:'100vh',overflowX:'hidden',fontSize:16},container:{maxWidth:960,margin:'0 auto',padding:'0 24px'},section:{marginBottom:80}};
+
+// ─── Particles ───
+const FloatingParticles=()=>{
+  const items=Array.from({length:18},(_,i)=>({id:i,left:`${Math.random()*100}%`,size:4+Math.random()*10,delay:Math.random()*8,dur:8+Math.random()*12,color:[C.primary,C.secondary,C.accent,'#e879f9','#38bdf8'][i%5],opacity:.15+Math.random()*.2}));
+  return(<div style={{position:'fixed',inset:0,pointerEvents:'none',zIndex:0,overflow:'hidden'}}>{items.map(p=>(<div key={p.id} style={{position:'absolute',bottom:-20,left:p.left,width:p.size,height:p.size,borderRadius:'50%',background:p.color,opacity:p.opacity,animation:`particleFloat ${p.dur}s ${p.delay}s infinite ease-out`}}/>))}</div>);
+};
+
+const HeroBlobs=()=>(<div style={{position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none'}}><div style={{position:'absolute',top:-100,right:-80,width:350,height:350,background:'rgba(99,102,241,.1)',animation:'morphBlob1 12s ease-in-out infinite',filter:'blur(40px)'}}/><div style={{position:'absolute',bottom:-60,left:-60,width:300,height:300,background:'rgba(6,182,212,.1)',animation:'morphBlob2 10s ease-in-out infinite',filter:'blur(40px)'}}/><div style={{position:'absolute',top:'40%',left:'50%',width:200,height:200,background:'rgba(139,92,246,.08)',animation:'morphBlob1 14s 2s ease-in-out infinite',filter:'blur(50px)'}}/></div>);
+
+// ─── ScrollProgress ───
+const ScrollProgress=()=>{
+  const[pct,setPct]=useState(0);
+  useEffect(()=>{const h=()=>{const m=document.documentElement.scrollHeight-window.innerHeight;setPct(m>0?(window.scrollY/m)*100:0)};window.addEventListener('scroll',h,{passive:true});return()=>window.removeEventListener('scroll',h)},[]);
+  return(<div style={{position:'fixed',top:0,left:0,width:'100%',height:4,zIndex:1000,background:'rgba(0,0,0,.05)'}}><div style={{height:'100%',width:`${pct}%`,background:`linear-gradient(90deg,${C.primary},${C.secondary},${C.accent})`,transition:'width .1s',borderRadius:'0 2px 2px 0'}}/></div>);
+};
+
+// ─── BackToTop ───
+const BackToTop=()=>{
+  const[show,setShow]=useState(false);
+  useEffect(()=>{const h=()=>setShow(window.scrollY>600);window.addEventListener('scroll',h,{passive:true});return()=>window.removeEventListener('scroll',h)},[]);
+  return show?(<button onClick={()=>window.scrollTo({top:0,behavior:'smooth'})} style={{position:'fixed',bottom:32,right:32,width:48,height:48,borderRadius:'50%',border:'none',cursor:'pointer',background:`linear-gradient(135deg,${C.primary},${C.accent})`,color:'#fff',fontSize:20,boxShadow:C.shadowLg,zIndex:999,animation:'scaleInBounce .4s ease-out',display:'flex',alignItems:'center',justifyContent:'center',transition:'transform .2s,box-shadow .2s'}} onMouseEnter={e=>{e.currentTarget.style.transform='scale(1.15)';e.currentTarget.style.boxShadow=`0 8px 25px rgba(99,102,241,.4)`}} onMouseLeave={e=>{e.currentTarget.style.transform='scale(1)';e.currentTarget.style.boxShadow=C.shadowLg}}>↑</button>):null;
+};
+
+// ─── AnimSection ───
+const AnimSection=({children,animation='fadeInUp',delay=0,duration=.7,style={}})=>{
+  const[ref,inView]=useInView(.1);
+  return(<div ref={ref} style={{opacity:inView?1:0,animation:inView?`${animation} ${duration}s ${delay}s both ease-out`:'none',...style}}>{children}</div>);
+};
+
+// ─── StaggerList ───
+const StaggerList=({children,baseDelay=0,stagger=.1,animation='fadeInUp'})=>{
+  const[ref,inView]=useInView(.05);
+  return(<div ref={ref}>{Children.map(children,(child,i)=>(<div style={{opacity:inView?1:0,animation:inView?`${animation} .6s ${baseDelay+i*stagger}s both ease-out`:'none'}}>{child}</div>))}</div>);
+};
+
+// ─── TiltCard ───
+const TiltCard=({children,style={}})=>{
+  const cardRef=useRef(null);
+  const handleMove=e=>{const c=cardRef.current;if(!c)return;const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(800px) rotateY(${x*8}deg) rotateX(${-y*8}deg) scale(1.02)`};
+  const handleLeave=()=>{if(cardRef.current)cardRef.current.style.transform='perspective(800px) rotateY(0) rotateX(0) scale(1)'};
+  return(<div ref={cardRef} onMouseMove={handleMove} onMouseLeave={handleLeave} style={{transition:'transform .15s ease-out',transformStyle:'preserve-3d',...style}}>{children}</div>);
+};
+
+// ─── LevelBadge ───
+const LevelBadge=({level,color})=>(<span style={{display:'inline-flex',alignItems:'center',gap:6,padding:'6px 16px',borderRadius:50,background:color+'18',color,fontWeight:700,fontSize:14,border:`2px solid ${color}30`,animation:'pulseGlow 3s infinite',boxShadow:`0 0 10px ${color}20`}}>{'★'.repeat(level)} LEVEL {level}</span>);
+
+// ─── ProgressBar ───
+const ProgressBar=({percent,color,label,delay=0})=>{
+  const[ref,inView]=useInView();
+  return(<div ref={ref} style={{marginBottom:12}}>{label&&<div style={{fontSize:13,color:C.textSoft,marginBottom:4,fontWeight:600}}>{label}</div>}<div style={{height:8,borderRadius:4,background:C.borderLight,overflow:'hidden'}}><div style={{height:'100%',borderRadius:4,background:`linear-gradient(90deg,${color},${color}cc)`,width:inView?`${percent}%`:'0%',transition:`width 1.2s ${delay}s cubic-bezier(.4,0,.2,1)`}}/></div></div>);
+};
+
+// ─── CodeBlock ───
+const CodeBlock=({children,lang='bash'})=>(<div style={{position:'relative',marginBottom:16}}><div style={{position:'absolute',top:0,right:0,padding:'2px 10px',borderRadius:'0 12px 0 8px',background:C.primary+'15',color:C.primary,fontSize:11,fontWeight:700,letterSpacing:.5}}>{lang}</div><pre style={{background:'#1e293b',color:'#e2e8f0',padding:'20px 20px 16px',borderRadius:12,fontSize:13.5,lineHeight:1.6,overflowX:'auto',border:`1px solid ${C.border}`,boxShadow:'inset 0 2px 4px rgba(0,0,0,.2)',fontFamily:"'Fira Code','JetBrains Mono','Cascadia Code',monospace",whiteSpace:'pre-wrap',wordBreak:'break-word'}}><code>{children}</code></pre></div>);
+
+// ─── InlineCode ───
+const IC=({children})=>(<code style={{background:C.primaryBg,color:C.primary,padding:'2px 8px',borderRadius:6,fontSize:'.88em',fontFamily:"'Fira Code','JetBrains Mono',monospace",fontWeight:500}}>{children}</code>);
+
+// ─── Callout ───
+const Callout=({type='tip',title,children})=>{
+  const cfg={tip:{icon:'💡',color:C.primary,bg:C.primaryBg,border:C.primary+'40'},warning:{icon:'⚠️',color:C.warning,bg:C.warningBg,border:C.warning+'40'},success:{icon:'✅',color:C.success,bg:C.successBg,border:C.success+'40'},danger:{icon:'🚨',color:C.danger,bg:C.dangerBg,border:C.danger+'40'},info:{icon:'📌',color:C.secondary,bg:C.secondaryBg,border:C.secondary+'40'}}[type];
+  return(<div style={{background:cfg.bg,border:`1px solid ${cfg.border}`,borderLeft:`4px solid ${cfg.color}`,borderRadius:12,padding:'16px 20px',marginBottom:20,transition:'transform .2s,box-shadow .2s'}} onMouseEnter={e=>{e.currentTarget.style.transform='translateX(4px)';e.currentTarget.style.boxShadow=C.shadow}} onMouseLeave={e=>{e.currentTarget.style.transform='translateX(0)';e.currentTarget.style.boxShadow='none'}}><div style={{fontWeight:700,color:cfg.color,marginBottom:4,fontSize:15}}>{cfg.icon} {title}</div><div style={{color:C.textSoft,fontSize:14,lineHeight:1.7}}>{children}</div></div>);
+};
+
+// ─── Accordion ───
+const Accordion=({title,children,defaultOpen=false,icon='📂'})=>{
+  const[open,setOpen]=useState(defaultOpen);
+  return(<div style={{border:`1px solid ${C.border}`,borderRadius:12,marginBottom:12,overflow:'hidden',background:C.bgCard,transition:'box-shadow .3s',boxShadow:open?C.shadow:'none'}}><button onClick={()=>setOpen(!open)} style={{width:'100%',padding:'14px 20px',display:'flex',alignItems:'center',justifyContent:'space-between',background:'none',border:'none',cursor:'pointer',fontSize:15,fontWeight:600,color:C.text,transition:'background .2s'}} onMouseEnter={e=>e.currentTarget.style.background=C.borderLight} onMouseLeave={e=>e.currentTarget.style.background='none'}><span>{icon} {title}</span><span style={{transition:'transform .3s cubic-bezier(.4,0,.2,1)',transform:open?'rotate(180deg)':'rotate(0)',fontSize:18}}>▼</span></button><div style={{overflow:'hidden',maxHeight:open?3000:0,opacity:open?1:0,transition:'max-height .5s cubic-bezier(.4,0,.2,1),opacity .3s'}}><div style={{padding:'0 20px 16px',fontSize:14,color:C.textSoft,lineHeight:1.8}}>{children}</div></div></div>);
+};
+
+// ─── CompareTable ───
+const CompareTable=({headers,rows})=>(<div style={{overflowX:'auto',marginBottom:20}}><table style={{width:'100%',borderCollapse:'separate',borderSpacing:0,fontSize:14,borderRadius:12,overflow:'hidden',border:`1px solid ${C.border}`}}><thead><tr>{headers.map((h,i)=>(<th key={i} style={{padding:'12px 16px',textAlign:'left',background:`linear-gradient(135deg,${C.primary}10,${C.accent}10)`,color:C.text,fontWeight:700,fontSize:13,borderBottom:`2px solid ${C.primary}30`}}>{h}</th>))}</tr></thead><tbody>{rows.map((row,ri)=>(<tr key={ri} style={{transition:'background .2s'}} onMouseEnter={e=>e.currentTarget.style.background=C.primaryBg+'60'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>{row.map((cell,ci)=>(<td key={ci} style={{padding:'10px 16px',borderBottom:`1px solid ${C.borderLight}`,color:ci===0?C.text:C.textSoft,fontWeight:ci===0?600:400}}>{cell}</td>))}</tr>))}</tbody></table></div>);
+
+// ─── CardGrid ───
+const CardGrid=({children,cols=2})=>(<div className="card-grid-responsive" style={{display:'grid',gridTemplateColumns:`repeat(${cols},1fr)`,gap:16,marginBottom:20}}>{children}</div>);
+
+// ─── IconCard ───
+const IconCard=({icon,title,desc,color=C.primary,delay=0})=>{
+  const[ref,inView]=useInView();
+  return(<TiltCard><div ref={ref} style={{background:C.bgCard,borderRadius:16,padding:24,border:`1px solid ${C.border}`,boxShadow:C.shadow,opacity:inView?1:0,animation:inView?`fadeInUp .6s ${delay}s both ease-out`:'none',transition:'box-shadow .3s,border-color .3s',cursor:'default'}} onMouseEnter={e=>{e.currentTarget.style.boxShadow=C.shadowXl;e.currentTarget.style.borderColor=color+'50'}} onMouseLeave={e=>{e.currentTarget.style.boxShadow=C.shadow;e.currentTarget.style.borderColor=C.border}}><div style={{fontSize:32,marginBottom:12,animation:'float 3s ease-in-out infinite'}}>{icon}</div><div style={{fontWeight:700,fontSize:16,color:C.text,marginBottom:6}}>{title}</div><div style={{fontSize:13,color:C.textSoft,lineHeight:1.6}}>{desc}</div></div></TiltCard>);
+};
+
+// ─── StepItem ───
+const StepItem=({number,title,children,color=C.primary})=>(<div style={{display:'flex',gap:16,marginBottom:20}}><div style={{flexShrink:0,width:40,height:40,borderRadius:'50%',background:`linear-gradient(135deg,${color},${color}cc)`,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:16,boxShadow:`0 4px 12px ${color}30`,animation:'springPop .5s ease-out'}}>{number}</div><div style={{flex:1}}><div style={{fontWeight:700,fontSize:15,color:C.text,marginBottom:4}}>{title}</div><div style={{fontSize:14,color:C.textSoft,lineHeight:1.7}}>{children}</div></div></div>);
+
+// ─── SectionTitle ───
+const SectionTitle=({children,sub,level,color})=>{
+  const[ref,inView]=useInView();const c=color||C.primary;
+  return(<div ref={ref} style={{marginBottom:32,opacity:inView?1:0,animation:inView?'blurClear .8s ease-out':'none'}}>{level!=null&&<LevelBadge level={level} color={C.lvl[level-1]}/>}<h2 style={{fontSize:32,fontWeight:800,color:C.text,marginTop:level!=null?12:0,marginBottom:8,background:`linear-gradient(135deg,${c},${C.accent})`,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{children}</h2>{sub&&<p style={{fontSize:16,color:C.textSoft,margin:0}}>{sub}</p>}<div style={{width:60,height:4,borderRadius:2,marginTop:12,background:`linear-gradient(90deg,${c},${C.accent})`,animation:inView?'slideRight .8s .3s both':'none'}}/></div>);
+};
+
+const SubTitle=({children,icon})=>{const[ref,inView]=useInView();return(<h3 ref={ref} style={{fontSize:20,fontWeight:700,color:C.text,marginTop:36,marginBottom:16,display:'flex',alignItems:'center',gap:8,opacity:inView?1:0,animation:inView?'fadeInLeft .5s ease-out':'none'}}>{icon&&<span style={{fontSize:22}}>{icon}</span>}{children}</h3>)};
+
+// ─── Kbd ───
+const Kbd=({children})=>(<kbd style={{display:'inline-block',padding:'2px 8px',borderRadius:6,background:'#f1f5f9',border:'1px solid #d1d5db',boxShadow:'0 1px 2px rgba(0,0,0,.1),inset 0 -1px 0 rgba(0,0,0,.1)',fontFamily:"'Fira Code',monospace",fontSize:'.85em',fontWeight:600,color:C.text}}>{children}</kbd>);
+
+// ─── CmdCard ───
+const CmdCard=({cmd,desc,example})=>(<div style={{background:C.bgCard,borderRadius:12,padding:'14px 18px',border:`1px solid ${C.border}`,marginBottom:8,transition:'all .25s'}} onMouseEnter={e=>{e.currentTarget.style.borderColor=C.primary+'60';e.currentTarget.style.boxShadow=`0 2px 8px ${C.primary}15`;e.currentTarget.style.transform='translateX(4px)'}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.boxShadow='none';e.currentTarget.style.transform='translateX(0)'}}><div style={{display:'flex',alignItems:'baseline',gap:8,flexWrap:'wrap'}}><IC>{cmd}</IC><span style={{fontSize:13,color:C.textSoft}}>{desc}</span></div>{example&&<div style={{fontSize:12,color:C.textMuted,marginTop:4,fontFamily:'monospace'}}>예: {example}</div>}</div>);
+
+// ─── PracticeBox ───
+const PracticeBox=({tasks,level})=>{
+  const[checked,setChecked]=useState(tasks.map(()=>false));
+  const toggle=i=>setChecked(p=>p.map((v,j)=>j===i?!v:v));
+  const done=checked.filter(Boolean).length;
+  const color=C.lvl[(level||1)-1];
+  return(<AnimSection animation="flipInX"><div style={{background:`linear-gradient(135deg,${color}08,${color}04)`,border:`2px dashed ${color}40`,borderRadius:16,padding:24,marginTop:32,marginBottom:20}}><div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}><div style={{fontWeight:800,fontSize:17,color}}>🎯 실습 과제</div><span style={{padding:'4px 12px',borderRadius:20,fontSize:12,fontWeight:700,background:done===tasks.length?C.successBg:color+'15',color:done===tasks.length?C.success:color,transition:'all .3s'}}>{done===tasks.length?'🎉 완료!':`${done}/${tasks.length}`}</span></div><ProgressBar percent={(done/tasks.length)*100} color={color}/><div style={{marginTop:12}}>{tasks.map((t,i)=>(<label key={i} style={{display:'flex',alignItems:'flex-start',gap:10,padding:'8px 0',cursor:'pointer',transition:'opacity .3s',opacity:checked[i]?.6:1}}><input type="checkbox" checked={checked[i]} onChange={()=>toggle(i)} style={{width:18,height:18,marginTop:2,accentColor:color,cursor:'pointer'}}/><span style={{fontSize:14,color:C.textSoft,lineHeight:1.6,textDecoration:checked[i]?'line-through':'none',transition:'text-decoration .3s'}}>{t}</span></label>))}</div></div></AnimSection>);
+};
+
+// ─── Divider ───
+const Divider=()=>(<div style={{display:'flex',alignItems:'center',gap:16,margin:'60px 0',opacity:.4}}><div style={{flex:1,height:1,background:`linear-gradient(90deg,transparent,${C.border})`}}/><div style={{width:6,height:6,borderRadius:'50%',background:C.primary,animation:'pulse 2s infinite'}}/><div style={{flex:1,height:1,background:`linear-gradient(90deg,${C.border},transparent)`}}/></div>);
+
+// ─── FloatingNav ───
+const FloatingNav=({activeLevel})=>{
+  const[show,setShow]=useState(false);const scrollY=useScrollY();
+  useEffect(()=>setShow(scrollY>400),[scrollY]);
+  if(!show)return null;
+  const levels=[{id:'level1',label:'L1 설치',color:C.lvl[0]},{id:'level2',label:'L2 기본',color:C.lvl[1]},{id:'level3',label:'L3 실전',color:C.lvl[2]},{id:'level4',label:'L4 설정',color:C.lvl[3]},{id:'level5',label:'L5 고급',color:C.lvl[4]}];
+  return(<nav className="floating-nav-wrap" style={{position:'fixed',left:16,top:'50%',transform:'translateY(-50%)',display:'flex',flexDirection:'column',gap:8,zIndex:998,animation:'fadeInLeft .5s ease-out'}}>{levels.map(lv=>(<button key={lv.id} onClick={()=>document.getElementById(lv.id)?.scrollIntoView({behavior:'smooth'})} style={{width:'auto',padding:'6px 12px',borderRadius:20,border:`2px solid ${lv.color}40`,background:C.bgCard,color:lv.color,fontSize:11,fontWeight:700,cursor:'pointer',transition:'all .3s',boxShadow:C.shadow,opacity:activeLevel===lv.id?1:.7,transform:activeLevel===lv.id?'scale(1.1)':'scale(1)'}} onMouseEnter={e=>{e.currentTarget.style.background=lv.color;e.currentTarget.style.color='#fff'}} onMouseLeave={e=>{e.currentTarget.style.background=C.bgCard;e.currentTarget.style.color=lv.color}}>{lv.label}</button>))}</nav>);
+};
+
+// ─── TOCCard ───
+const TOCCard=({level,title,desc,target,color,delay})=>{
+  const[ref,inView]=useInView();
+  return(<div ref={ref} onClick={()=>document.getElementById(target)?.scrollIntoView({behavior:'smooth'})} style={{background:C.bgCard,borderRadius:16,padding:20,border:`1px solid ${C.border}`,cursor:'pointer',opacity:inView?1:0,animation:inView?`scaleInBounce .6s ${delay}s both`:'none',transition:'all .3s',borderLeft:`4px solid ${color}`}} onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-4px) scale(1.02)';e.currentTarget.style.boxShadow=`0 12px 24px ${color}20`;e.currentTarget.style.borderColor=color}} onMouseLeave={e=>{e.currentTarget.style.transform='translateY(0) scale(1)';e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderColor=C.border}}><div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}><span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:32,height:32,borderRadius:'50%',background:`linear-gradient(135deg,${color},${color}cc)`,color:'#fff',fontWeight:800,fontSize:14}}>{level}</span><span style={{fontWeight:700,fontSize:16,color:C.text}}>{title}</span></div><p style={{margin:0,fontSize:13,color:C.textSoft,lineHeight:1.5}}>{desc}</p></div>);
+};
+
+// ─── SkeletonLoader ───
+const SkeletonLoader=({onDone})=>{
+  useEffect(()=>{const t=setTimeout(onDone,1800);return()=>clearTimeout(t)},[onDone]);
+  return(<div style={{...S.page,display:'flex',alignItems:'center',justifyContent:'center',minHeight:'100vh',flexDirection:'column',gap:24}}><div style={{width:60,height:60,borderRadius:'50%',border:`4px solid ${C.borderLight}`,borderTopColor:C.primary,animation:'spin .8s linear infinite'}}/><div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:12}}><div style={{width:300,height:28,borderRadius:8,background:`linear-gradient(90deg,${C.borderLight},${C.border},${C.borderLight})`,backgroundSize:'200% 100%',animation:'shimmer 1.5s infinite'}}/><div style={{width:200,height:16,borderRadius:6,background:`linear-gradient(90deg,${C.borderLight},${C.border},${C.borderLight})`,backgroundSize:'200% 100%',animation:'shimmer 1.5s .2s infinite'}}/></div></div>);
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// MAIN APP
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function App(){
+  const[loading,setLoading]=useState(true);
+  const[activeLevel,setActiveLevel]=useState('level1');
+  const titleText=useTypewriter('Claude Code 완전 정복',60,2000);
+
+  useEffect(()=>{const h=()=>{for(const id of['level5','level4','level3','level2','level1']){const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<300){setActiveLevel(id);break}}};window.addEventListener('scroll',h,{passive:true});return()=>window.removeEventListener('scroll',h)},[]);
+
+  if(loading)return(<React.Fragment><style>{keyframes}</style><SkeletonLoader onDone={()=>setLoading(false)}/></React.Fragment>);
+
+  return(
+  <div style={S.page}>
+  <style>{keyframes}</style>
+  <FloatingParticles/><ScrollProgress/><FloatingNav activeLevel={activeLevel}/><BackToTop/>
+
+  {/* HERO */}
+  <header style={{background:C.bgHero,position:'relative',padding:'80px 0 60px',overflow:'hidden',borderBottom:`1px solid ${C.border}`}}>
+    <HeroBlobs/>
+    <div style={{...S.container,position:'relative',zIndex:1,textAlign:'center'}}>
+      <div style={{animation:'bounceIn 1s ease-out',marginBottom:20}}><span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:80,height:80,borderRadius:20,background:`linear-gradient(135deg,${C.primary},${C.accent})`,fontSize:40,boxShadow:`0 8px 32px ${C.primary}30`,animation:'floatSlow 4s ease-in-out infinite'}}>⚡</span></div>
+      <h1 className="hero-title" style={{fontSize:48,fontWeight:900,margin:'0 0 8px',background:`linear-gradient(135deg,${C.primary},${C.secondary},${C.accent})`,backgroundSize:'200% 200%',animation:'gradientShift 4s ease infinite',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',minHeight:58}}>{titleText}<span style={{borderRight:'3px solid',animation:'typewriterCursor 1s infinite',WebkitTextFillColor:C.primary}}>|</span></h1>
+      <p style={{fontSize:14,color:C.textMuted,margin:'0 0 24px',animation:'fadeIn 1s 2.5s both'}}>초급부터 고급까지 · AI 에이전트 코딩 도구</p>
+      <p className="hero-sub" style={{fontSize:18,color:C.textSoft,maxWidth:600,margin:'0 auto 32px',animation:'fadeInUp .8s 3s both',lineHeight:1.7}}>파일을 읽고, 편집하고, 명령을 실행하는<br/><strong style={{color:C.primary}}>AI 페어 프로그래머</strong>와 함께 코딩하세요</p>
+      <div style={{display:'flex',justifyContent:'center',gap:12,flexWrap:'wrap',animation:'fadeInUp .8s 3.3s both'}}>{['Terminal CLI','VS Code','JetBrains','Desktop','Web'].map((env,i)=>(<span key={i} style={{padding:'6px 16px',borderRadius:20,background:C.bgCard,border:`1px solid ${C.border}`,fontSize:13,color:C.textSoft,fontWeight:500,transition:'all .3s',cursor:'default',boxShadow:C.shadow}} onMouseEnter={e=>{e.currentTarget.style.background=C.primary;e.currentTarget.style.color='#fff';e.currentTarget.style.transform='translateY(-2px)'}} onMouseLeave={e=>{e.currentTarget.style.background=C.bgCard;e.currentTarget.style.color=C.textSoft;e.currentTarget.style.transform='translateY(0)'}}>{env}</span>))}</div>
+      <div style={{marginTop:48,animation:'fadeIn 1s 4s both'}}><div style={{animation:'float 2s ease-in-out infinite',fontSize:24,opacity:.4}}>↓</div></div>
+    </div>
+  </header>
+
+  <main style={S.container}>
+
+  {/* TOC */}
+  <section style={{...S.section,marginTop:60}}>
+    <AnimSection><h2 style={{fontSize:24,fontWeight:800,textAlign:'center',marginBottom:32,color:C.text}}>📚 학습 로드맵</h2></AnimSection>
+    <div className="toc-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:16}}>
+      <TOCCard level={1} title="설치 & 첫 시작" desc="설치, 로그인, 첫 대화, 첫 코드 변경" target="level1" color={C.lvl[0]} delay={0}/>
+      <TOCCard level={2} title="기본 사용법" desc="핵심 명령어, 실행 모드, 파일 참조" target="level2" color={C.lvl[1]} delay={.1}/>
+      <TOCCard level={3} title="실전 워크플로우" desc="버그 수정, 테스트, Git, 프롬프트 팁" target="level3" color={C.lvl[2]} delay={.2}/>
+      <TOCCard level={4} title="환경 설정" desc="CLAUDE.md, Hooks, MCP, Skills" target="level4" color={C.lvl[3]} delay={.3}/>
+      <TOCCard level={5} title="고급 활용" desc="Context 관리, Subagent, 자동화" target="level5" color={C.lvl[4]} delay={.4}/>
+    </div>
+    <div style={{textAlign:'center',marginTop:20}}><ProgressBar percent={100} color={C.primary} label="전체 커리큘럼"/></div>
+  </section>
+
+  <Divider/>
+
+  {/* LEVEL 1 */}
+  <section id="level1" style={S.section}>
+    <SectionTitle level={1} sub="Claude Code를 설치하고 첫 대화를 해봅니다">설치 & 첫 시작</SectionTitle>
+    <SubTitle icon="🤖">Claude Code란?</SubTitle>
+    <AnimSection><p style={{fontSize:15,color:C.textSoft,marginBottom:20}}>Claude Code는 <strong>AI 기반 에이전트 코딩 도구</strong>입니다. 일반 챗봇과 근본적으로 다릅니다.</p></AnimSection>
+    <AnimSection animation="flipInY" delay={.1}><CompareTable headers={['항목','일반 AI 챗봇','Claude Code']} rows={[['응답 방식','텍스트로 답변','직접 파일을 읽고, 편집하고, 명령 실행'],['코드 작업','복사/붙여넣기 필요','코드베이스를 탐색하고 자율적으로 작업'],['작업 범위','한 파일씩 처리','여러 파일에 걸쳐 변경사항 구현']]}/></AnimSection>
+    <Callout type="info" title="핵심 포인트">Claude Code는 여러분의 <strong>AI 페어 프로그래머</strong>입니다. 동료 개발자에게 말하듯이 자연어로 대화하면 됩니다.</Callout>
+    <SubTitle icon="📥">설치하기</SubTitle>
+    <AnimSection animation="tiltIn"><CardGrid cols={2}><div><div style={{fontWeight:700,fontSize:14,color:C.primary,marginBottom:8}}>Windows (PowerShell)</div><CodeBlock lang="powershell">{`irm https://claude.ai/install.ps1 | iex`}</CodeBlock></div><div><div style={{fontWeight:700,fontSize:14,color:C.secondary,marginBottom:8}}>macOS / Linux / WSL</div><CodeBlock lang="bash">{`curl -fsSL https://claude.ai/install.sh | bash`}</CodeBlock></div></CardGrid></AnimSection>
+    <Accordion title="기타 설치 방법" icon="📦"><CodeBlock lang="bash">{`# Homebrew (macOS)\nbrew install --cask claude-code\n\n# WinGet (Windows)\nwinget install Anthropic.ClaudeCode`}</CodeBlock></Accordion>
+    <SubTitle icon="🚀">첫 실행</SubTitle>
+    <AnimSection>
+      <StepItem number="1" title="프로젝트 폴더로 이동" color={C.lvl[0]}><CodeBlock lang="bash">{`cd /path/to/your/project`}</CodeBlock></StepItem>
+      <StepItem number="2" title="Claude Code 시작" color={C.lvl[0]}><CodeBlock lang="bash">{`claude`}</CodeBlock></StepItem>
+      <StepItem number="3" title="첫 번째 질문하기" color={C.lvl[0]}><CodeBlock lang="bash">{`> what does this project do?\n> explain the folder structure`}</CodeBlock></StepItem>
+    </AnimSection>
+    <Callout type="success" title="팁">Claude는 필요한 파일을 <strong>알아서 읽습니다</strong>. 수동 지정 불필요!</Callout>
+    <PracticeBox level={1} tasks={['Claude Code를 설치하고 로그인해보세요','아무 프로젝트 폴더에서 claude를 실행해보세요','"이 프로젝트가 뭘 하는 거야?" 라고 물어보세요','"메인 파일에 주석을 하나 추가해줘" 라고 요청해보세요']}/>
+  </section><Divider/>
+
+  {/* LEVEL 2 */}
+  <section id="level2" style={S.section}>
+    <SectionTitle level={2} sub="핵심 명령어와 다양한 실행 모드를 익힙니다" color={C.lvl[1]}>기본 사용법 마스터</SectionTitle>
+    <SubTitle icon="⌨️">터미널 명령어</SubTitle>
+    <StaggerList stagger={.05}><CmdCard cmd="claude" desc="대화형 모드 시작"/><CmdCard cmd='claude "작업"' desc="작업 설명과 함께 시작" example='claude "빌드 에러 고쳐줘"'/><CmdCard cmd='claude -p "질문"' desc="한 번 질문 후 종료" example='claude -p "이 함수 설명해줘"'/><CmdCard cmd="claude -c" desc="가장 최근 대화 이어서 하기"/><CmdCard cmd="claude -r" desc="이전 대화 목록에서 선택"/><CmdCard cmd="claude commit" desc="Git 커밋 생성"/></StaggerList>
+    <SubTitle icon="🔧">슬래시 명령어</SubTitle>
+    <AnimSection animation="tiltIn"><CompareTable headers={['명령어','설명']} rows={[['/help','사용 가능한 명령 보기'],['/clear','대화 기록 지우기'],['/resume','이전 대화 돌아가기'],['/rename','세션 이름 붙이기'],['/init','CLAUDE.md 생성'],['/compact','컨텍스트 압축'],['/hooks','Hook 설정'],['/mcp','MCP 상태 확인']]}/></AnimSection>
+    <SubTitle icon="⚡">핵심 단축키</SubTitle>
+    <AnimSection><CardGrid cols={2}><div style={{background:C.bgCard,borderRadius:12,padding:16,border:`1px solid ${C.border}`}}><div style={{fontWeight:700,color:C.primary,marginBottom:10,fontSize:14}}>조작</div><div style={{fontSize:14,color:C.textSoft,lineHeight:2.2}}><Kbd>Esc</Kbd> 작업 중지<br/><Kbd>Esc</Kbd>×2 되돌리기<br/><Kbd>Shift+Tab</Kbd> 모드 전환<br/><Kbd>Tab</Kbd> 자동완성</div></div><div style={{background:C.bgCard,borderRadius:12,padding:16,border:`1px solid ${C.border}`}}><div style={{fontWeight:700,color:C.secondary,marginBottom:10,fontSize:14}}>보기</div><div style={{fontSize:14,color:C.textSoft,lineHeight:2.2}}><Kbd>Ctrl+O</Kbd> Verbose 모드<br/><Kbd>Alt+T</Kbd> Thinking 토글<br/><Kbd>?</Kbd> 단축키 보기<br/><Kbd>↑</Kbd> 이전 명령 기록</div></div></CardGrid></AnimSection>
+    <SubTitle icon="🔄">세 가지 실행 모드</SubTitle>
+    <StaggerList stagger={.15}><IconCard icon="💬" title="대화형 모드" desc="가장 기본. 여러 턴에 걸쳐 작업." color={C.lvl[1]}/><IconCard icon="📤" title="일회성 모드 (Headless)" desc='claude -p "질문". 스크립트/자동화에 적합.' color={C.primary} delay={.15}/><IconCard icon="🔍" title="Plan Mode" desc="코드 변경 없이 분석만. Shift+Tab 전환." color={C.accent} delay={.3}/></StaggerList>
+    <SubTitle icon="@">파일 참조</SubTitle>
+    <AnimSection><CodeBlock lang="bash">{`> @src/utils/auth.js 의 로직을 설명해줘\n> @src/components 디렉토리 구조를 알려줘`}</CodeBlock></AnimSection>
+    <PracticeBox level={2} tasks={['claude -p "기술 스택 알려줘" 실행','@ 로 특정 파일 참조하며 질문','Plan Mode(Shift+Tab)로 코드 분석','/rename 으로 세션 이름 → --resume 이어하기']}/>
+  </section><Divider/>
+
+  {/* LEVEL 3 */}
+  <section id="level3" style={S.section}>
+    <SectionTitle level={3} sub="실제 개발 업무에서 Claude Code를 활용합니다" color={C.lvl[2]}>실전 워크플로우</SectionTitle>
+    <SubTitle icon="🔍">코드베이스 탐색</SubTitle>
+    <AnimSection><CodeBlock lang="bash">{`> give me an overview of this codebase\n> 로깅은 어떻게 작동하나요?\n> 새로운 API 엔드포인트를 만들려면?`}</CodeBlock></AnimSection>
+    <SubTitle icon="🐛">버그 수정</SubTitle>
+    <AnimSection animation="fadeInRight"><CodeBlock lang="bash">{`> 세션 시간 초과 후 로그인 실패 보고.\n> src/auth/ 인증 흐름 확인, 토큰 새로고침 확인.\n> 실패하는 테스트 작성 후 수정해줘.`}</CodeBlock><Callout type="tip" title="핵심">증상 + <strong>위치</strong> + <strong>성공 기준</strong>을 구체적으로!</Callout></AnimSection>
+    <SubTitle icon="🏗️">기능 추가: 4단계 패턴</SubTitle>
+    <StaggerList stagger={.12}>
+      <StepItem number="1" title="탐색 (Plan Mode)" color={C.success}><CodeBlock lang="bash">{`> (Plan Mode) /src/auth를 읽고 이해해줘.`}</CodeBlock></StepItem>
+      <StepItem number="2" title="계획 (Plan Mode)" color={C.secondary}><CodeBlock lang="bash">{`> OAuth 추가 계획을 작성해줘.`}</CodeBlock></StepItem>
+      <StepItem number="3" title="구현 (Normal)" color={C.primary}><CodeBlock lang="bash">{`> 계획대로 구현하고 테스트해줘.`}</CodeBlock></StepItem>
+      <StepItem number="4" title="커밋" color={C.accent}><CodeBlock lang="bash">{`> 커밋하고 PR 열어줘`}</CodeBlock></StepItem>
+    </StaggerList>
+    <SubTitle icon="✍️">프롬프트 팁</SubTitle>
+    <AnimSection animation="flipInX"><CompareTable headers={['전략','❌ 나쁜 예','✅ 좋은 예']} rows={[['구체적으로','"버그 수정"','"src/auth/ 로그인 실패 수정 + 테스트"'],['검증 기준','"검증 함수 만들어"','"user@test.com→true, invalid→false"'],['패턴 참조','"위젯 추가"','"HotDogWidget.php 패턴 따라"']]}/></AnimSection>
+    <PracticeBox level={3} tasks={['코드베이스 아키텍처 질문','테스트 작성 요청','Plan Mode로 기능 계획','변경사항 커밋 요청']}/>
+  </section><Divider/>
+
+  {/* LEVEL 4 */}
+  <section id="level4" style={S.section}>
+    <SectionTitle level={4} sub="CLAUDE.md, Hooks, MCP, Skills로 맞춤 설정" color={C.lvl[3]}>환경 설정 & 커스터마이징</SectionTitle>
+    <SubTitle icon="🧠">CLAUDE.md</SubTitle>
+    <AnimSection><p style={{fontSize:14,color:C.textSoft,marginBottom:16}}>모든 대화 시작 시 <strong>자동으로 읽히는</strong> 프로젝트 규칙 파일.</p></AnimSection>
+    <AnimSection animation="scaleIn"><CodeBlock lang="bash">{`> /init    # CLAUDE.md 자동 생성`}</CodeBlock></AnimSection>
+    <AnimSection animation="tiltIn"><CompareTable headers={['위치','범위','용도']} rows={[['~/.claude/CLAUDE.md','모든 프로젝트','개인 선호도'],['./CLAUDE.md','현재 프로젝트','팀 공유 규칙'],['.claude/rules/*.md','현재 프로젝트','주제별 규칙']]}/></AnimSection>
+    <Accordion title="CLAUDE.md 예시" icon="✍️" defaultOpen={true}><CodeBlock lang="markdown">{`# 코드 스타일\n- ES 모듈 사용. CommonJS 금지.\n\n# 빌드 & 테스트\n- 빌드: npm run build\n- 테스트: npm test`}</CodeBlock></Accordion>
+
+    <SubTitle icon="🪝">Hooks</SubTitle>
+    <AnimSection><p style={{fontSize:14,color:C.textSoft,marginBottom:12}}>CLAUDE.md = 권고 / Hooks = <strong>반드시 실행</strong></p></AnimSection>
+    <AnimSection animation="flipInY"><CompareTable headers={['이벤트','시점','예']} rows={[['PreToolUse','도구 호출 전','위험 명령 차단'],['PostToolUse','도구 호출 후','자동 포맷팅'],['Notification','알림 발생','커스텀 알림']]}/></AnimSection>
+
+    <SubTitle icon="🔌">MCP - 외부 도구 연결</SubTitle>
+    <AnimSection animation="fadeInLeft"><CodeBlock lang="bash">{`# GitHub 연결\nclaude mcp add --transport http github \\\\\n  https://api.githubcopilot.com/mcp/\n\n# Notion 연결\nclaude mcp add --transport http notion \\\\\n  https://mcp.notion.com/mcp\n\n# 관리\nclaude mcp list / remove`}</CodeBlock></AnimSection>
+
+    <SubTitle icon="🎯">Skills</SubTitle>
+    <Accordion title="호출형 Skill" icon="▶️" defaultOpen={true}><CodeBlock lang="markdown">{`<!-- .claude/skills/fix-issue/SKILL.md -->\n---\nname: fix-issue\n---\n1. gh issue view로 이슈 확인\n2. 수정 구현\n3. 테스트 및 커밋`}</CodeBlock><p style={{fontSize:14,color:C.textSoft}}>사용: <IC>/fix-issue 1234</IC></p></Accordion>
+    <PracticeBox level={4} tasks={['/init 으로 CLAUDE.md 생성','CLAUDE.md에 코딩 규칙 추가','/hooks 로 hook 설정','MCP 서버 연결']}/>
+  </section><Divider/>
+
+  {/* LEVEL 5 */}
+  <section id="level5" style={S.section}>
+    <SectionTitle level={5} sub="병렬 세션, Subagent, 자동화 파이프라인" color={C.lvl[4]}>고급 활용 & 자동화</SectionTitle>
+    <SubTitle icon="🧊">Context 관리 (최중요)</SubTitle>
+    <AnimSection><Callout type="danger" title="핵심">Context가 차면 <strong>성능 저하</strong>. 가장 중요한 리소스!</Callout></AnimSection>
+    <AnimSection animation="flipInX"><CompareTable headers={['실패 패턴','해결법']} rows={[['관련 없는 작업 뒤섞기','작업 간 /clear'],['반복 수정 실패','2번 실패 후 /clear → 재시작'],['CLAUDE.md 과다','무자비하게 정리'],['검증 없는 신뢰','항상 테스트'],['무한 탐색','Subagent 활용']]}/></AnimSection>
+    <SubTitle icon="🤖">Subagent</SubTitle>
+    <AnimSection><CodeBlock lang="bash">{`> subagent로 인증 시스템 토큰 새로고침 조사해줘\n> subagent로 이 코드 엣지 케이스 검토해줘`}</CodeBlock></AnimSection>
+    <Accordion title="커스텀 Subagent" icon="🛠️" defaultOpen={true}><CodeBlock lang="markdown">{`<!-- .claude/agents/security-reviewer.md -->\n---\nname: security-reviewer\ntools: Read, Grep, Glob, Bash\nmodel: opus\n---\n보안 엔지니어로서 코드 검토:\n- 주입 취약점\n- 인증 결함\n- 코드 내 비밀`}</CodeBlock></Accordion>
+    <SubTitle icon="⚡">Headless 자동화</SubTitle>
+    <AnimSection animation="tiltIn"><CodeBlock lang="bash">{`# CI/CD 분석\nclaude -p "보안 취약점 찾아줘"\n\n# 파이프라인\ncat error.log | claude -p '원인 설명' > out.txt\n\n# 보안 리뷰\ngit diff main --name-only | claude -p "보안 이슈 검토"`}</CodeBlock></AnimSection>
+    <SubTitle icon="🌊">Fan-out 패턴</SubTitle>
+    <StaggerList stagger={.1}>
+      <StepItem number="1" title="파일 목록 생성" color={C.danger}><CodeBlock lang="bash">{`claude -p "마이그레이션 파일 목록" > files.txt`}</CodeBlock></StepItem>
+      <StepItem number="2" title="테스트 후 전체 실행" color={C.success}><CodeBlock lang="bash">{`cat files.txt | while read f; do\n  claude -p "$f 마이그레이션" --allowedTools "Edit"\ndone`}</CodeBlock></StepItem>
+    </StaggerList>
+    <PracticeBox level={5} tasks={['Subagent로 코드 리뷰 위임','claude -p headless 분석','Git worktree 병렬 실행','파이프라인으로 로그 분석']}/>
+  </section><Divider/>
+
+  {/* 부록 */}
+  <section style={S.section}>
+    <AnimSection><h2 style={{fontSize:28,fontWeight:800,textAlign:'center',marginBottom:32,color:C.text}}>📎 부록</h2></AnimSection>
+    <Accordion title="핵심 CLI 플래그" icon="🏁" defaultOpen={true}><CompareTable headers={['플래그','설명']} rows={[['-p','응답만 출력'],['-c','최근 대화 이어하기'],['-r','세션 재개'],['--model','모델 지정'],['--output-format','출력 형식'],['--allowedTools','도구 제한'],['--max-turns','턴 수 제한'],['--verbose','상세 로깅']]}/></Accordion>
+    <Accordion title="문제 해결" icon="🔧"><CompareTable headers={['문제','해결']} rows={[['설치 실패','네트워크 확인'],['로그인 안 됨','/login 재인증'],['응답 느림','/clear context 정리'],['지시 무시','CLAUDE.md 길이 확인'],['MCP 실패','/mcp 상태 확인']]}/></Accordion>
+    <Accordion title="유용한 리소스" icon="🔗"><div style={{display:'flex',flexDirection:'column',gap:8}}>{[{l:'공식 문서 (한국어)',u:'code.claude.com/docs/ko/overview'},{l:'Discord',u:'anthropic.com/discord'},{l:'GitHub Issues',u:'github.com/anthropics/claude-code/issues'}].map((r,i)=>(<div key={i} style={{padding:'10px 16px',borderRadius:8,background:C.primaryBg,border:`1px solid ${C.primary}20`,fontSize:14,transition:'all .2s'}} onMouseEnter={e=>{e.currentTarget.style.transform='translateX(8px)';e.currentTarget.style.borderColor=C.primary}} onMouseLeave={e=>{e.currentTarget.style.transform='translateX(0)';e.currentTarget.style.borderColor=C.primary+'20'}}><strong style={{color:C.primary}}>{r.l}</strong><div style={{fontSize:12,color:C.textMuted,fontFamily:'monospace'}}>{r.u}</div></div>))}</div></Accordion>
+  </section>
+
+  {/* Footer */}
+  <footer style={{textAlign:'center',padding:'48px 0 64px',borderTop:`1px solid ${C.border}`}}>
+    <AnimSection animation="blurClear">
+      <div style={{fontSize:36,marginBottom:16,animation:'float 3s ease-in-out infinite'}}>🚀</div>
+      <p style={{fontSize:18,fontWeight:700,background:`linear-gradient(135deg,${C.primary},${C.accent})`,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',marginBottom:8}}>직접 사용하면서 느끼는 직관이 최고의 가이드입니다.</p>
+      <p style={{display:'inline-block',padding:'10px 28px',borderRadius:50,background:`linear-gradient(135deg,${C.primary},${C.accent})`,color:'#fff',fontWeight:700,fontSize:16,boxShadow:`0 4px 15px ${C.primary}40`,animation:'pulse 2s infinite',marginTop:16}}>시작하세요!</p>
+    </AnimSection>
+    <p style={{fontSize:12,color:C.textMuted,marginTop:32}}>출처: code.claude.com/docs/ko · Claude Code 공식 문서 기반</p>
+  </footer>
+
+  </main></div>);
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

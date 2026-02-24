@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>옵시디언 초보자 사용 설명서</title>
+<style>
+* { margin: 0px; padding: 0px; box-sizing: border-box; }
+html, body, #root { min-height: 100vh; }
+body { background: rgb(249, 247, 255); overflow-x: hidden; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgb(196, 181, 253); border-radius: 3px; }
+@keyframes blink { 
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes fadeIn { 
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0px); }
+}
+@keyframes pulse { 
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+</style>
+</head>
+<body>
+
+<div id="root"><div style="font-family: -apple-system, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif; min-height: 100vh; background: rgb(249, 247, 255); display: flex; font-size: 14px;"><div style="width: 222px; background: linear-gradient(rgb(76, 29, 149) 0%, rgb(30, 7, 65) 100%); min-height: 100vh; position: sticky; top: 0px; flex-shrink: 0; display: flex; flex-direction: column;"><div style="padding: 24px 16px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); text-align: center;"><div style="font-size: 32px;">📓</div><div style="color: rgb(233, 213, 255); font-weight: 800; font-size: 15px; margin-top: 6px;">옵시디언</div><div style="color: rgb(167, 139, 250); font-size: 11px; margin-top: 2px;">초보자 사용 설명서</div></div><div style="padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.07);"><div style="display: flex; justify-content: space-between; color: rgb(107, 114, 128); font-size: 11px; margin-bottom: 5px;"><span>진행도</span><span>10%</span></div><div style="background: rgba(255, 255, 255, 0.1); border-radius: 4px; height: 5px;"><div style="background: linear-gradient(90deg, rgb(124, 58, 237), rgb(167, 139, 250)); border-radius: 4px; height: 5px; width: 10%; transition: width 0.4s;"></div></div></div><nav style="padding: 10px 0px; flex: 1 1 0%; overflow-y: auto;"><button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; background: rgba(196, 181, 253, 0.15); border-top: none; border-right: none; border-bottom: none; border-left: 3px solid rgb(167, 139, 250); border-image: initial; color: rgb(233, 213, 255); cursor: pointer; font-size: 12px; font-weight: 700; text-align: left; transition: 0.15s;"><span>📓</span><span>1. 옵시디언이란?</span></button><button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; background: transparent; border-top: none; border-right: none; border-bottom: none; border-left: 3px solid transparent; border-image: initial; color: rgb(107, 114, 128); cursor: pointer; font-size: 12px; font-weight: 400; text-align: left; transition: 0.15s;"><span>⬇️</span><span>2. 설치와 첫 시작</span></button><button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; background: transparent; border-top: none; border-right: none; border-bottom: none; border-left: 3px solid transparent; border-image: initial; color: rgb(107, 114, 128); cursor: pointer; font-size: 12px; font-weight: 400; text-align: left; transition: 0.15s;"><span>🏦</span><span>3. 볼트(Vault) 완전 이해</span></button><button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; background: transparent; border-top: none; border-right: none; border-bottom: none; border-left: 3px solid transparent; border-image: initial; color: rgb(107, 114, 128); cursor: pointer; font-size: 12px; font-weight: 400; text-align: left; transition: 0.15s;"><span>🧭</span><span>4. 화면 &amp; 아이콘 가이드</span></button><button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; background: transparent; border-top: none; border-right: none; border-bottom: none; border-left: 3px solid transparent; border-image: initial; color: rgb(107, 114, 128); cursor: pointer; font-size: 12px; font-weight: 400; text-align: left; transition: 0.15s;"><span>✏️</span><span>5. 첫 메모 작성하기</span></button><button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; background: transparent; border-top: none; border-right: none; border-bottom: none; border-left: 3px solid transparent; border-image: initial; color: rgb(107, 114, 128); cursor: pointer; font-size: 12px; font-weight: 400; text-align: left; transition: 0.15s;"><span>🔗</span><span>6. 메모 연결하기</span></button><button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; background: transparent; border-top: none; border-right: none; border-bottom: none; border-left: 3px solid transparent; border-image: initial; color: rgb(107, 114, 128); cursor: pointer; font-size: 12px; font-weight: 400; text-align: left; transition: 0.15s;"><span>🗂️</span><span>7. 태그와 폴더 정리</span></button><button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; background: transparent; border-top: none; border-right: none; border-bottom: none; border-left: 3px solid transparent; border-image: initial; color: rgb(107, 114, 128); cursor: pointer; font-size: 12px; font-weight: 400; text-align: left; transition: 0.15s;"><span>⌨️</span><span>8. 단축키 모음</span></button><button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; background: transparent; border-top: none; border-right: none; border-bottom: none; border-left: 3px solid transparent; border-image: initial; color: rgb(107, 114, 128); cursor: pointer; font-size: 12px; font-weight: 400; text-align: left; transition: 0.15s;"><span>🔌</span><span>9. 플러그인 확장</span></button><button style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; background: transparent; border-top: none; border-right: none; border-bottom: none; border-left: 3px solid transparent; border-image: initial; color: rgb(107, 114, 128); cursor: pointer; font-size: 12px; font-weight: 400; text-align: left; transition: 0.15s;"><span>❓</span><span>10. 자주 묻는 질문</span></button></nav></div><div style="flex: 1 1 0%; overflow-y: auto; max-height: 100vh;"><div style="max-width: 720px; margin: 0px auto; padding: 40px 40px 80px;"><div style="color: rgb(167, 139, 250); font-size: 12px; margin-bottom: 6px;">1장 / 10장</div><h1 style="font-size: 26px; font-weight: 800; color: rgb(76, 29, 149); margin-bottom: 6px; display: flex; align-items: center; gap: 10px;">📓 옵시디언이란?</h1><div style="width: 40px; height: 4px; background: linear-gradient(90deg, rgb(124, 58, 237), rgb(167, 139, 250)); border-radius: 4px; margin-bottom: 28px;"></div><div><p style="font-size: 15px; color: rgb(55, 65, 81); line-height: 1.9;">옵시디언(Obsidian)은 내 컴퓨터에 저장하는 <strong>무료 메모 앱</strong>입니다.<br>메모끼리 링크로 연결해서 나만의 지식 네트워크(= 제2의 뇌)를 만들 수 있어요.</p><h3 style="color: rgb(91, 33, 182); margin-top: 20px;">주요 특징 — 카드를 클릭하면 자세한 설명이 나옵니다</h3><div style="margin: 18px 0px;"><div style="color: rgb(107, 114, 128); font-size: 12px; margin-bottom: 10px;">카드를 클릭하면 자세한 설명이 나타납니다</div><div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;"><div style="background: linear-gradient(135deg, rgb(237, 233, 254), rgb(245, 243, 255)); border: 1px solid rgb(196, 181, 253); border-radius: 12px; padding: 14px; cursor: pointer; transition: 0.22s; transform: none; box-shadow: none;"><div style="font-size: 22px; margin-bottom: 6px;">💾</div><div style="font-weight: 700; color: rgb(91, 33, 182); font-size: 13px; margin-bottom: 3px;">완전 무료</div><div style="font-size: 11px; color: rgb(107, 114, 128);">개인 사용 영구 무료</div></div><div style="background: linear-gradient(135deg, rgb(237, 233, 254), rgb(245, 243, 255)); border: 1px solid rgb(196, 181, 253); border-radius: 12px; padding: 14px; cursor: pointer; transition: 0.22s; transform: none; box-shadow: none;"><div style="font-size: 22px; margin-bottom: 6px;">🔒</div><div style="font-weight: 700; color: rgb(91, 33, 182); font-size: 13px; margin-bottom: 3px;">내 PC에 저장</div><div style="font-size: 11px; color: rgb(107, 114, 128);">인터넷 없어도 동작</div></div><div style="background: linear-gradient(135deg, rgb(237, 233, 254), rgb(245, 243, 255)); border: 1px solid rgb(196, 181, 253); border-radius: 12px; padding: 14px; cursor: pointer; transition: 0.22s; transform: none; box-shadow: none;"><div style="font-size: 22px; margin-bottom: 6px;">🔗</div><div style="font-weight: 700; color: rgb(91, 33, 182); font-size: 13px; margin-bottom: 3px;">메모 연결</div><div style="font-size: 11px; color: rgb(107, 114, 128);">나만의 위키피디아</div></div><div style="background: linear-gradient(135deg, rgb(237, 233, 254), rgb(245, 243, 255)); border: 1px solid rgb(196, 181, 253); border-radius: 12px; padding: 14px; cursor: pointer; transition: 0.22s; transform: none; box-shadow: none;"><div style="font-size: 22px; margin-bottom: 6px;">🧩</div><div style="font-weight: 700; color: rgb(91, 33, 182); font-size: 13px; margin-bottom: 3px;">무한 확장</div><div style="font-size: 11px; color: rgb(107, 114, 128);">1,000개+ 플러그인</div></div><div style="background: linear-gradient(135deg, rgb(237, 233, 254), rgb(245, 243, 255)); border: 1px solid rgb(196, 181, 253); border-radius: 12px; padding: 14px; cursor: pointer; transition: 0.22s; transform: none; box-shadow: none;"><div style="font-size: 22px; margin-bottom: 6px;">📝</div><div style="font-weight: 700; color: rgb(91, 33, 182); font-size: 13px; margin-bottom: 3px;">마크다운</div><div style="font-size: 11px; color: rgb(107, 114, 128);">표준 텍스트 형식</div></div><div style="background: linear-gradient(135deg, rgb(237, 233, 254), rgb(245, 243, 255)); border: 1px solid rgb(196, 181, 253); border-radius: 12px; padding: 14px; cursor: pointer; transition: 0.22s; transform: none; box-shadow: none;"><div style="font-size: 22px; margin-bottom: 6px;">🎨</div><div style="font-weight: 700; color: rgb(91, 33, 182); font-size: 13px; margin-bottom: 3px;">완전 커스텀</div><div style="font-size: 11px; color: rgb(107, 114, 128);">테마·폰트 마음대로</div></div></div></div><h3 style="color: rgb(91, 33, 182); margin-top: 24px;">실제 옵시디언 UI — 직접 클릭해보세요</h3><div style="border: 1px solid rgb(196, 181, 253); border-radius: 12px; overflow: hidden; box-shadow: rgba(124, 58, 237, 0.18) 0px 8px 32px; margin: 20px 0px;"><div style="background: rgb(30, 27, 75); padding: 8px 14px; display: flex; align-items: center; gap: 8px;"><div style="width: 11px; height: 11px; border-radius: 50%; background: rgb(255, 95, 87);"></div><div style="width: 11px; height: 11px; border-radius: 50%; background: rgb(255, 189, 46);"></div><div style="width: 11px; height: 11px; border-radius: 50%; background: rgb(40, 202, 65);"></div></div><div style="display: flex; min-height: 230px;"><div style="width: 155px; background: rgb(19, 17, 28); padding: 10px 0px; border-right: 1px solid rgb(45, 42, 62); transition: background 0.2s; position: relative;"><div style="color: rgb(107, 114, 128); font-size: 11px; padding: 0px 12px 8px;">📁 파일 탐색기</div><div style="padding: 7px 12px; font-size: 12px; color: rgb(233, 213, 255); background: rgba(124, 58, 237, 0.3); cursor: pointer; border-left: 2px solid rgb(124, 58, 237); transition: 0.15s;">📄 나의 첫 메모</div><div style="padding: 7px 12px; font-size: 12px; color: rgb(156, 163, 175); background: transparent; cursor: pointer; border-left: 2px solid transparent; transition: 0.15s;">📄 독서 목록</div><div style="padding: 7px 12px; font-size: 12px; color: rgb(156, 163, 175); background: transparent; cursor: pointer; border-left: 2px solid transparent; transition: 0.15s;">📄 오늘의 일기</div><div style="padding: 7px 12px; font-size: 12px; color: rgb(156, 163, 175); background: transparent; cursor: pointer; border-left: 2px solid transparent; transition: 0.15s;">📄 프로젝트 A</div></div><div style="flex: 1 1 0%; background: rgb(26, 22, 37); padding: 16px 20px; overflow-y: auto; transition: background 0.2s; position: relative;"><div style="color: rgb(233, 213, 255); font-weight: 700; font-size: 16px; margin-bottom: 8px;">나의 첫 메모</div><div style="height: 8px;"></div><div style="color: rgb(209, 213, 219); font-size: 12px; line-height: 1.8;">안녕하세요! 옵시디언을 시작했습니다.</div><div style="height: 8px;"></div><div style="color: rgb(167, 139, 250); font-size: 12px; line-height: 1.8;">오늘 읽은 책은 <span style="color: rgb(167, 139, 250); border-bottom: 1px dashed rgb(124, 58, 237); cursor: pointer;">[[독서 목록]]</span>에 기록했어요.</div><div style="height: 8px;"></div><span style="display: inline-block; background: rgba(124, 58, 237, 0.2); color: rgb(167, 139, 250); font-size: 11px; padding: 1px 6px; border-radius: 4px; margin: 2px;">#일기 #시작</span></div></div><div style="background: rgb(19, 17, 28); padding: 5px 14px; font-size: 11px; color: rgb(107, 114, 128);">👆 파일 클릭 → 내용 전환 | 영역 위에 마우스 → 이름 표시</div></div><h3 style="color: rgb(91, 33, 182); margin-top: 20px;">화면 구성 한눈에 보기</h3><div style="display: flex; gap: 12px; padding: 10px 14px; background: rgb(249, 247, 255); border-radius: 8px; border: 1px solid rgb(237, 233, 254); margin-bottom: 6px;"><span style="font-weight: 700; color: rgb(124, 58, 237); min-width: 165px; font-size: 13px;">🗂️ 왼쪽 사이드바</span><span style="color: rgb(55, 65, 81); font-size: 13px;">파일 탐색기(내 메모 목록), 검색, 북마크</span></div><div style="display: flex; gap: 12px; padding: 10px 14px; background: rgb(249, 247, 255); border-radius: 8px; border: 1px solid rgb(237, 233, 254); margin-bottom: 6px;"><span style="font-weight: 700; color: rgb(124, 58, 237); min-width: 165px; font-size: 13px;">📝 가운데 편집 영역</span><span style="color: rgb(55, 65, 81); font-size: 13px;">메모를 작성하고 읽는 메인 공간</span></div><div style="display: flex; gap: 12px; padding: 10px 14px; background: rgb(249, 247, 255); border-radius: 8px; border: 1px solid rgb(237, 233, 254); margin-bottom: 6px;"><span style="font-weight: 700; color: rgb(124, 58, 237); min-width: 165px; font-size: 13px;">📌 오른쪽 사이드바</span><span style="color: rgb(55, 65, 81); font-size: 13px;">태그 목록, 아웃라인(목차), 백링크</span></div><div style="display: flex; gap: 12px; padding: 10px 14px; background: rgb(249, 247, 255); border-radius: 8px; border: 1px solid rgb(237, 233, 254); margin-bottom: 6px;"><span style="font-weight: 700; color: rgb(124, 58, 237); min-width: 165px; font-size: 13px;">🔘 리본 (왼쪽 아이콘줄)</span><span style="color: rgb(55, 65, 81); font-size: 13px;">자주 쓰는 기능에 빠르게 접근</span></div><div style="display: flex; gap: 12px; padding: 10px 14px; background: rgb(249, 247, 255); border-radius: 8px; border: 1px solid rgb(237, 233, 254); margin-bottom: 6px;"><span style="font-weight: 700; color: rgb(124, 58, 237); min-width: 165px; font-size: 13px;">📊 상태 표시줄 (하단)</span><span style="color: rgb(55, 65, 81); font-size: 13px;">현재 파일 정보, 글자 수 등 표시</span></div></div><div style="display: flex; justify-content: space-between; margin-top: 48px; padding-top: 24px; border-top: 1px solid rgb(233, 213, 255);"><div></div><button style="background: rgb(124, 58, 237); border: none; border-radius: 8px; padding: 10px 24px; color: rgb(255, 255, 255); font-weight: 600; cursor: pointer; font-size: 14px;">다음 →</button></div></div></div></div></div>
+<script crossorigin="" src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script crossorigin="" src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef, useCallback, useReducer } = React;
+
+/* ── 데이터 ── */
+const CHAPTERS = [
+  { id: "intro",     icon: "📓", title: "옵시디언이란?" },
+  { id: "install",   icon: "⬇️", title: "설치와 첫 시작" },
+  { id: "vault",     icon: "🏦", title: "볼트(Vault) 완전 이해" },
+  { id: "ribbon",    icon: "🧭", title: "화면 & 아이콘 가이드" },
+  { id: "write",     icon: "✏️", title: "첫 메모 작성하기" },
+  { id: "link",      icon: "🔗", title: "메모 연결하기" },
+  { id: "organize",  icon: "🗂️", title: "태그와 폴더 정리" },
+  { id: "shortcuts", icon: "⌨️", title: "단축키 모음" },
+  { id: "plugins",   icon: "🔌", title: "플러그인 확장" },
+  { id: "faq",       icon: "❓", title: "자주 묻는 질문" },
+];
+
+/* ── 공통 컴포넌트 ── */
+function TipBox({ title, children }) {
+  return (
+    <div style={{ background: "linear-gradient(135deg,#EDE9FE,#F5F3FF)", border: "1px solid #C4B5FD", borderLeft: "4px solid #7C3AED", borderRadius: 10, padding: "14px 18px", margin: "18px 0" }}>
+      <div style={{ fontWeight: 700, color: "#5B21B6", marginBottom: 6, fontSize: 14 }}>💡 {title}</div>
+      <div style={{ color: "#374151", fontSize: 14, lineHeight: 1.8 }}>{children}</div>
+    </div>
+  );
+}
+
+function Code({ children }) {
+  return <code style={{ background: "#1E1B4B", color: "#C4B5FD", padding: "2px 8px", borderRadius: 5, fontFamily: "monospace", fontSize: 13 }}>{children}</code>;
+}
+
+function FAQItem({ q, a }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ marginBottom: 10, border: "1px solid #E9D5FF", borderRadius: 12, overflow: "hidden" }}>
+      <button onClick={() => setOpen(o => !o)} style={{ width: "100%", background: open ? "#EDE9FE" : "#F5F3FF", border: "none", padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", textAlign: "left" }}>
+        <span style={{ fontWeight: 600, color: "#4C1D95", fontSize: 14 }}>Q. {q}</span>
+        <span style={{ color: "#7C3AED", fontSize: 18, flexShrink: 0, marginLeft: 8, transition: "transform 0.25s", transform: open ? "rotate(180deg)" : "none" }}>▾</span>
+      </button>
+      {open && <div style={{ padding: "14px 18px", background: "#fff", borderTop: "1px solid #E9D5FF", color: "#374151", fontSize: 14, lineHeight: 1.9, whiteSpace: "pre-line", animation: "fadeIn 0.2s" }}>{a}</div>}
+    </div>
+  );
+}
+
+function MacWin({ background = "#1E1B4B" }) {
+  return (
+    <div style={{ background, padding: "8px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+      {["#FF5F57","#FFBD2E","#28CA41"].map(c => <div key={c} style={{ width: 11, height: 11, borderRadius: "50%", background: c }} />)}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   INTRO — 인터랙티브 특징 카드 + UI 목업
+══════════════════════════════════════ */
+function FeatureCards() {
+  const [active, setActive] = useState(null);
+  const features = [
+    { id: "free",   icon: "💾", title: "완전 무료",    short: "개인 사용 영구 무료",      detail: "앱 설치만 하면 기본 기능 전부 무료입니다.\n유료 서비스(동기화·게시)는 선택 사항이고 기본 앱 사용에는 전혀 필요 없습니다." },
+    { id: "local",  icon: "🔒", title: "내 PC에 저장",  short: "인터넷 없어도 동작",       detail: "모든 메모가 내 컴퓨터 폴더에 .md 파일로 저장됩니다.\n서비스가 종료되거나 인터넷이 없어도 항상 접근 가능합니다." },
+    { id: "link",   icon: "🔗", title: "메모 연결",     short: "나만의 위키피디아",        detail: "[[메모이름]] 문법으로 메모끼리 연결합니다.\n연결이 쌓이면 그래프 뷰에서 내 지식 네트워크가 시각적으로 보입니다." },
+    { id: "plugin", icon: "🧩", title: "무한 확장",     short: "1,000개+ 플러그인",       detail: "커뮤니티가 만든 수천 개의 플러그인으로\n캘린더, 칸반보드, 다이어그램 등 원하는 기능을 자유롭게 추가할 수 있습니다." },
+    { id: "md",     icon: "📝", title: "마크다운",      short: "표준 텍스트 형식",         detail: "메모가 .md (마크다운) 파일로 저장됩니다.\n옵시디언이 없어도 메모장·VS Code 등 어떤 편집기로든 열 수 있습니다." },
+    { id: "theme",  icon: "🎨", title: "완전 커스텀",   short: "테마·폰트 마음대로",       detail: "수백 개의 커뮤니티 테마가 있고\n폰트, 색상, 레이아웃 등을 CSS로 완전히 바꿀 수 있습니다." },
+  ];
+  return (
+    <div style={{ margin: "18px 0" }}>
+      <div style={{ color: "#6B7280", fontSize: 12, marginBottom: 10 }}>카드를 클릭하면 자세한 설명이 나타납니다</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+        {features.map(f => (
+          <div key={f.id} onClick={() => setActive(active === f.id ? null : f.id)}
+            style={{ background: active === f.id ? "linear-gradient(135deg,#5B21B6,#7C3AED)" : "linear-gradient(135deg,#EDE9FE,#F5F3FF)", border: `1px solid ${active === f.id ? "#7C3AED" : "#C4B5FD"}`, borderRadius: 12, padding: "14px", cursor: "pointer", transition: "all 0.22s", transform: active === f.id ? "translateY(-2px)" : "none", boxShadow: active === f.id ? "0 6px 20px rgba(124,58,237,0.35)" : "none" }}>
+            <div style={{ fontSize: 22, marginBottom: 6 }}>{f.icon}</div>
+            <div style={{ fontWeight: 700, color: active === f.id ? "#fff" : "#5B21B6", fontSize: 13, marginBottom: 3 }}>{f.title}</div>
+            <div style={{ fontSize: 11, color: active === f.id ? "#C4B5FD" : "#6B7280" }}>{f.short}</div>
+          </div>
+        ))}
+      </div>
+      {active && (
+        <div style={{ marginTop: 12, background: "#1E1B4B", border: "1px solid #7C3AED", borderRadius: 10, padding: "14px 18px", animation: "fadeIn 0.2s" }}>
+          <div style={{ color: "#E9D5FF", fontWeight: 700, fontSize: 14, marginBottom: 6 }}>
+            {features.find(f => f.id === active)?.icon} {features.find(f => f.id === active)?.title}
+          </div>
+          <div style={{ color: "#A78BFA", fontSize: 14, lineHeight: 1.9, whiteSpace: "pre-line" }}>{features.find(f => f.id === active)?.detail}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ObsidianMockup() {
+  const [activeFile, setActiveFile] = useState("나의 첫 메모");
+  const [highlighted, setHighlighted] = useState(null);
+  const files = ["나의 첫 메모", "독서 목록", "오늘의 일기", "프로젝트 A"];
+  const contents = {
+    "나의 첫 메모": "# 나의 첫 메모\n\n안녕하세요! 옵시디언을 시작했습니다.\n\n오늘 읽은 책은 [[독서 목록]]에 기록했어요.\n\n#일기 #시작",
+    "독서 목록": "# 독서 목록\n\n## 읽는 중\n- 아주 작은 습관의 힘\n- 생각에 관한 생각\n\n## 읽고 싶은 책\n- 총, 균, 쇠\n\n#독서",
+    "오늘의 일기": "# 2024-02-20\n\n오늘은 맑은 날씨였다.\n옵시디언 공부를 시작했다.\n\n[[나의 첫 메모]] 작성 완료!\n\n#일기",
+    "프로젝트 A": "# 프로젝트 A\n\n## 목표\n- 3월까지 완성\n\n## 관련 메모\n- [[독서 목록]]\n\n#업무 #프로젝트",
+  };
+  return (
+    <div style={{ border: "1px solid #C4B5FD", borderRadius: 12, overflow: "hidden", boxShadow: "0 8px 32px rgba(124,58,237,0.18)", margin: "20px 0" }}>
+      <MacWin />
+      <div style={{ display: "flex", minHeight: 230 }}>
+        <div onMouseEnter={() => setHighlighted("sidebar")} onMouseLeave={() => setHighlighted(null)}
+          style={{ width: 155, background: highlighted === "sidebar" ? "#1A1530" : "#13111C", padding: "10px 0", borderRight: "1px solid #2D2A3E", transition: "background 0.2s", position: "relative" }}>
+          <div style={{ color: "#6B7280", fontSize: 11, padding: "0 12px 8px" }}>📁 파일 탐색기</div>
+          {files.map(f => (
+            <div key={f} onClick={() => setActiveFile(f)}
+              style={{ padding: "7px 12px", fontSize: 12, color: activeFile === f ? "#E9D5FF" : "#9CA3AF", background: activeFile === f ? "rgba(124,58,237,0.3)" : "transparent", cursor: "pointer", borderLeft: activeFile === f ? "2px solid #7C3AED" : "2px solid transparent", transition: "all 0.15s" }}>
+              📄 {f}
+            </div>
+          ))}
+          {highlighted === "sidebar" && <div style={{ position: "absolute", bottom: 6, left: 6, right: 6, background: "#7C3AED", borderRadius: 5, padding: "3px 6px", fontSize: 10, color: "#fff", textAlign: "center" }}>파일 탐색기</div>}
+        </div>
+        <div onMouseEnter={() => setHighlighted("editor")} onMouseLeave={() => setHighlighted(null)}
+          style={{ flex: 1, background: highlighted === "editor" ? "#1E1A2E" : "#1A1625", padding: "16px 20px", overflowY: "auto", transition: "background 0.2s", position: "relative" }}>
+          {contents[activeFile].split("\n").map((line, i) => {
+            if (line.startsWith("# ")) return <div key={i} style={{ color: "#E9D5FF", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{line.replace("# ", "")}</div>;
+            if (line.startsWith("## ")) return <div key={i} style={{ color: "#C4B5FD", fontWeight: 600, fontSize: 13, margin: "10px 0 4px" }}>{line.replace("## ", "")}</div>;
+            if (line.includes("[[")) {
+              const parts = line.split(/(\[\[.*?\]\])/g);
+              return <div key={i} style={{ color: "#A78BFA", fontSize: 12, lineHeight: 1.8 }}>{parts.map((p, j) => p.startsWith("[[") ? <span key={j} style={{ color: "#A78BFA", borderBottom: "1px dashed #7C3AED", cursor: "pointer" }}>{p}</span> : p)}</div>;
+            }
+            if (line.startsWith("#") && !line.startsWith("##")) return <span key={i} style={{ display: "inline-block", background: "rgba(124,58,237,0.2)", color: "#A78BFA", fontSize: 11, padding: "1px 6px", borderRadius: 4, margin: "2px 2px" }}>{line}</span>;
+            if (line.startsWith("- ")) return <div key={i} style={{ color: "#D1D5DB", fontSize: 12, lineHeight: 1.8, paddingLeft: 12 }}>• {line.replace("- ", "")}</div>;
+            return line ? <div key={i} style={{ color: "#D1D5DB", fontSize: 12, lineHeight: 1.8 }}>{line}</div> : <div key={i} style={{ height: 8 }} />;
+          })}
+          {highlighted === "editor" && <div style={{ position: "absolute", bottom: 6, right: 6, background: "#7C3AED", borderRadius: 5, padding: "3px 8px", fontSize: 10, color: "#fff" }}>편집 영역</div>}
+        </div>
+      </div>
+      <div style={{ background: "#13111C", padding: "5px 14px", fontSize: 11, color: "#6B7280" }}>
+        👆 파일 클릭 → 내용 전환 | 영역 위에 마우스 → 이름 표시
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   INSTALL — 체크리스트 + 볼트 생성 데모
+══════════════════════════════════════ */
+function InstallChecklist() {
+  const [done, setDone] = useState({});
+  const steps = [
+    { id: "1", title: "obsidian.md 공식 사이트 접속", desc: "브라우저 주소창에 obsidian.md 입력" },
+    { id: "2", title: "운영체제 선택 후 다운로드",   desc: "Windows / macOS / Linux 중 선택" },
+    { id: "3", title: "설치 파일 실행",              desc: "다운받은 파일을 더블클릭 → 안내대로 진행" },
+    { id: "4", title: "옵시디언 첫 실행",            desc: "바탕화면 또는 앱 목록에서 Obsidian 클릭" },
+  ];
+  const allDone = steps.every(s => done[s.id]);
+  return (
+    <div style={{ margin: "14px 0" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <span style={{ color: "#5B21B6", fontWeight: 700, fontSize: 14 }}>설치 체크리스트</span>
+        {allDone
+          ? <span style={{ background: "#059669", color: "#fff", fontSize: 12, padding: "3px 10px", borderRadius: 20, animation: "pulse 0.6s" }}>✅ 완료!</span>
+          : <button onClick={() => setDone({})} style={{ background: "none", border: "1px solid #C4B5FD", borderRadius: 6, color: "#7C3AED", fontSize: 11, padding: "3px 10px", cursor: "pointer" }}>초기화</button>}
+      </div>
+      {steps.map((s, i) => (
+        <div key={s.id} onClick={() => setDone(d => ({ ...d, [s.id]: !d[s.id] }))}
+          style={{ display: "flex", gap: 14, padding: "13px 16px", background: done[s.id] ? "#F0FDF4" : "#F5F3FF", borderRadius: 10, border: `1px solid ${done[s.id] ? "#86EFAC" : "#E9D5FF"}`, marginBottom: 8, cursor: "pointer", transition: "all 0.2s" }}>
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: done[s.id] ? "#059669" : "#7C3AED", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, flexShrink: 0, fontSize: 13, transition: "background 0.2s" }}>
+            {done[s.id] ? "✓" : i + 1}
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, color: done[s.id] ? "#059669" : "#374151", fontSize: 14, textDecoration: done[s.id] ? "line-through" : "none", transition: "all 0.2s" }}>{s.title}</div>
+            <div style={{ color: "#6B7280", fontSize: 13, marginTop: 2 }}>{s.desc}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function VaultSetupDemo() {
+  const [vaultName, setVaultName] = useState("");
+  const [created, setCreated] = useState(false);
+  return (
+    <div style={{ background: "#13111C", borderRadius: 12, padding: 18, margin: "18px 0", border: "1px solid #2D2A3E" }}>
+      <MacWin background="#1E1B4B" />
+      <div style={{ padding: "18px 16px" }}>
+        <div style={{ color: "#A78BFA", fontSize: 13, fontWeight: 700, marginBottom: 16, textAlign: "center" }}>새 볼트 만들기</div>
+        {!created ? (
+          <>
+            <div style={{ color: "#6B7280", fontSize: 12, marginBottom: 6 }}>볼트 이름</div>
+            <input value={vaultName} onChange={e => setVaultName(e.target.value)}
+              placeholder="예: 나의 노트"
+              style={{ width: "100%", background: "#1A1625", border: "1px solid #7C3AED", borderRadius: 6, padding: "8px 12px", color: "#C4B5FD", fontFamily: "monospace", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
+            <div style={{ color: "#6B7280", fontSize: 12, marginBottom: 6 }}>저장 위치</div>
+            <div style={{ background: "#0F0D1A", border: "1px solid #2D2A3E", borderRadius: 6, padding: "8px 12px", color: "#4B5563", fontSize: 12, fontFamily: "monospace", marginBottom: 14 }}>
+              C:\Users\사용자\Documents\{vaultName || "..."}
+            </div>
+            <button onClick={() => vaultName.trim() && setCreated(true)}
+              style={{ width: "100%", background: vaultName.trim() ? "#7C3AED" : "#2D2A3E", border: "none", borderRadius: 8, padding: "10px", color: vaultName.trim() ? "#fff" : "#4B5563", fontWeight: 700, fontSize: 14, cursor: vaultName.trim() ? "pointer" : "default", transition: "all 0.2s" }}>
+              볼트 만들기
+            </button>
+            {!vaultName.trim() && <div style={{ color: "#6B7280", fontSize: 11, textAlign: "center", marginTop: 6 }}>이름을 입력하면 버튼이 활성화됩니다</div>}
+          </>
+        ) : (
+          <div style={{ textAlign: "center", animation: "fadeIn 0.3s" }}>
+            <div style={{ fontSize: 40, marginBottom: 10 }}>🎉</div>
+            <div style={{ color: "#E9D5FF", fontWeight: 700, fontSize: 16, marginBottom: 6 }}>"{vaultName}" 볼트 생성 완료!</div>
+            <div style={{ color: "#A78BFA", fontSize: 13, marginBottom: 14 }}>이제 첫 메모를 작성할 수 있습니다.</div>
+            <button onClick={() => { setCreated(false); setVaultName(""); }}
+              style={{ background: "#2D2A3E", border: "none", borderRadius: 6, padding: "7px 16px", color: "#A78BFA", cursor: "pointer", fontSize: 12 }}>↺ 다시 해보기</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   VAULT — 폴더 트리 + FAQ
+══════════════════════════════════════ */
+function VaultFileRow({ item, isVisible, open, onToggle }) {
+  const [hovered, setHovered] = useState(false);
+  if (!isVisible) return null;
+  return (
+    <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      style={{ display: "flex", alignItems: "center", gap: 8, lineHeight: 2.2, cursor: "pointer", borderRadius: 5, transition: "background 0.15s", background: hovered ? "rgba(124,58,237,0.1)" : "transparent", padding: `2px ${item.depth * 22 + 8}px` }}>
+      {item.hasChild
+        ? <span onClick={() => onToggle(item.id)} style={{ color: "#6B7280", fontSize: 10, userSelect: "none" }}>{open[item.id] ? "▾" : "▸"}</span>
+        : <span style={{ width: 14 }} />}
+      <span>{item.icon}</span>
+      <span style={{ color: item.color }}>{item.name}</span>
+      {hovered && item.desc && <span style={{ color: "#A78BFA", fontSize: 11, marginLeft: 4, animation: "fadeIn 0.15s" }}>{item.desc}</span>}
+    </div>
+  );
+}
+
+function FolderTreeVault() {
+  const [open, setOpen] = useState({ root: true });
+  const toggle = (id) => setOpen(o => ({ ...o, [id]: !o[id] }));
+  const items = [
+    { id: "root",     depth: 0, icon: "📁", name: "나의노트",      color: "#7C3AED", desc: "← 이게 볼트 폴더. 그냥 일반 폴더입니다.",       hasChild: true },
+    { id: "diary",    depth: 1, icon: "📄", name: "환영합니다.md",  color: "#E9D5FF", desc: "← .md 파일. 메모장으로도 열 수 있어요.",         hasChild: false },
+    { id: "read",     depth: 1, icon: "📄", name: "독서 목록.md",   color: "#E9D5FF", desc: "",                                              hasChild: false },
+    { id: "obsidian", depth: 1, icon: "📁", name: ".obsidian",     color: "#4B5563", desc: "← 숨김 폴더. 설정 파일 저장. 건드리지 마세요!", hasChild: false },
+  ];
+  return (
+    <div style={{ background: "#13111C", borderRadius: 12, padding: "16px 20px", margin: "14px 0", border: "1px solid #2D2A3E", fontFamily: "monospace", fontSize: 13 }}>
+      <div style={{ color: "#6B7280", fontSize: 11, marginBottom: 12 }}>📂 C:\Users\홍길동\Documents\나의노트\  — 항목 위에 마우스를 올려보세요</div>
+      {items.map(item => (
+        <VaultFileRow key={item.id} item={item} isVisible={item.depth === 0 || open.root} open={open} onToggle={toggle} />
+      ))}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   RIBBON — 호버 인터랙티브 목업
+══════════════════════════════════════ */
+function RibbonDemo() {
+  const [hovered, setHovered] = useState(null);
+  const icons = [
+    { symbol: "☰",  name: "사이드바 토글",  desc: "왼쪽 사이드바 전체를 열거나 닫습니다.", section: "top" },
+    { symbol: "📁",  name: "파일 탐색기",    desc: "볼트 안의 파일·폴더 목록을 보여줍니다.\n메모 만들기, 폴더 만들기도 여기서 합니다.", section: "top" },
+    { symbol: "🔍",  name: "전체 검색",      desc: "볼트 안 모든 메모의 내용을 검색합니다.\n단축키: Ctrl + Shift + F", section: "top" },
+    { symbol: "🔖",  name: "북마크",         desc: "별표로 즐겨찾기 해둔 메모·블록·검색을\n모아서 보여줍니다.", section: "top" },
+    { symbol: "div", name: "─", desc: "", section: "divider" },
+    { symbol: "⬡",  name: "그래프 뷰",      desc: "모든 메모의 연결을 시각적인 네트워크\n그래프로 보여줍니다.\n※ 기본 단축키 없음 — 이 아이콘 클릭으로 열기", section: "mid" },
+    { symbol: "⬜",  name: "Canvas",        desc: "무한 화이트보드입니다.\n메모·이미지·카드를 자유롭게 배치해서\n시각적으로 정리할 수 있습니다.", section: "mid" },
+    { symbol: "📅",  name: "Daily Notes",   desc: "오늘 날짜의 일기 메모를 바로 열거나\n만듭니다.\n(Daily Notes 플러그인 활성화 필요)", section: "mid" },
+    { symbol: "📋",  name: "템플릿 삽입",    desc: "미리 만들어둔 템플릿을 현재 메모에\n붙여넣습니다.\n(Templates 플러그인 활성화 필요)", section: "mid" },
+    { symbol: "div", name: "─", desc: "", section: "divider" },
+    { symbol: "❓",  name: "도움말",         desc: "옵시디언 공식 도움말 문서를 엽니다.\n영어로 되어 있습니다.", section: "bottom" },
+    { symbol: "⚙️",  name: "설정",          desc: "설정 창을 엽니다.\n단축키 Ctrl + , 와 동일합니다.\n테마·플러그인·단축키 모든 설정이 여기에!", section: "bottom" },
+  ];
+  const hoverData = icons.find(ic => ic.name === hovered);
+  return (
+    <div style={{ display: "flex", gap: 16, margin: "16px 0", alignItems: "flex-start" }}>
+      <div style={{ background: "#13111C", borderRadius: 12, border: "1px solid #2D2A3E", padding: "10px 0", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 52, gap: 2 }}>
+        <div style={{ color: "#4B5563", fontSize: 9, marginBottom: 6, letterSpacing: 1 }}>리본</div>
+        {icons.map((ic, i) => {
+          if (ic.section === "divider") return <div key={i} style={{ width: 28, height: 1, background: "#2D2A3E", margin: "4px 0" }} />;
+          return (
+            <div key={i} onMouseEnter={() => setHovered(ic.name)} onMouseLeave={() => setHovered(null)}
+              style={{ width: 36, height: 36, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, cursor: "pointer", transition: "all 0.15s", background: hovered === ic.name ? "rgba(124,58,237,0.4)" : "transparent", border: hovered === ic.name ? "1px solid #7C3AED" : "1px solid transparent" }}>
+              {ic.symbol}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ flex: 1, background: "#1A1625", borderRadius: 12, border: "1px solid #2D2A3E", padding: "18px 20px", minHeight: 190 }}>
+        {hoverData && hoverData.section !== "divider" ? (
+          <div style={{ animation: "fadeIn 0.15s" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <span style={{ fontSize: 26 }}>{hoverData.symbol}</span>
+              <span style={{ color: "#E9D5FF", fontWeight: 700, fontSize: 16 }}>{hoverData.name}</span>
+            </div>
+            <p style={{ color: "#A78BFA", fontSize: 14, lineHeight: 1.9, margin: 0, whiteSpace: "pre-line" }}>{hoverData.desc}</p>
+          </div>
+        ) : (
+          <div style={{ color: "#4B5563", fontSize: 14, lineHeight: 1.9, paddingTop: 16 }}>
+            ← 왼쪽 아이콘 위에<br />마우스를 올려보세요
+            <div style={{ marginTop: 16, color: "#374151", fontSize: 13 }}>실제 옵시디언에서도<br />아이콘 위에 올리면 이름이 뜹니다.</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   WRITE — 마크다운 샌드박스 + 타이핑 데모
+══════════════════════════════════════ */
+function MarkdownSandbox() {
+  const [input, setInput] = useState("# 나의 첫 메모\n\n**오늘 배운 것:** 옵시디언 마크다운\n\n## 핵심 정리\n- 제목은 # 으로\n- 굵게는 **별표 두 개**\n- 링크는 [[다른 메모]]\n\n#공부 #옵시디언");
+  const renderLine = (line, i) => {
+    if (line.startsWith("# "))  return <h1  key={i} style={{ color: "#E9D5FF", fontSize: 20, margin: "4px 0 10px", fontWeight: 800 }}>{line.slice(2)}</h1>;
+    if (line.startsWith("## ")) return <h2  key={i} style={{ color: "#C4B5FD", fontSize: 15, margin: "12px 0 4px", fontWeight: 700 }}>{line.slice(3)}</h2>;
+    if (line.startsWith("### ")) return <h3 key={i} style={{ color: "#A78BFA", fontSize: 13, margin: "10px 0 4px", fontWeight: 700 }}>{line.slice(4)}</h3>;
+    if (line.startsWith("- ")) {
+      const text = line.slice(2).replace(/\*\*(.*?)\*\*/g, "<b>$1</b>").replace(/\*(.*?)\*/g, "<i>$1</i>").replace(/\[\[(.*?)\]\]/g, "<u>$1</u>");
+      return <div key={i} style={{ color: "#D1D5DB", fontSize: 13, lineHeight: 1.8, paddingLeft: 14, display: "flex", gap: 6 }}><span style={{ color: "#7C3AED" }}>•</span><span dangerouslySetInnerHTML={{ __html: text }} /></div>;
+    }
+    if (line.match(/^#+\s/)) return null;
+    if (!line.trim()) return <div key={i} style={{ height: 8 }} />;
+    let text = line.replace(/\*\*(.*?)\*\*/g, "<strong style='color:#C4B5FD'>$1</strong>")
+                   .replace(/\*(.*?)\*/g, "<em style='color:#A78BFA'>$1</em>")
+                   .replace(/\[\[(.*?)\]\]/g, "<span style='color:#7C3AED;border-bottom:1px solid #7C3AED;cursor:pointer'>$1</span>")
+                   .replace(/#([^\s#]+)/g, "<span style='background:rgba(124,58,237,0.2);color:#A78BFA;padding:1px 6px;border-radius:4px;font-size:12px'>#$1</span>");
+    return <div key={i} style={{ color: "#D1D5DB", fontSize: 13, lineHeight: 1.9 }} dangerouslySetInnerHTML={{ __html: text }} />;
+  };
+  return (
+    <div style={{ margin: "18px 0" }}>
+      <div style={{ color: "#6B7280", fontSize: 12, marginBottom: 8 }}>✏️ 왼쪽에 직접 마크다운을 입력해보세요 — 오른쪽에 실시간으로 렌더링됩니다!</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <div style={{ background: "#13111C", borderRadius: 10, overflow: "hidden", border: "1px solid #2D2A3E" }}>
+          <div style={{ background: "#1E1B4B", padding: "7px 12px", fontSize: 11, color: "#A78BFA", fontFamily: "monospace" }}>✏️ 마크다운 입력</div>
+          <textarea value={input} onChange={e => setInput(e.target.value)}
+            style={{ width: "100%", minHeight: 260, background: "#13111C", border: "none", color: "#A78BFA", fontFamily: "monospace", fontSize: 12, padding: "14px", resize: "vertical", outline: "none", lineHeight: 1.9, boxSizing: "border-box" }} />
+        </div>
+        <div style={{ background: "#1A1625", borderRadius: 10, overflow: "hidden", border: "1px solid #2D2A3E" }}>
+          <div style={{ background: "#1E1B4B", padding: "7px 12px", fontSize: 11, color: "#A78BFA" }}>📖 렌더링 결과</div>
+          <div style={{ padding: "14px 18px", minHeight: 260 }}>
+            {input.split("\n").map((line, i) => renderLine(line, i))}
+          </div>
+        </div>
+      </div>
+      <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {[["# 제목", "# "], ["## 소제목", "## "], ["**굵게**", "**굵게**"], ["[[링크]]", "[["], ["#태그", "#태그"]].map(([label, insert]) => (
+          <button key={label} onClick={() => setInput(v => v + "\n" + insert)}
+            style={{ background: "#1E1B4B", border: "1px solid #4C1D95", borderRadius: 6, color: "#C4B5FD", fontSize: 12, padding: "4px 10px", cursor: "pointer", fontFamily: "monospace" }}>{label}</button>
+        ))}
+        <button onClick={() => setInput("# 나의 첫 메모\n\n**오늘 배운 것:** 옵시디언 마크다운\n\n## 핵심 정리\n- 제목은 # 으로\n- 굵게는 **별표 두 개**\n- 링크는 [[다른 메모]]\n\n#공부 #옵시디언")}
+          style={{ background: "#2D2A3E", border: "1px solid #374151", borderRadius: 6, color: "#6B7280", fontSize: 12, padding: "4px 10px", cursor: "pointer" }}>↺ 초기화</button>
+      </div>
+    </div>
+  );
+}
+
+function TypingDemo() {
+  const [text, setText] = useState("");
+  const [key, setKey] = useState(0);
+  const target = "# 오늘의 독서 메모\n\n**제목:** 아주 작은 습관의 힘\n\n오늘의 핵심: 1%씩 매일 나아지면\n1년 뒤엔 37배 성장한다.\n\n[[독서 목록]]에 추가 완료!\n\n#독서 #자기계발";
+  useEffect(() => {
+    setText(""); let idx = 0;
+    const iv = setInterval(() => { if (idx <= target.length) { setText(target.slice(0, idx)); idx++; } else clearInterval(iv); }, 28);
+    return () => clearInterval(iv);
+  }, [key]);
+  const renderLine = (line, i) => {
+    if (line.startsWith("# "))  return <div key={i} style={{ color: "#E9D5FF", fontWeight: 700, fontSize: 17 }}>{line.replace("# ", "")}</div>;
+    if (line.includes("**")) return <div key={i} style={{ color: "#C4B5FD" }}>{line.replace(/\*\*(.*?)\*\*/g, "$1")}</div>;
+    if (line.includes("[[")) { const parts = line.split(/(\[\[.*?\]\])/g); return <div key={i} style={{ color: "#A78BFA" }}>{parts.map((p, j) => p.startsWith("[[") ? <span key={j} style={{ color: "#7C3AED", borderBottom: "1px solid #7C3AED" }}>{p}</span> : p)}</div>; }
+    if (line.startsWith("#")) return <span key={i} style={{ display: "inline-block", background: "rgba(124,58,237,0.2)", color: "#A78BFA", padding: "1px 7px", borderRadius: 4, margin: "2px 3px", fontSize: 12 }}>{line}</span>;
+    return line ? <div key={i} style={{ color: "#D1D5DB" }}>{line}</div> : <div key={i} style={{ height: 8 }} />;
+  };
+  return (
+    <div style={{ border: "1px solid #2D2A3E", borderRadius: 10, overflow: "hidden", margin: "16px 0" }}>
+      <div style={{ background: "#1E1B4B", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ color: "#A78BFA", fontSize: 12, fontFamily: "monospace" }}>오늘의메모.md</span>
+        <button onClick={() => setKey(k => k + 1)} style={{ background: "#7C3AED", border: "none", borderRadius: 5, color: "#fff", fontSize: 11, padding: "3px 10px", cursor: "pointer" }}>▶ 다시 재생</button>
+      </div>
+      <div style={{ background: "#1A1625", padding: "18px 20px", minHeight: 170, fontFamily: "monospace", fontSize: 13, lineHeight: 1.9 }}>
+        {text.split("\n").map((line, i) => renderLine(line, i))}
+        <span style={{ display: "inline-block", width: 2, height: 15, background: "#7C3AED", verticalAlign: "middle", animation: "blink 1s infinite" }} />
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   LINK — 자동완성 + 백링크 + 그래프 뷰
+══════════════════════════════════════ */
+function LinkAutocomplete() {
+  const [val, setVal] = useState("");
+  const [selected, setSelected] = useState(null);
+  const allFiles = ["독서 목록", "독서 일지", "독서 계획", "오늘의 일기", "프로젝트 A", "아이디어 노트", "나의 첫 메모"];
+  const filtered = val.length > 0 ? allFiles.filter(f => f.toLowerCase().includes(val.toLowerCase())) : [];
+  return (
+    <div style={{ margin: "16px 0" }}>
+      <div style={{ background: "#13111C", borderRadius: 10, overflow: "hidden", border: "1px solid #2D2A3E" }}>
+        <div style={{ background: "#1E1B4B", padding: "7px 12px", fontSize: 11, color: "#6B7280" }}>💡 실제로 [[ 를 입력하면 이런 자동완성이 뜹니다 — 직접 타이핑해보세요!</div>
+        <div style={{ padding: "14px 16px", fontFamily: "monospace", fontSize: 13, color: "#A78BFA", display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+          <span>오늘 읽은 책은 [[</span>
+          <input value={val} onChange={e => { setVal(e.target.value); setSelected(null); }}
+            placeholder="파일명 입력..."
+            style={{ background: "transparent", border: "none", outline: "none", color: "#7C3AED", fontFamily: "monospace", fontSize: 13, width: 130 }} />
+          {selected && <span style={{ color: "#A78BFA" }}>]] 에 기록했다.</span>}
+        </div>
+        {filtered.length > 0 && !selected && (
+          <div style={{ borderTop: "1px solid #2D2A3E" }}>
+            {filtered.slice(0, 4).map((f, i) => (
+              <div key={f} onClick={() => { setSelected(f); setVal(f); }}
+                style={{ padding: "8px 16px", background: i === 0 ? "rgba(124,58,237,0.3)" : "transparent", color: i === 0 ? "#E9D5FF" : "#9CA3AF", fontSize: 13, display: "flex", justifyContent: "space-between", cursor: "pointer", borderTop: i > 0 ? "1px solid #1A1625" : "none", transition: "background 0.1s" }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(124,58,237,0.2)"}
+                onMouseLeave={e => e.currentTarget.style.background = i === 0 ? "rgba(124,58,237,0.3)" : "transparent"}>
+                <span>📄 {f}</span>
+                {i === 0 && <span style={{ color: "#7C3AED", fontSize: 11 }}>← Enter로 선택</span>}
+              </div>
+            ))}
+          </div>
+        )}
+        {val.length > 0 && filtered.length === 0 && !selected && (
+          <div style={{ borderTop: "1px solid #2D2A3E", padding: "8px 16px", color: "#6B7280", fontSize: 12 }}>
+            📄 "{val}" — 새 메모로 만들기 (Enter)
+          </div>
+        )}
+      </div>
+      {selected && (
+        <div style={{ marginTop: 8, background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 8, padding: "8px 14px", fontSize: 13, color: "#059669", animation: "fadeIn 0.2s" }}>
+          ✅ [[{selected}]] 링크가 연결되었습니다!
+        </div>
+      )}
+      <button onClick={() => { setVal(""); setSelected(null); }}
+        style={{ marginTop: 8, background: "none", border: "1px solid #C4B5FD", borderRadius: 6, color: "#7C3AED", fontSize: 11, padding: "4px 12px", cursor: "pointer" }}>↺ 초기화</button>
+    </div>
+  );
+}
+
+function BacklinkPanel() {
+  const [active, setActive] = useState(null);
+  const backlinks = [
+    { from: "나의 첫 메모",  preview: "오늘 읽은 책은 [[독서 목록]]에 기록했어요. #일기 #시작" },
+    { from: "오늘의 일기",   preview: "오늘 [[독서 목록]] 정리했다. 공부 계속 잘 되고 있어. #일기" },
+    { from: "프로젝트 A",    preview: "관련 메모: [[독서 목록]] 참고. #업무 #프로젝트" },
+  ];
+  return (
+    <div style={{ background: "#13111C", borderRadius: 10, padding: 16, margin: "14px 0", border: "1px solid #2D2A3E" }}>
+      <div style={{ color: "#A78BFA", fontSize: 12, marginBottom: 10 }}>📌 백링크 패널 — "독서 목록" 기준 / 항목을 클릭하면 미리보기</div>
+      {backlinks.map((b) => (
+        <div key={b.from}>
+          <div onClick={() => setActive(active === b.from ? null : b.from)}
+            style={{ padding: "9px 14px", background: active === b.from ? "rgba(124,58,237,0.25)" : "rgba(124,58,237,0.1)", borderRadius: 7, marginBottom: 4, display: "flex", justifyContent: "space-between", border: "1px solid #2D2A3E", cursor: "pointer", transition: "all 0.15s" }}>
+            <span style={{ color: "#C4B5FD", fontSize: 13 }}>📄 {b.from}</span>
+            <span style={{ color: "#7C3AED", fontSize: 11 }}>{active === b.from ? "▲ 닫기" : "▼ 미리보기"}</span>
+          </div>
+          {active === b.from && (
+            <div style={{ background: "#1A1625", borderRadius: 6, padding: "10px 14px", marginBottom: 6, border: "1px solid #2D2A3E", fontSize: 12, color: "#9CA3AF", fontFamily: "monospace", lineHeight: 1.7, animation: "fadeIn 0.2s" }}>
+              {b.preview.split("[[독서 목록]]").map((part, i, arr) => (
+                <span key={i}>{part}{i < arr.length - 1 && <span style={{ color: "#7C3AED", background: "rgba(124,58,237,0.2)", padding: "1px 4px", borderRadius: 3 }}>[[독서 목록]]</span>}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LinkGraphDemo() {
+  const [step, setStep] = useState(0);
+  const [hoveredNode, setHoveredNode] = useState(null);
+  const nodes = [
+    { id: "나의 메모", x: 50, y: 50, main: true },
+    { id: "독서 목록",  x: 22, y: 22 },
+    { id: "프로젝트",   x: 78, y: 22 },
+    { id: "일기",       x: 16, y: 72 },
+    { id: "아이디어",   x: 80, y: 74 },
+    { id: "회의록",     x: 50, y: 86 },
+  ];
+  const edges = [["나의 메모","독서 목록"],["나의 메모","프로젝트"],["나의 메모","일기"],["나의 메모","아이디어"],["나의 메모","회의록"],["독서 목록","아이디어"],["프로젝트","회의록"]];
+  useEffect(() => {
+    if (step < edges.length) { const t = setTimeout(() => setStep(s => s + 1), 420); return () => clearTimeout(t); }
+  }, [step]);
+  return (
+    <div style={{ background: "#0F0D1A", borderRadius: 12, padding: "16px 20px", margin: "20px 0", border: "1px solid #2D2A3E" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <span style={{ color: "#A78BFA", fontSize: 13 }}>🕸️ 그래프 뷰 — 노드를 hover 해보세요</span>
+        <button onClick={() => setStep(0)} style={{ background: "#2D2A3E", border: "none", borderRadius: 6, color: "#A78BFA", fontSize: 12, padding: "4px 10px", cursor: "pointer" }}>↺ 초기화</button>
+      </div>
+      <svg viewBox="0 0 100 100" style={{ width: "100%", height: 230 }}>
+        {edges.map(([a, b], i) => {
+          const na = nodes.find(n => n.id === a), nb = nodes.find(n => n.id === b);
+          const on = i < step;
+          const dimmed = hoveredNode && hoveredNode !== a && hoveredNode !== b;
+          return <line key={i} x1={na.x} y1={na.y} x2={nb.x} y2={nb.y} stroke={dimmed ? "#1E1B4B" : on ? "#7C3AED" : "#2D2A3E"} strokeWidth={on ? 0.8 : 0.3} style={{ transition: "all 0.4s" }} />;
+        })}
+        {nodes.map(n => {
+          const isHovered = hoveredNode === n.id;
+          const isDimmed = hoveredNode && !isHovered && !edges.some(([a,b]) => (a===hoveredNode&&b===n.id)||(b===hoveredNode&&a===n.id));
+          return (
+            <g key={n.id} onMouseEnter={() => setHoveredNode(n.id)} onMouseLeave={() => setHoveredNode(null)} style={{ cursor: "pointer" }}>
+              <circle cx={n.x} cy={n.y} r={isHovered ? (n.main ? 7 : 5) : (n.main ? 5 : 3.5)} fill={isDimmed ? "#1E1B4B" : n.main ? "#7C3AED" : "#4C1D95"} stroke={isDimmed ? "#2D2A3E" : n.main ? "#C4B5FD" : "#7C3AED"} strokeWidth={0.8} style={{ transition: "all 0.2s" }} />
+              <text x={n.x} y={n.y - 7} textAnchor="middle" fill={isDimmed ? "#2D2A3E" : "#C4B5FD"} fontSize={4.5} fontFamily="sans-serif" style={{ transition: "fill 0.2s" }}>{n.id}</text>
+            </g>
+          );
+        })}
+      </svg>
+      {hoveredNode && <div style={{ color: "#A78BFA", fontSize: 12, textAlign: "center", animation: "fadeIn 0.15s" }}>📄 {hoveredNode} — 연결된 메모가 강조됩니다</div>}
+      {!hoveredNode && <div style={{ color: "#6B7280", fontSize: 11, textAlign: "center" }}>메모가 쌓일수록 지식 네트워크가 점점 풍부해집니다</div>}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   ORGANIZE — 폴더 트리 + 태그 데모
+══════════════════════════════════════ */
+function FolderTree() {
+  const [open, setOpen] = useState({ root: true, work: false });
+  const toggle = id => setOpen(o => ({ ...o, [id]: !o[id] }));
+  const Row = ({ depth, icon, name, color, foldId, children }) => (
+    <div>
+      <div onClick={() => foldId && toggle(foldId)}
+        style={{ paddingLeft: depth * 20 + 8, display: "flex", alignItems: "center", gap: 8, lineHeight: 2, cursor: foldId ? "pointer" : "default", borderRadius: 5 }}
+        onMouseEnter={e => e.currentTarget.style.background = "rgba(124,58,237,0.08)"}
+        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+        {foldId && <span style={{ color: "#6B7280", fontSize: 10, width: 12 }}>{open[foldId] ? "▾" : "▸"}</span>}
+        {!foldId && <span style={{ width: 12 }} />}
+        <span>{icon}</span>
+        <span style={{ color, fontSize: 13 }}>{name}</span>
+        {foldId && <span style={{ color: "#4B5563", fontSize: 10, marginLeft: 2 }}>({open[foldId] ? "접기" : "펼치기"})</span>}
+      </div>
+      {foldId && open[foldId] && <div style={{ animation: "fadeIn 0.15s" }}>{children}</div>}
+    </div>
+  );
+  return (
+    <div style={{ background: "#13111C", borderRadius: 12, padding: "14px 16px", margin: "14px 0", border: "1px solid #2D2A3E", fontFamily: "monospace" }}>
+      <div style={{ color: "#A78BFA", marginBottom: 8, fontFamily: "sans-serif", fontSize: 12 }}>📁 추천 폴더 구조 — 폴더명 클릭으로 접기/펼치기</div>
+      <Row depth={0} icon="📁" name="나의 볼트" color="#7C3AED" foldId="root">
+        <Row depth={1} icon="📁" name="일기" color="#059669" />
+        <Row depth={1} icon="📁" name="독서 메모" color="#D97706" />
+        <Row depth={1} icon="📁" name="업무" color="#DC2626" foldId="work">
+          <Row depth={2} icon="📄" name="회의록.md" color="#9CA3AF" />
+          <Row depth={2} icon="📄" name="프로젝트A.md" color="#9CA3AF" />
+        </Row>
+        <Row depth={1} icon="📁" name="아이디어" color="#7C3AED" />
+      </Row>
+    </div>
+  );
+}
+
+function TagDemo() {
+  const [selected, setSelected] = useState(null);
+  const tags = [
+    { label: "#독서",         color: "#7C3AED", count: 12, notes: ["아주 작은 습관의 힘", "총 균 쇠", "생각에 관한 생각"] },
+    { label: "#일기",         color: "#059669", count: 30, notes: ["2024-02-20", "2024-02-19", "2024-02-18"] },
+    { label: "#업무",         color: "#DC2626", count: 8,  notes: ["주간 회의록", "프로젝트 A 계획", "팀 미팅"] },
+    { label: "#아이디어",     color: "#D97706", count: 5,  notes: ["앱 아이디어", "글쓰기 소재", "여행 계획"] },
+    { label: "#독서/소설",    color: "#5B21B6", count: 7,  notes: ["채식주의자", "82년생 김지영"] },
+    { label: "#독서/자기계발", color: "#4C1D95", count: 5, notes: ["아주 작은 습관의 힘", "원씽"] },
+  ];
+  const sel = tags.find(t => t.label === selected);
+  return (
+    <div style={{ background: "#13111C", borderRadius: 12, padding: 18, margin: "20px 0", border: "1px solid #2D2A3E" }}>
+      <div style={{ color: "#A78BFA", fontSize: 12, marginBottom: 12 }}>🏷️ 태그 패널 — 클릭하면 해당 태그의 메모 목록이 펼쳐집니다</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: sel ? 12 : 0 }}>
+        {tags.map(t => (
+          <div key={t.label} onClick={() => setSelected(selected === t.label ? null : t.label)}
+            style={{ display: "flex", alignItems: "center", gap: 6, background: selected === t.label ? `${t.color}44` : `${t.color}22`, border: `1px solid ${selected === t.label ? t.color : t.color + "66"}`, borderRadius: 20, padding: "5px 12px", cursor: "pointer", transition: "all 0.2s", transform: selected === t.label ? "scale(1.05)" : "scale(1)" }}>
+            <span style={{ color: t.color, fontFamily: "monospace", fontSize: 13, fontWeight: 700 }}>{t.label}</span>
+            <span style={{ background: t.color, color: "#fff", borderRadius: 10, padding: "0 6px", fontSize: 10 }}>{t.count}</span>
+          </div>
+        ))}
+      </div>
+      {sel && (
+        <div style={{ borderTop: "1px solid #2D2A3E", paddingTop: 12, animation: "fadeIn 0.2s" }}>
+          <div style={{ color: sel.color, fontSize: 12, fontWeight: 700, marginBottom: 8, fontFamily: "monospace" }}>{sel.label} — {sel.count}개 메모</div>
+          {sel.notes.map(n => (
+            <div key={n} style={{ padding: "6px 12px", background: "rgba(255,255,255,0.03)", borderRadius: 6, marginBottom: 4, color: "#C4B5FD", fontSize: 12, display: "flex", alignItems: "center", gap: 8, border: "1px solid #2D2A3E" }}>
+              <span>📄</span> {n}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   SHORTCUTS — 키보드 + 명령 팔레트
+══════════════════════════════════════ */
+function KeyboardDemo({ keys, label }) {
+  const [pressed, setPressed] = useState(false);
+  return (
+    <div onClick={() => { setPressed(true); setTimeout(() => setPressed(false), 200); }}
+      style={{ display: "flex", alignItems: "center", gap: 14, padding: "11px 16px", background: pressed ? "#EDE9FE" : "#F5F3FF", borderRadius: 10, border: "1px solid #E9D5FF", marginBottom: 8, cursor: "pointer", transition: "all 0.1s", userSelect: "none" }}>
+      <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+        {keys.map((k, i) => (
+          <span key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <kbd style={{ background: pressed ? "#5B21B6" : "#1E1B4B", color: pressed ? "#fff" : "#C4B5FD", padding: "4px 10px", borderRadius: 6, fontFamily: "monospace", fontSize: 13, border: "1px solid #4C1D95", boxShadow: pressed ? "none" : "0 3px 0 #0F0D1A", display: "inline-block", transition: "all 0.1s", transform: pressed ? "translateY(2px)" : "none" }}>{k}</kbd>
+            {i < keys.length - 1 && <span style={{ color: "#6B7280", fontSize: 12 }}>+</span>}
+          </span>
+        ))}
+      </div>
+      <span style={{ color: "#374151", fontSize: 14 }}>{label}</span>
+    </div>
+  );
+}
+
+function CommandPaletteDemo() {
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState(null);
+  const commands = [
+    { name: "그래프 뷰 열기",         keys: "" },
+    { name: "로컬 그래프 열기",        keys: "" },
+    { name: "새 메모 만들기",          keys: "Ctrl+N" },
+    { name: "설정 열기",              keys: "Ctrl+," },
+    { name: "전체 검색",              keys: "Ctrl+Shift+F" },
+    { name: "오늘 일기 열기",         keys: "" },
+    { name: "테마 변경",              keys: "" },
+    { name: "단축키 설정",            keys: "" },
+    { name: "플러그인 관리",           keys: "" },
+    { name: "커뮤니티 플러그인 탐색",  keys: "" },
+  ];
+  const filtered = query ? commands.filter(c => c.name.includes(query)) : commands;
+  return (
+    <div style={{ background: "#13111C", borderRadius: 12, overflow: "hidden", border: "1px solid #2D2A3E", margin: "20px 0" }}>
+      <div style={{ background: "#1E1B4B", padding: "10px 14px", borderBottom: "1px solid #2D2A3E" }}>
+        <div style={{ color: "#6B7280", fontSize: 11, marginBottom: 6 }}>🎯 명령 팔레트 (Ctrl+P) — 직접 검색해보세요!</div>
+        <input value={query} onChange={e => { setQuery(e.target.value); setSelected(null); }}
+          placeholder="기능 이름 검색..."
+          style={{ width: "100%", background: "#0F0D1A", border: "1px solid #7C3AED", borderRadius: 6, padding: "8px 12px", color: "#A78BFA", fontFamily: "monospace", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+      </div>
+      <div style={{ maxHeight: 220, overflowY: "auto" }}>
+        {filtered.length === 0 && <div style={{ padding: "12px 16px", color: "#4B5563", fontSize: 13 }}>검색 결과 없음</div>}
+        {filtered.map((cmd, i) => (
+          <div key={cmd.name} onClick={() => setSelected(cmd.name)}
+            style={{ padding: "9px 16px", background: selected === cmd.name ? "rgba(124,58,237,0.35)" : i === 0 && !selected ? "rgba(124,58,237,0.15)" : "transparent", color: selected === cmd.name ? "#fff" : "#C4B5FD", fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: i > 0 ? "1px solid #1E1B4B" : "none", cursor: "pointer", transition: "background 0.1s" }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(124,58,237,0.2)"}
+            onMouseLeave={e => e.currentTarget.style.background = selected === cmd.name ? "rgba(124,58,237,0.35)" : i===0&&!selected ? "rgba(124,58,237,0.15)" : "transparent"}>
+            <span>◈ {cmd.name}</span>
+            {cmd.keys && <kbd style={{ background: "#1E1B4B", color: "#7C3AED", padding: "1px 6px", borderRadius: 4, fontSize: 11, border: "1px solid #4C1D95", fontFamily: "monospace" }}>{cmd.keys}</kbd>}
+          </div>
+        ))}
+      </div>
+      {selected && <div style={{ background: "#059669", padding: "8px 14px", fontSize: 12, color: "#fff", animation: "fadeIn 0.2s" }}>✅ "{selected}" 실행됨</div>}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   PLUGINS — 플립 카드
+══════════════════════════════════════ */
+function PluginCard({ name, icon, use, desc, detail, color }) {
+  const [flipped, setFlipped] = useState(false);
+  return (
+    <div onClick={() => setFlipped(f => !f)} style={{ cursor: "pointer", perspective: "600px", height: 130 }}>
+      <div style={{ width: "100%", height: "100%", position: "relative", transformStyle: "preserve-3d", transition: "transform 0.45s", transform: flipped ? "rotateY(180deg)" : "none" }}>
+        <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", background: "#F9F7FF", borderRadius: 12, border: "1px solid #EDE9FE", padding: "16px", display: "flex", gap: 14 }}>
+          <div style={{ background: `${color}22`, border: `1px solid ${color}44`, borderRadius: 10, padding: "8px 12px", fontSize: 22, flexShrink: 0, alignSelf: "flex-start" }}>{icon}</div>
+          <div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
+              <span style={{ fontWeight: 700, color: "#374151", fontSize: 14 }}>{name}</span>
+              <span style={{ background: `${color}22`, color, fontSize: 11, padding: "1px 8px", borderRadius: 10, border: `1px solid ${color}44` }}>{use}</span>
+            </div>
+            <p style={{ color: "#6B7280", fontSize: 12, margin: 0, lineHeight: 1.6 }}>{desc}</p>
+            <div style={{ color: "#C4B5FD", fontSize: 11, marginTop: 8 }}>클릭하면 상세 정보 →</div>
+          </div>
+        </div>
+        <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", transform: "rotateY(180deg)", background: `linear-gradient(135deg,${color}33,${color}11)`, border: `1px solid ${color}66`, borderRadius: 12, padding: "16px" }}>
+          <div style={{ fontWeight: 700, color, fontSize: 14, marginBottom: 8 }}>{icon} {name} — 이런 분께 추천</div>
+          <p style={{ color: "#374151", fontSize: 12, lineHeight: 1.7, margin: 0 }}>{detail}</p>
+          <div style={{ color: "#6B7280", fontSize: 11, marginTop: 8 }}>← 다시 클릭하면 돌아갑니다</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   CONTENT 정의
+══════════════════════════════════════ */
+const CONTENT = {
+  intro: () => (
+    <div>
+      <p style={{ fontSize: 15, color: "#374151", lineHeight: 1.9 }}>옵시디언(Obsidian)은 내 컴퓨터에 저장하는 <strong>무료 메모 앱</strong>입니다.<br />메모끼리 링크로 연결해서 나만의 지식 네트워크(= 제2의 뇌)를 만들 수 있어요.</p>
+      <h3 style={{ color: "#5B21B6", marginTop: 20 }}>주요 특징 — 카드를 클릭하면 자세한 설명이 나옵니다</h3>
+      <FeatureCards />
+      <h3 style={{ color: "#5B21B6", marginTop: 24 }}>실제 옵시디언 UI — 직접 클릭해보세요</h3>
+      <ObsidianMockup />
+      <h3 style={{ color: "#5B21B6", marginTop: 20 }}>화면 구성 한눈에 보기</h3>
+      {[["🗂️ 왼쪽 사이드바","파일 탐색기(내 메모 목록), 검색, 북마크"],["📝 가운데 편집 영역","메모를 작성하고 읽는 메인 공간"],["📌 오른쪽 사이드바","태그 목록, 아웃라인(목차), 백링크"],["🔘 리본 (왼쪽 아이콘줄)","자주 쓰는 기능에 빠르게 접근"],["📊 상태 표시줄 (하단)","현재 파일 정보, 글자 수 등 표시"]].map(([a,b]) => (
+        <div key={a} style={{ display: "flex", gap: 12, padding: "10px 14px", background: "#F9F7FF", borderRadius: 8, border: "1px solid #EDE9FE", marginBottom: 6 }}>
+          <span style={{ fontWeight: 700, color: "#7C3AED", minWidth: 165, fontSize: 13 }}>{a}</span>
+          <span style={{ color: "#374151", fontSize: 13 }}>{b}</span>
+        </div>
+      ))}
+    </div>
+  ),
+
+  install: () => (
+    <div>
+      <h3 style={{ color: "#5B21B6" }}>STEP 1 — 다운로드 & 설치</h3>
+      <p style={{ color: "#6B7280", fontSize: 13, marginBottom: 14 }}>각 단계를 완료했으면 클릭해서 체크해보세요!</p>
+      <InstallChecklist />
+      <h3 style={{ color: "#5B21B6", marginTop: 28 }}>STEP 2 — 볼트(Vault) 만들기</h3>
+      <p style={{ color: "#374151", lineHeight: 1.8, fontSize: 14 }}><strong>볼트(Vault)</strong>란 모든 메모가 저장되는 폴더입니다. 아래에서 직접 만들어보세요!</p>
+      <VaultSetupDemo />
+      <TipBox title="볼트 위치 선택 팁">나중에 <strong>여러 기기에서 동기화</strong>하려면 Dropbox나 iCloud 폴더 안에 볼트를 만드세요.<br />볼트 이름과 위치는 언제든 변경 가능합니다.</TipBox>
+    </div>
+  ),
+
+  vault: () => (
+    <div>
+      <p style={{ fontSize: 15, color: "#374151", lineHeight: 1.9 }}>옵시디언을 쓰다 보면 <strong>"볼트가 뭐예요?"</strong>라는 질문이 제일 먼저 나옵니다.<br />한 문장으로: <strong style={{ color: "#7C3AED" }}>볼트 = 내 컴퓨터 안의 일반 폴더</strong>입니다. 그게 전부예요.</p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "20px 0" }}>
+        <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 12, padding: 16 }}>
+          <div style={{ fontWeight: 700, color: "#DC2626", marginBottom: 10, fontSize: 14 }}>❌ 노션/에버노트 방식</div>
+          <div style={{ fontSize: 13, color: "#374151", lineHeight: 1.9 }}>내 메모 → <strong>회사 서버</strong>에 저장<br />직접 파일을 볼 수 없음<br />서비스 종료 시 데이터 위험<br />오프라인에서 느리거나 불가</div>
+        </div>
+        <div style={{ background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 12, padding: 16 }}>
+          <div style={{ fontWeight: 700, color: "#16A34A", marginBottom: 10, fontSize: 14 }}>✅ 옵시디언 방식</div>
+          <div style={{ fontSize: 13, color: "#374151", lineHeight: 1.9 }}>내 메모 → <strong>내 컴퓨터 폴더</strong>에 저장<br />파일 탐색기로 직접 열 수 있음<br />서비스 종료와 무관하게 영구 보존<br />인터넷 없어도 완벽하게 동작</div>
+        </div>
+      </div>
+      <h3 style={{ color: "#5B21B6" }}>볼트를 파일 탐색기로 열면? — hover해보세요</h3>
+      <FolderTreeVault />
+      <TipBox title=".obsidian 폴더는 절대 건드리지 마세요">볼트 안에 자동으로 생기는 숨김 폴더입니다. 테마, 플러그인, 단축키 설정이 담겨 있어요.<br />이 폴더를 삭제하면 모든 설정이 초기화됩니다. 메모 파일은 안전합니다.</TipBox>
+      <h3 style={{ color: "#5B21B6", marginTop: 24 }}>볼트 관련 Q&A — 클릭해서 펼쳐보세요</h3>
+      {[{q:"볼트를 여러 개 만들 수 있나요?",a:"네. 예를 들어 '업무용 볼트'와 '개인용 볼트'를 따로 만들 수 있습니다.\n왼쪽 하단의 볼트 이름을 클릭하면 볼트 전환 메뉴가 나타납니다."},{q:"볼트 폴더를 다른 곳으로 옮기면 어떻게 되나요?",a:"문제없습니다. 일반 폴더이기 때문에 이동·복사·외장하드 백업 모두 가능합니다.\n옮긴 후 옵시디언에서 '볼트 열기'로 새 위치를 선택하면 됩니다."},{q:"볼트를 삭제하면 메모가 다 사라지나요?",a:"네. 볼트 폴더를 삭제하면 그 안의 모든 .md 파일도 함께 삭제됩니다.\n중요한 볼트는 주기적으로 다른 곳에 복사해 백업해두세요."},{q:"볼트 이름이 Obsidian이라고 뜨는데 제 볼트 이름인가요?",a:"네. 볼트 폴더의 이름이 곧 볼트 이름입니다.\n폴더 이름을 바꾸면 볼트 이름도 바뀝니다. 언제든 자유롭게 변경 가능합니다."}].map(item => <FAQItem key={item.q} {...item} />)}
+      <div style={{ background: "linear-gradient(135deg,#1E1B4B,#2D1B69)", borderRadius: 12, padding: "20px 24px", margin: "24px 0", border: "1px solid #4C1D95" }}>
+        <div style={{ color: "#C4B5FD", fontWeight: 700, fontSize: 15, marginBottom: 10 }}>🏦 왜 이름이 "금고(Vault)"일까요?</div>
+        <p style={{ color: "#A78BFA", fontSize: 14, lineHeight: 1.9, margin: 0 }}>영어로 Vault는 은행 금고실을 뜻합니다.<br /><strong style={{ color: "#E9D5FF" }}>"내 생각과 지식을 안전하게 보관하는 나만의 금고"</strong>라는 의미입니다.<br />데이터가 내 컴퓨터에만 있고 외부 서버에 올라가지 않으니, 금고라는 표현이 딱 맞습니다.</p>
+      </div>
+    </div>
+  ),
+
+  ribbon: () => (
+    <div>
+      <p style={{ fontSize: 15, color: "#374151", lineHeight: 1.9 }}>옵시디언 화면 왼쪽에는 아이콘이 세로로 나열된 <strong>리본(Ribbon)</strong>이 있습니다.<br /><strong style={{ color: "#7C3AED" }}>아이콘 위에 마우스를 올리면 툴팁으로 이름이 표시됩니다.</strong></p>
+      <TipBox title="아이콘 이름 확인하는 가장 쉬운 방법">아이콘 위에 마우스 커서를 1~2초 올려두면 이름이 뜹니다.<br /><strong>리본에 뜨는 아이콘은 설치된 플러그인에 따라 달라집니다.</strong></TipBox>
+      <h3 style={{ color: "#5B21B6" }}>리본 아이콘 — 마우스를 올려보세요</h3>
+      <RibbonDemo />
+      <h3 style={{ color: "#5B21B6", marginTop: 28 }}>파일 탐색기 상단 아이콘</h3>
+      {[["✏️ 새 메모 아이콘","새 .md 파일을 볼트 루트에 생성합니다"],["📁 새 폴더 아이콘","볼트 안에 새 폴더를 생성합니다"],["↕️ 정렬 아이콘","이름순, 수정일순 등으로 정렬 기준을 바꿉니다"],["☰ 메뉴 아이콘","파일 탐색기 추가 옵션을 보여줍니다"],["⌃ 접기 아이콘","열려 있는 폴더를 모두 닫아 목록을 정리합니다"]].map(([name,desc]) => (
+        <div key={name} style={{ display: "flex", gap: 12, padding: "10px 14px", background: "#F5F3FF", borderRadius: 8, border: "1px solid #EDE9FE", marginBottom: 6 }}>
+          <span style={{ fontWeight: 700, color: "#7C3AED", minWidth: 145, fontSize: 13, flexShrink: 0 }}>{name}</span>
+          <span style={{ color: "#374151", fontSize: 13 }}>{desc}</span>
+        </div>
+      ))}
+      <h3 style={{ color: "#5B21B6", marginTop: 24 }}>탭(Tab) — 여러 메모를 동시에 열기</h3>
+      <p style={{ color: "#374151", fontSize: 14, lineHeight: 1.8 }}>브라우저처럼 여러 메모를 탭으로 동시에 열어서 작업할 수 있습니다.</p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, margin: "12px 0" }}>
+        {[["Ctrl+T","새 탭 열기"],["Ctrl+W","현재 탭 닫기"],["Ctrl+Tab","탭 전환"]].map(([key,desc]) => (
+          <div key={key} style={{ background: "#F5F3FF", borderRadius: 8, padding: "10px 12px", textAlign: "center", border: "1px solid #E9D5FF" }}>
+            <div style={{ fontFamily: "monospace", color: "#7C3AED", fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{key}</div>
+            <div style={{ color: "#6B7280", fontSize: 12 }}>{desc}</div>
+          </div>
+        ))}
+      </div>
+      <h3 style={{ color: "#5B21B6", marginTop: 24 }}>하단 상태 표시줄</h3>
+      {[["왼쪽 볼트 이름","클릭하면 볼트 전환 메뉴가 나타납니다. 볼트 이름 = 볼트 폴더 이름입니다."],["? 물음표 아이콘","도움말 문서를 엽니다. 영어로 되어 있지만 기능 설명이 자세합니다."],["⚙️ 톱니바퀴 아이콘","설정 창을 엽니다. 단축키 Ctrl+, 와 동일합니다."]].map(([name,desc]) => (
+        <div key={name} style={{ display: "flex", gap: 12, padding: "10px 14px", background: "#F5F3FF", borderRadius: 8, border: "1px solid #EDE9FE", marginBottom: 6 }}>
+          <span style={{ fontWeight: 700, color: "#7C3AED", minWidth: 160, fontSize: 13, flexShrink: 0 }}>{name}</span>
+          <span style={{ color: "#374151", fontSize: 13 }}>{desc}</span>
+        </div>
+      ))}
+    </div>
+  ),
+
+  write: () => (
+    <div>
+      <h3 style={{ color: "#5B21B6" }}>새 메모 만드는 3가지 방법</h3>
+      {[["✏️","아이콘 클릭","왼쪽 파일 탐색기 상단의 새 메모 아이콘 클릭"],["⌨️","단축키","Ctrl + N (Mac: Cmd + N) — 가장 빠른 방법!"],["🖱️","오른쪽 클릭","파일 탐색기에서 오른쪽 클릭 → 새 노트 만들기"]].map(([icon,t,d]) => (
+        <div key={t} style={{ display: "flex", gap: 14, padding: "12px 16px", background: "#F5F3FF", borderRadius: 10, border: "1px solid #E9D5FF", marginBottom: 8 }}>
+          <span style={{ fontSize: 22, flexShrink: 0 }}>{icon}</span>
+          <div><div style={{ fontWeight: 700, color: "#374151", fontSize: 14 }}>{t}</div><div style={{ color: "#6B7280", fontSize: 13, marginTop: 2 }}>{d}</div></div>
+        </div>
+      ))}
+      <h3 style={{ color: "#5B21B6", marginTop: 24 }}>마크다운 타이핑 데모</h3>
+      <TypingDemo />
+      <h3 style={{ color: "#5B21B6", marginTop: 24 }}>🎮 마크다운 직접 써보기 — 실시간 렌더링</h3>
+      <MarkdownSandbox />
+      <h3 style={{ color: "#5B21B6", marginTop: 24 }}>마크다운 핵심 문법 정리</h3>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14, margin: "10px 0" }}>
+        <thead><tr style={{ background: "#5B21B6" }}>{["입력","결과"].map(h => <th key={h} style={{ color: "#fff", padding: "10px 14px", textAlign: "left" }}>{h}</th>)}</tr></thead>
+        <tbody>
+          {[["# 제목1","가장 큰 제목 (H1)"],["## 제목2","중간 제목 (H2)"],["**굵게**","굵은 글씨"],["*기울임*","기울어진 글씨"],["- 항목","• 글머리 목록"],["1. 항목","번호 매긴 목록"],["[[메모이름]]","다른 메모로 링크"],["#태그","태그 추가"],["---","수평선 구분선"]].map(([inp,desc],i) => (
+            <tr key={i} style={{ background: i%2===0?"#F5F3FF":"#fff" }}>
+              <td style={{ padding: "9px 14px" }}><code style={{ background: "#1E1B4B", color: "#C4B5FD", padding: "2px 8px", borderRadius: 5, fontFamily: "monospace", fontSize: 13 }}>{inp}</code></td>
+              <td style={{ padding: "9px 14px", color: "#374151" }}>{desc}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <TipBox title="라이브 미리보기 강력 추천!">설정 → 편집기 → <strong>라이브 미리보기</strong>를 켜면, 타이핑하면서 동시에 완성된 모습을 볼 수 있습니다.</TipBox>
+    </div>
+  ),
+
+  link: () => (
+    <div>
+      <p style={{ color: "#374151", lineHeight: 1.9, fontSize: 15 }}>옵시디언의 핵심 기능! 메모끼리 연결하면 나만의 위키피디아가 됩니다.</p>
+      <h3 style={{ color: "#5B21B6" }}>내부 링크 만들기 — 직접 타이핑해보세요</h3>
+      <p style={{ color: "#374151", fontSize: 14, lineHeight: 1.8 }}>메모 안에서 <Code>[[</Code>를 입력하면 자동완성 목록이 바로 뜹니다!</p>
+      <LinkAutocomplete />
+      <h3 style={{ color: "#5B21B6", marginTop: 24 }}>백링크(Backlink) — 클릭하면 미리보기</h3>
+      <p style={{ color: "#374151", fontSize: 14, lineHeight: 1.8 }}>백링크는 <strong>"나를 언급한 다른 메모들"</strong>을 자동으로 보여줍니다.</p>
+      <BacklinkPanel />
+      <h3 style={{ color: "#5B21B6", marginTop: 24 }}>그래프 뷰 — 노드에 hover해보세요</h3>
+      <LinkGraphDemo />
+    </div>
+  ),
+
+  organize: () => (
+    <div>
+      <h3 style={{ color: "#5B21B6" }}>태그(Tag) — 주제별 라벨 붙이기</h3>
+      <p style={{ color: "#374151", fontSize: 14, lineHeight: 1.8 }}>메모 본문 어디에나 <Code>#태그이름</Code>을 쓰면 태그가 붙습니다.</p>
+      <pre style={{ background: "#1E1B4B", color: "#E9D5FF", padding: "14px 18px", borderRadius: 10, fontFamily: "monospace", fontSize: 13, margin: "12px 0", lineHeight: 1.9, whiteSpace: "pre-wrap" }}>{`#독서 #자기계발 #2024
+#업무/회의  ← 슬래시(/)로 계층 구조도 만들 수 있어요
+
+⚠️ 태그에는 공백을 쓸 수 없어요!
+#독서 메모  → (X)  #독서만 태그, '메모'는 일반 텍스트로 분리됨
+#독서-메모  → (O)  하이픈 사용
+#독서_메모  → (O)  언더스코어 사용`}</pre>
+      <TagDemo />
+      <h3 style={{ color: "#5B21B6", marginTop: 28 }}>폴더(Folder) — 접기/펼치기 가능한 구조</h3>
+      <FolderTree />
+      <h3 style={{ color: "#5B21B6", marginTop: 24 }}>폴더 vs 태그, 언제 써야 할까?</h3>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "12px 0" }}>
+        {[["📁 폴더 사용","메모가 딱 한 곳에만 속할 때\n\n예: 일기는 일기 폴더에만, 회의록은 업무 폴더에만"],["🏷️ 태그 사용","메모가 여러 카테고리에 동시에 속할 때\n\n예: 독서 메모이면서 동시에 아이디어이기도 할 때"]].map(([t,d]) => (
+          <div key={t} style={{ background: "#F5F3FF", borderRadius: 10, padding: "14px 16px", border: "1px solid #E9D5FF" }}>
+            <div style={{ fontWeight: 700, color: "#5B21B6", marginBottom: 8, fontSize: 14 }}>{t}</div>
+            <div style={{ color: "#374151", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-line" }}>{d}</div>
+          </div>
+        ))}
+      </div>
+      <TipBox title="두 가지를 같이 쓰는 게 가장 좋아요!">폴더로 큰 카테고리를 잡고, 태그로 세부 분류를 더하면 나중에 검색·필터링이 훨씬 강력해집니다.</TipBox>
+    </div>
+  ),
+
+  shortcuts: () => (
+    <div>
+      <p style={{ color: "#6B7280", fontSize: 14, marginBottom: 18 }}>키보드 버튼을 클릭해보세요 — 눌리는 느낌이 납니다!</p>
+      <h3 style={{ color: "#5B21B6", marginBottom: 12 }}>🔑 가장 많이 쓰는 단축키</h3>
+      {[[["Ctrl","N"],"새 메모 만들기"],[["Ctrl","O"],"빠른 전환기 — 파일 열기 / 새 메모 생성"],[["Ctrl","P"],"명령 팔레트 (모든 기능 검색)"],[["Ctrl","E"],"라이브 미리보기 ↔ 읽기 모드 전환"],[["Ctrl","Shift","F"],"전체 검색 (볼트 전체)"],[["Ctrl","B"],"굵게 (Bold)"],[["Ctrl","I"],"기울임 (Italic)"],[["Ctrl",","],"설정 열기"]].map(([keys,label]) => (
+        <KeyboardDemo key={label} keys={keys} label={label} />
+      ))}
+      <TipBox title="Mac 사용자는 Ctrl → Cmd 로 바꿔서 쓰세요">예: Ctrl + N → Cmd + N</TipBox>
+      <TipBox title="그래프 뷰는 기본 단축키가 없어요">왼쪽 리본의 그래프 아이콘을 클릭하거나, <Code>Ctrl+P</Code> → "graph" 검색으로 열 수 있습니다.</TipBox>
+      <h3 style={{ color: "#5B21B6", marginTop: 24 }}>🎯 명령 팔레트 — 직접 검색해보세요!</h3>
+      <CommandPaletteDemo />
+    </div>
+  ),
+
+  plugins: () => (
+    <div>
+      <p style={{ color: "#374151", lineHeight: 1.9, fontSize: 15 }}>플러그인으로 기능을 무한히 확장할 수 있습니다.<br /><strong>설정 → 커뮤니티 플러그인 → 탐색</strong>에서 검색해 바로 설치 가능!</p>
+      <h3 style={{ color: "#5B21B6" }}>🔌 초보자 추천 플러그인 — 카드를 클릭해 뒤집어보세요</h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, margin: "14px 0" }}>
+        {[
+          { name: "Calendar",    icon: "📅", use: "매일 일기 쓰는 분",   color: "#059669", desc: "달력 형태로 날짜별 메모를 관리합니다.",          detail: "달력에서 날짜를 클릭하면 그날의 메모가 바로 열립니다. Daily Note와 연동해서 일기를 꾸준히 쓰고 싶은 분께 최고입니다. 설치 후 리본에 달력 아이콘이 생깁니다." },
+          { name: "Dataview",    icon: "📊", use: "데이터 정리하는 분",  color: "#7C3AED", desc: "메모들을 스프레드시트처럼 조회·정렬·필터링합니다.", detail: "메모의 속성(태그, 날짜, 상태 등)을 기반으로 자동 목록을 만들 수 있습니다. 예: 이번 달 읽은 책 목록, 완료하지 않은 할 일 등을 쿼리로 생성." },
+          { name: "Templater",   icon: "📋", use: "반복 작업이 많은 분",  color: "#D97706", desc: "메모 템플릿을 만들어 자동으로 양식을 채웁니다.",   detail: "회의록, 일기, 독서 메모 등 자주 쓰는 양식을 템플릿으로 저장해두면 새 메모를 만들 때 자동으로 틀이 채워집니다. 날짜·시간 자동 삽입도 가능합니다." },
+          { name: "Kanban",      icon: "🃏", use: "할 일 관리하는 분",   color: "#DC2626", desc: "Trello처럼 카드 형식으로 할 일을 관리합니다.",    detail: "할 일 카드를 '할 일 → 진행 중 → 완료' 칸으로 드래그앤드롭해서 관리합니다. 프로젝트 진행 상황을 한눈에 파악할 수 있습니다." },
+          { name: "Excalidraw",  icon: "🎨", use: "시각적으로 정리하는 분", color: "#0891B2", desc: "메모 안에서 직접 다이어그램이나 그림을 그립니다.", detail: "손그림 느낌의 다이어그램, 플로우차트, 마인드맵을 그릴 수 있습니다. 그린 그림을 메모에 직접 삽입하고 링크로 연결할 수도 있습니다." },
+        ].map(p => <PluginCard key={p.name} {...p} />)}
+      </div>
+      <h3 style={{ color: "#5B21B6", marginTop: 24 }}>📦 설치 방법</h3>
+      {[["1","설정 열기","Ctrl + , (쉼표)"],["2","커뮤니티 플러그인 클릭","왼쪽 메뉴에서 선택"],["3","제한된 모드 끄기","'켜기' 버튼 클릭 → 커뮤니티 플러그인 활성화"],["4","탐색 버튼 클릭","원하는 플러그인 이름으로 검색"],["5","설치 → 활성화","두 버튼을 순서대로 클릭하면 완료!"]].map(([num,title,desc]) => (
+        <div key={num} style={{ display: "flex", gap: 14, padding: "12px 16px", background: "#F5F3FF", borderRadius: 10, border: "1px solid #E9D5FF", marginBottom: 8 }}>
+          <div style={{ background: "#7C3AED", color: "#fff", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, flexShrink: 0, fontSize: 13 }}>{num}</div>
+          <div><div style={{ fontWeight: 700, color: "#374151", fontSize: 14 }}>{title}</div><div style={{ color: "#6B7280", fontSize: 12, marginTop: 2 }}>{desc}</div></div>
+        </div>
+      ))}
+    </div>
+  ),
+
+  faq: () => (
+    <div>
+      {[
+        {q:"실수로 메모를 삭제했어요. 복구할 수 있나요?",a:"네! 옵시디언은 삭제된 파일을 시스템 휴지통 또는 볼트 안의 .trash 폴더로 이동합니다.\n\n설정 → 파일 및 링크 → '삭제된 파일' 항목에서 복구 방식을 설정하고 확인하세요."},
+        {q:"여러 기기(PC + 스마트폰)에서 동기화하고 싶어요.",a:"세 가지 방법이 있습니다:\n\n① 옵시디언 공식 Sync 서비스 — 유료, 가장 편리, 암호화 지원 (가격은 obsidian.md/pricing 확인)\n② iCloud / Dropbox / OneDrive 폴더 안에 볼트 저장 — 무료\n③ Git + GitHub — 완전 무료지만 기술적 지식 필요"},
+        {q:"메모를 PDF나 Word로 내보낼 수 있나요?",a:"기본으로 PDF 내보내기가 가능합니다.\n\n메모 오른쪽 상단 ··· 메뉴 → 'PDF로 내보내기'\n\nWord(.docx) 형식은 'Pandoc Plugin' 커뮤니티 플러그인을 설치해 사용하세요."},
+        {q:"한국어로 언어 설정을 바꾸고 싶어요.",a:"설정(Ctrl + ,) → 기타(About) → 언어 항목에서 한국어 선택 → 앱 재시작 후 적용됩니다."},
+        {q:"완전 무료인가요? 숨겨진 비용이 있나요?",a:"개인 사용은 영구 완전 무료입니다!\n\n유료 서비스는 선택 사항으로만 존재합니다:\n• Sync (동기화) — 유료, 가격은 obsidian.md/pricing 에서 확인\n• Publish (웹 게시) — 유료, 가격은 obsidian.md/pricing 에서 확인\n\n기본 앱은 돈을 낼 필요가 전혀 없어요."},
+        {q:"기존 노션(Notion) 메모를 옮길 수 있나요?",a:"네! 노션에서 마크다운(.md) 형식으로 내보내기 한 후, 그 파일들을 옵시디언 볼트 폴더에 복사하면 바로 사용할 수 있습니다.\n\n노션 → 페이지 메뉴 → 내보내기 → Markdown & CSV 선택"}
+      ].map(item => <FAQItem key={item.q} {...item} />)}
+    </div>
+  ),
+};
+
+/* ══════════════════════════════════════
+   메인 앱
+══════════════════════════════════════ */
+function App() {
+  const [active, setActive] = useState("intro");
+  const contentRef = useRef(null);
+  const chIdx = CHAPTERS.findIndex(c => c.id === active);
+  const chapter = CHAPTERS[chIdx];
+  const ContentComp = CONTENT[active];
+
+  useEffect(() => {
+    if (contentRef.current) contentRef.current.scrollTop = 0;
+  }, [active]);
+
+  return (
+    <div style={{ fontFamily: "-apple-system,'Segoe UI','Noto Sans KR',sans-serif", minHeight: "100vh", background: "#F9F7FF", display: "flex", fontSize: 14 }}>
+      {/* 사이드바 */}
+      <div style={{ width: 222, background: "linear-gradient(180deg,#4C1D95 0%,#1E0741 100%)", minHeight: "100vh", position: "sticky", top: 0, flexShrink: 0, display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "24px 16px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", textAlign: "center" }}>
+          <div style={{ fontSize: 32 }}>📓</div>
+          <div style={{ color: "#E9D5FF", fontWeight: 800, fontSize: 15, marginTop: 6 }}>옵시디언</div>
+          <div style={{ color: "#A78BFA", fontSize: 11, marginTop: 2 }}>초보자 사용 설명서</div>
+        </div>
+        <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", color: "#6B7280", fontSize: 11, marginBottom: 5 }}>
+            <span>진행도</span><span>{Math.round(((chIdx+1)/CHAPTERS.length)*100)}%</span>
+          </div>
+          <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 4, height: 5 }}>
+            <div style={{ background: "linear-gradient(90deg,#7C3AED,#A78BFA)", borderRadius: 4, height: 5, width: `${((chIdx+1)/CHAPTERS.length)*100}%`, transition: "width 0.4s" }} />
+          </div>
+        </div>
+        <nav style={{ padding: "10px 0", flex: 1, overflowY: "auto" }}>
+          {CHAPTERS.map((ch, i) => (
+            <button key={ch.id} onClick={() => setActive(ch.id)}
+              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 16px", background: active===ch.id?"rgba(196,181,253,0.15)":"transparent", border: "none", borderLeft: active===ch.id?"3px solid #A78BFA":"3px solid transparent", color: active===ch.id?"#E9D5FF":"#6B7280", cursor: "pointer", fontSize: 12, fontWeight: active===ch.id?700:400, textAlign: "left", transition: "all 0.15s" }}
+              onMouseEnter={e => { if (active !== ch.id) { e.currentTarget.style.color = "#9CA3AF"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; } }}
+              onMouseLeave={e => { if (active !== ch.id) { e.currentTarget.style.color = "#6B7280"; e.currentTarget.style.background = "transparent"; } }}>
+              <span>{ch.icon}</span><span>{i+1}. {ch.title}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+      {/* 메인 컨텐츠 */}
+      <div ref={contentRef} style={{ flex: 1, overflowY: "auto", maxHeight: "100vh" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 40px 80px" }}>
+          <div style={{ color: "#A78BFA", fontSize: 12, marginBottom: 6 }}>{chIdx+1}장 / {CHAPTERS.length}장</div>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: "#4C1D95", marginBottom: 6, display: "flex", alignItems: "center", gap: 10 }}>{chapter.icon} {chapter.title}</h1>
+          <div style={{ width: 40, height: 4, background: "linear-gradient(90deg,#7C3AED,#A78BFA)", borderRadius: 4, marginBottom: 28 }} />
+          <ContentComp />
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 48, paddingTop: 24, borderTop: "1px solid #E9D5FF" }}>
+            {chIdx > 0
+              ? <button onClick={() => setActive(CHAPTERS[chIdx-1].id)} style={{ background: "#EDE9FE", border: "none", borderRadius: 8, padding: "10px 20px", color: "#5B21B6", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>← 이전</button>
+              : <div />}
+            {chIdx < CHAPTERS.length-1
+              ? <button onClick={() => setActive(CHAPTERS[chIdx+1].id)} style={{ background: "#7C3AED", border: "none", borderRadius: 8, padding: "10px 24px", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>다음 →</button>
+              : <div style={{ background: "#EDE9FE", borderRadius: 8, padding: "10px 20px", color: "#5B21B6", fontWeight: 700, fontSize: 14 }}>🎉 완료! Happy Note-taking!</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+
+
+
+</body>
+</html>

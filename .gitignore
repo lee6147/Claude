@@ -1,0 +1,8 @@
+# Obsidian 사용자별 설정 (추적 불필요)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+
+# 시스템 파일
+.trash/
+.DS_Store
+Thumbs.db

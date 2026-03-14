@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>R&D 센터 구축 가이드</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#030712;color:#e2e8f0;font-family:'Segoe UI','Noto Sans KR',system-ui,sans-serif;line-height:1.7;overflow-x:hidden}
+::selection{background:#6366f150;color:#fff}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#0a0e1a}
+::-webkit-scrollbar-thumb{background:#6366f150;border-radius:3px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px #6366f120}50%{box-shadow:0 0 40px #6366f140}}
+@keyframes gradientMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes borderGlow{0%,100%{border-color:#6366f120}50%{border-color:#6366f160}}
+@keyframes countUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spinSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+.reveal{opacity:0;transform:translateY(30px);transition:all .8s cubic-bezier(.16,1,.3,1)}.reveal.v{opacity:1;transform:translateY(0)}
+
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(#6366f106 1px,transparent 1px),linear-gradient(90deg,#6366f106 1px,transparent 1px);background-size:60px 60px}
+.bg-orb{position:fixed;border-radius:50%;filter:blur(60px);pointer-events:none;z-index:0}
+
+.progress-bar{position:fixed;top:0;left:0;height:3px;z-index:101;background:linear-gradient(90deg,#6366f1,#22d3ee,#e879f9);background-size:200% 100%;animation:gradientMove 3s ease infinite;transition:width .3s;border-radius:0 2px 2px 0}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:#030712dd;backdrop-filter:blur(20px);border-bottom:1px solid #1e293b;padding:12px 0;transition:.3s}
+nav.scrolled{background:#030712f0;box-shadow:0 4px 30px #00000040}
+.nav-inner{max-width:900px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:15px;font-weight:800;background:linear-gradient(135deg,#6366f1,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;cursor:pointer}
+.nav-links{display:flex;gap:4px;flex-wrap:wrap}
+.nav-link{padding:5px 10px;border-radius:8px;font-size:11px;color:#94a3b8;cursor:pointer;transition:.2s;border:none;background:none;font-family:inherit}
+.nav-link:hover{color:#e2e8f0;background:#1e293b}
+
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:99px;background:#6366f115;border:1px solid #6366f130;font-size:13px;color:#a5b4fc;margin-bottom:32px;animation:fadeUp .8s ease-out,glow 4s ease-in-out infinite}
+.hero-dot{width:6px;height:6px;border-radius:50%;background:#6366f1;animation:pulse 2s infinite}
+.hero h1{font-size:clamp(32px,5vw,56px);font-weight:900;line-height:1.1;margin-bottom:24px;animation:fadeUp .8s ease-out .2s both}
+.gradient{background:linear-gradient(135deg,#6366f1,#22d3ee,#e879f9);background-size:200% 200%;animation:gradientMove 5s ease infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:clamp(15px,2vw,18px);color:#94a3b8;max-width:640px;margin-bottom:48px;animation:fadeUp .8s ease-out .4s both}
+
+.section{padding:80px 24px;position:relative;z-index:1}
+.section-inner{max-width:800px;margin:0 auto}
+.section-label{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#6366f1;margin-bottom:16px}
+.section-label .line{width:24px;height:2px;background:#6366f1;border-radius:1px}
+.section-title{font-size:clamp(26px,4vw,38px);font-weight:900;margin-bottom:16px;line-height:1.2}
+.section-desc{font-size:16px;color:#94a3b8;margin-bottom:40px;max-width:600px}
+
+.card{padding:28px;margin-bottom:20px;border-radius:18px;background:#0d1321;border:1px solid #1e293b;transition:.4s;overflow:hidden;position:relative}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--c,#6366f1),transparent);opacity:0;transition:.4s}
+.card:hover{border-color:color-mix(in srgb,var(--c,#6366f1),transparent 70%);transform:translateY(-2px);box-shadow:0 8px 30px #00000040}
+.card:hover::before{opacity:1}
+.card-num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;font-size:14px;font-weight:900;margin-bottom:14px}
+.card-title{font-size:19px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.card-body{color:#94a3b8;font-size:14px}
+.card-body p{margin-bottom:10px}
+
+.substep{display:flex;gap:14px;padding:14px;margin:10px 0;border-radius:12px;background:#1a223620;border-left:3px solid var(--c,#6366f1);transition:.3s}
+.substep:hover{background:#1a223650;transform:translateX(4px)}
+.substep-num{flex-shrink:0;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+.substep-text{font-size:13px;color:#cbd5e1}.substep-text strong{color:#e2e8f0}
+
+.tip{padding:18px 22px;margin:18px 0;border-radius:14px;display:flex;gap:12px;align-items:flex-start;transition:.3s}
+.tip:hover{transform:translateX(4px)}
+.tip-info{background:#6366f108;border:1px solid #6366f120}
+.tip-warn{background:#fbbf2408;border:1px solid #fbbf2420}
+.tip-success{background:#22c55e08;border:1px solid #22c55e20}
+.tip-icon{font-size:18px;flex-shrink:0;margin-top:2px}
+.tip-content{font-size:13px;color:#cbd5e1}.tip-content strong{color:#e2e8f0}
+
+.compare{width:100%;border-collapse:separate;border-spacing:0;margin:20px 0;border-radius:12px;overflow:hidden;border:1px solid #1e293b}
+.compare th{padding:12px 18px;text-align:left;font-size:12px;font-weight:700;background:#0f1525;color:#94a3b8;border-bottom:1px solid #1e293b}
+.compare td{padding:10px 18px;font-size:13px;border-bottom:1px solid #1e293b10;transition:.2s}
+.compare tr:hover td{background:#1e293b20}
+.tag{display:inline-block;padding:2px 10px;border-radius:6px;font-size:11px;font-weight:700}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin:24px 0}
+.stat{text-align:center;padding:24px 16px;border-radius:16px;background:#0d1321;border:1px solid #1e293b;transition:.3s}
+.stat:hover{border-color:#6366f130;transform:translateY(-3px)}
+.stat-num{font-size:32px;font-weight:900;margin-bottom:4px}
+.stat-label{font-size:12px;color:#94a3b8}
+
+.timeline{position:relative;padding-left:32px;margin:24px 0}
+.timeline::before{content:'';position:absolute;left:12px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,#6366f1,#22d3ee,#e879f9)}
+.tl-item{position:relative;margin-bottom:28px}
+.tl-dot{position:absolute;left:-28px;top:4px;width:16px;height:16px;border-radius:50%;border:3px solid;background:#030712}
+.tl-year{font-size:13px;font-weight:800;margin-bottom:4px}
+.tl-desc{font-size:13px;color:#94a3b8}
+
+.org-chart{display:flex;flex-direction:column;align-items:center;gap:16px;margin:24px 0}
+.org-box{padding:16px 28px;border-radius:14px;text-align:center;border:1px solid;transition:.3s;min-width:200px}
+.org-box:hover{transform:translateY(-2px)}
+.org-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.org-box .org-title{font-size:14px;font-weight:800;margin-bottom:2px}
+.org-box .org-desc{font-size:11px;opacity:.7}
+.org-arrow{font-size:18px;color:#6366f160}
+
+.tab-group{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
+.tab-btn{padding:8px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid #1e293b;background:#0d1321;color:#94a3b8;transition:.3s;font-family:inherit}
+.tab-btn:hover{border-color:#334155;color:#e2e8f0}
+.tab-btn.active{background:#6366f120;border-color:#6366f150;color:#a5b4fc}
+.tab-panel{display:none}.tab-panel.active{display:block;animation:fadeUp .5s ease-out}
+
+.faq-item{margin-bottom:8px;border-radius:14px;overflow:hidden;border:1px solid #1e293b;transition:.3s}
+.faq-item:hover{border-color:#334155}
+.faq-q{padding:16px 22px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:700;background:#0d1321;transition:.3s}
+.faq-q:hover{background:#131b2e}
+.faq-arrow{transition:.3s;font-size:12px;color:#6366f1}
+.faq-item.open .faq-arrow{transform:rotate(180deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .4s;background:#0a0e1a;font-size:13px;color:#94a3b8}
+.faq-item.open .faq-a{max-height:500px;padding:18px 22px}
+
+.scroll-top{position:fixed;bottom:32px;right:32px;z-index:99;width:42px;height:42px;border-radius:12px;background:#6366f1;color:#fff;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;opacity:0;transform:translateY(20px);transition:.3s;box-shadow:0 4px 20px #6366f140}
+.scroll-top.show{opacity:1;transform:translateY(0)}
+.scroll-top:hover{transform:translateY(-3px)}
+
+footer{text-align:center;padding:60px 24px;color:#475569;font-size:12px;border-top:1px solid #1e293b;position:relative;z-index:1}
+
+@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.org-row{flex-direction:column;align-items:center}.nav-links{display:none}}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-orb" style="top:-200px;left:10%;width:500px;height:500px;background:radial-gradient(circle,#6366f108,transparent 70%);animation:float 20s ease-in-out infinite"></div>
+<div class="bg-orb" style="bottom:-200px;right:10%;width:600px;height:600px;background:radial-gradient(circle,#22d3ee06,transparent 70%);animation:float 25s ease-in-out infinite 5s"></div>
+
+<div class="progress-bar" id="pBar"></div>
+
+<nav id="nav">
+<div class="nav-inner">
+<div class="nav-logo" onclick="scrollTo(0,0)">🏗️ R&D 센터 구축</div>
+<div class="nav-links">
+<button class="nav-link" onclick="goto('why')">왜 R&D 센터?</button>
+<button class="nav-link" onclick="goto('framework')">구축 프레임워크</button>
+<button class="nav-link" onclick="goto('org')">조직 구성</button>
+<button class="nav-link" onclick="goto('infra')">인프라</button>
+<button class="nav-link" onclick="goto('ops')">운영 체계</button>
+<button class="nav-link" onclick="goto('talent')">인력 양성</button>
+<button class="nav-link" onclick="goto('budget')">예산</button>
+<button class="nav-link" onclick="goto('roadmap')">로드맵</button>
+<button class="nav-link" onclick="goto('cases')">실제 사례</button>
+<button class="nav-link" onclick="goto('risk')">리스크</button>
+<button class="nav-link" onclick="goto('faq')">FAQ</button>
+</div>
+</div>
+</nav>
+
+<button class="scroll-top" id="scrollTopBtn" onclick="scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<!-- HERO -->
+<section class="hero">
+<div class="hero-badge"><span class="hero-dot"></span>선도연구센터 · OIRC · CRC · ERC 분석 기반</div>
+<h1>정부 R&D 센터,<br/><span class="gradient">어떻게 구축하는가</span></h1>
+<p>SEVRC(2015), V2G 플랫폼 센터(2016), OIRC(2026) — 세 건의 실제 연구계획서를 분석하여 추출한 R&D 센터 구축의 핵심 패턴과 실전 가이드</p>
+</section>
+
+<!-- STATS -->
+<div class="section" style="padding-top:0">
+<div class="section-inner">
+<div class="stats reveal">
+<div class="stat"><div class="stat-num" style="color:#6366f1">3건</div><div class="stat-label">분석한 연구계획서</div></div>
+<div class="stat"><div class="stat-num" style="color:#22d3ee">~225억</div><div class="stat-label">최대 총예산 규모</div></div>
+<div class="stat"><div class="stat-num" style="color:#e879f9">7년</div><div class="stat-label">센터 운영 기간</div></div>
+<div class="stat"><div class="stat-num" style="color:#34d399">15+명</div><div class="stat-label">핵심 연구원 규모</div></div>
+</div>
+</div>
+</div>
+
+<!-- WHY -->
+<section class="section" id="why">
+<div class="section-inner">
+<div class="section-label reveal"><span class="line"></span> WHY</div>
+<h2 class="section-title reveal">왜 R&D 센터인가?</h2>
+<p class="section-desc reveal">단일 프로젝트가 아닌, 지속 가능한 연구 생태계를 구축해야 하는 이유</p>
+
+<div class="card reveal" style="--c:#f472b6">
+<div class="card-title">🔬 기술 융합의 복잡성</div>
+<div class="card-body">
+<p>전기버스 OIRC 사례에서 보듯, <strong>배터리 + 자율주행 + IoT 플랫폼 + 사업모델</strong>이라는 4~5개 기술 영역의 동시 융합은 단일 연구실이나 기업으로는 불가능합니다.</p>
+<p>SEVRC 사례에서도 <strong>ICT·디자인·인문사회·전기공학</strong>의 초학제 융합이 요구되었고, 이를 위해 14명의 핵심연구원이 센터 단위로 결집했습니다.</p>
+</div>
+</div>
+
+<div class="card reveal" style="--c:#38bdf8">
+<div class="card-title">🏢 인프라 공유의 경제성</div>
+<div class="card-body">
+<p>배터리 사이클러, 환경 챔버, 시뮬레이션 워크스테이션 등 <strong>수억 원 규모의 장비</strong>를 스타트업이 개별 확보하는 것은 비현실적입니다.</p>
+<p>대학 보유 인프라를 공유하면 스타트업은 <strong>초기 투자 없이 R&D에 집중</strong>할 수 있고, 대학은 장비 가동률을 높일 수 있습니다.</p>
+</div>
+</div>
+
+<div class="card reveal" style="--c:#34d399">
+<div class="card-title">🎓 인력 양성의 플랫폼</div>
+<div class="card-body">
+<p>세 건의 계획서 모두 <strong>석·박사 인력 양성</strong>을 핵심 성과로 포함합니다. 센터는 학생이 기업의 실제 개발 과제에 참여하고, 기업 연구원이 대학의 최신 이론을 접하는 <strong>양방향 교류의 장</strong>입니다.</p>
+</div>
+</div>
+
+<div class="card reveal" style="--c:#fbbf24">
+<div class="card-title">📈 사업화의 가속기</div>
+<div class="card-body">
+<p>연구 성과가 논문에 그치지 않고 실제 제품·서비스로 전환되려면, <strong>TLO(기술이전사무소), IP 전략, 투자유치 컨설팅</strong> 등 사업화 지원 체계가 필수입니다. 센터는 이 모든 것을 한 지붕 아래서 제공합니다.</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- FRAMEWORK -->
+<section class="section" id="framework">
+<div class="section-inner">
+<div class="section-label reveal"><span class="line"></span> FRAMEWORK</div>
+<h2 class="section-title reveal">센터 구축 5단계 프레임워크</h2>
+<p class="section-desc reveal">세 건의 계획서에서 공통적으로 추출한 R&D 센터 구축의 핵심 단계</p>
+
+<div class="card reveal" style="--c:#ef4444">
+<div class="card-num" style="background:#ef444415;color:#ef4444">1</div>
+<div class="card-title">비전 수립 & 기획</div>
+<div class="card-body">
+<div class="substep" style="--c:#ef4444"><div class="substep-num" style="background:#ef444420;color:#ef4444">①</div><div class="substep-text"><strong>연구 분야 및 중점기술 정의</strong> — 국가전략기술, 사회 문제, 시장 수요에서 도출</div></div>
+<div class="substep" style="--c:#ef4444"><div class="substep-num" style="background:#ef444420;color:#ef4444">②</div><div class="substep-text"><strong>센터 비전·미션 선언</strong> — SEVRC: "S-EV 생태계 구축", V2G: "V2G 플랫폼", OIRC: "공유배터리 자율주행 전기버스"</div></div>
+<div class="substep" style="--c:#ef4444"><div class="substep-num" style="background:#ef444420;color:#ef4444">③</div><div class="substep-text"><strong>TRL(기술성숙도) 현재 수준 진단</strong> 및 단계별 목표 TRL 설정</div></div>
+<div class="substep" style="--c:#ef4444"><div class="substep-num" style="background:#ef444420;color:#ef4444">④</div><div class="substep-text"><strong>사업 공고 분석</strong> — SRC/ERC/MRC/CRC/OIRC 등 사업 유형별 요구사항 파악</div></div>
+</div>
+</div>
+
+<div class="card reveal" style="--c:#f97316">
+<div class="card-num" style="background:#f9731615;color:#f97316">2</div>
+<div class="card-title">조직 & 인력 구성</div>
+<div class="card-body">
+<div class="substep" style="--c:#f97316"><div class="substep-num" style="background:#f9731620;color:#f97316">①</div><div class="substep-text"><strong>센터장(PI) 선정</strong> — 참여율 60% 이상, 해당 분야 실적 보유 교수</div></div>
+<div class="substep" style="--c:#f97316"><div class="substep-num" style="background:#f9731620;color:#f97316">②</div><div class="substep-text"><strong>그룹 구성</strong> — 기술 영역별 3~5개 그룹, 각 그룹 책임자 지정</div></div>
+<div class="substep" style="--c:#f97316"><div class="substep-num" style="background:#f9731620;color:#f97316">③</div><div class="substep-text"><strong>핵심연구원 8~15명</strong> — 교수급 인력, 신진교수(박사 7년 이내) 20% 이상 권장</div></div>
+<div class="substep" style="--c:#f97316"><div class="substep-num" style="background:#f9731620;color:#f97316">④</div><div class="substep-text"><strong>참여기업 확보</strong> — OIRC: 4개 스타트업 입주, SEVRC: 9개 기업 참여</div></div>
+</div>
+</div>
+
+<div class="card reveal" style="--c:#eab308">
+<div class="card-num" style="background:#eab30815;color:#eab308">3</div>
+<div class="card-title">물리적 인프라 구축</div>
+<div class="card-body">
+<div class="substep" style="--c:#eab308"><div class="substep-num" style="background:#eab30820;color:#eab308">①</div><div class="substep-text"><strong>입주 공간 확보</strong> — 대학 캠퍼스 내 전용 공간(사무실, 협업 공간, 세미나실)</div></div>
+<div class="substep" style="--c:#eab308"><div class="substep-num" style="background:#eab30820;color:#eab308">②</div><div class="substep-text"><strong>공용 장비 설치</strong> — 배터리 시험, 3D프린터, 계측장비, 시뮬레이션 서버</div></div>
+<div class="substep" style="--c:#eab308"><div class="substep-num" style="background:#eab30820;color:#eab308">③</div><div class="substep-text"><strong>시제품 테스트 공간</strong> — 프로토타입 조립·검수·시험 가능 환경</div></div>
+<div class="substep" style="--c:#eab308"><div class="substep-num" style="background:#eab30820;color:#eab308">④</div><div class="substep-text"><strong>네트워크·보안</strong> — 기가비트 유선, Wi-Fi 6E, 출입 통제, CCTV</div></div>
+</div>
+</div>
+
+<div class="card reveal" style="--c:#22c55e">
+<div class="card-num" style="background:#22c55e15;color:#22c55e">4</div>
+<div class="card-title">운영 체계 수립</div>
+<div class="card-body">
+<div class="substep" style="--c:#22c55e"><div class="substep-num" style="background:#22c55e20;color:#22c55e">①</div><div class="substep-text"><strong>운영규정 제정</strong> — 장비 공동활용, IP 귀속 규칙, 보안 관리, 인력 교류</div></div>
+<div class="substep" style="--c:#22c55e"><div class="substep-num" style="background:#22c55e20;color:#22c55e">②</div><div class="substep-text"><strong>정기 기술교류회</strong> — 월 2회 이상, 인터페이스 이슈 조율·진행 공유</div></div>
+<div class="substep" style="--c:#22c55e"><div class="substep-num" style="background:#22c55e20;color:#22c55e">③</div><div class="substep-text"><strong>컨설팅 전담조직</strong> — TLO 연계, IP 전략, 투자유치, 사업화 컨설팅</div></div>
+<div class="substep" style="--c:#22c55e"><div class="substep-num" style="background:#22c55e20;color:#22c55e">④</div><div class="substep-text"><strong>협력협의회</strong> — 전문기관과 연 2회 이상 회의, 성과 공유·확산</div></div>
+</div>
+</div>
+
+<div class="card reveal" style="--c:#6366f1">
+<div class="card-num" style="background:#6366f115;color:#6366f1">5</div>
+<div class="card-title">자립 운영 & 확산</div>
+<div class="card-body">
+<div class="substep" style="--c:#6366f1"><div class="substep-num" style="background:#6366f120;color:#6366f1">①</div><div class="substep-text"><strong>다원적 재원 확보</strong> — 후속 정부R&D, 기업 회비, 장비 활용료, 기술이전 수익</div></div>
+<div class="substep" style="--c:#6366f1"><div class="substep-num" style="background:#6366f120;color:#6366f1">②</div><div class="substep-text"><strong>센터 확장</strong> — 매년 추가 스타트업 선정·졸업, 생태계 확대</div></div>
+<div class="substep" style="--c:#6366f1"><div class="substep-num" style="background:#6366f120;color:#6366f1">③</div><div class="substep-text"><strong>운영 매뉴얼</strong> — 타 분야 적용 가능한 참조 모델 문서화</div></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ORG -->
+<section class="section" id="org">
+<div class="section-inner">
+<div class="section-label reveal"><span class="line"></span> ORGANIZATION</div>
+<h2 class="section-title reveal">조직 구성 모델</h2>
+<p class="section-desc reveal">세 건의 계획서에서 공통적으로 발견되는 조직 구조</p>
+
+<div class="org-chart reveal">
+<div class="org-box" style="border-color:#6366f150;background:#6366f108">
+<div class="org-title" style="color:#6366f1">주관부처 (과기정통부/산업부)</div>
+<div class="org-desc">예산 배정, 사업 관리</div>
+</div>
+<div class="org-arrow">↓</div>
+<div class="org-box" style="border-color:#22d3ee50;background:#22d3ee08">
+<div class="org-title" style="color:#22d3ee">전문기관 (NRF/사업화진흥원)</div>
+<div class="org-desc">과제 관리·평가, 협력협의회</div>
+</div>
+<div class="org-arrow">↓</div>
+<div class="org-box" style="border-color:#e879f950;background:#e879f908">
+<div class="org-title" style="color:#e879f9">센터장 (PI / 연구책임자)</div>
+<div class="org-desc">총괄 기획·관리, 참여율 60%+</div>
+</div>
+<div class="org-arrow">↓</div>
+<div class="org-row">
+<div class="org-box" style="border-color:#f4727650;background:#f4727608;flex:1">
+<div class="org-title" style="color:#f47276">그룹 1</div>
+<div class="org-desc">핵심기술 A</div>
+</div>
+<div class="org-box" style="border-color:#38bdf850;background:#38bdf808;flex:1">
+<div class="org-title" style="color:#38bdf8">그룹 2</div>
+<div class="org-desc">핵심기술 B</div>
+</div>
+<div class="org-box" style="border-color:#34d39950;background:#34d39908;flex:1">
+<div class="org-title" style="color:#34d399">그룹 3</div>
+<div class="org-desc">핵심기술 C</div>
+</div>
+</div>
+<div class="org-arrow">↓</div>
+<div class="org-row">
+<div class="org-box" style="border-color:#fbbf2450;background:#fbbf2408;flex:1">
+<div class="org-title" style="color:#fbbf24">참여기업 / 스타트업</div>
+<div class="org-desc">기술개발 + 사업화</div>
+</div>
+<div class="org-box" style="border-color:#fb923c50;background:#fb923c08;flex:1">
+<div class="org-title" style="color:#fb923c">컨설팅 전담조직</div>
+<div class="org-desc">IP·투자·사업화 지원</div>
+</div>
+</div>
+</div>
+
+<div class="tip tip-info reveal">
+<span class="tip-icon">💡</span>
+<div class="tip-content"><strong>핵심 포인트:</strong> 센터장은 반드시 그룹 책임자를 겸임해야 합니다. 핵심연구원 중 신진교수(박사 7년 이내/만 40세 미만) 비율 20% 이상이 권장됩니다.</div>
+</div>
+</div>
+</section>
+
+<!-- INFRA -->
+<section class="section" id="infra">
+<div class="section-inner">
+<div class="section-label reveal"><span class="line"></span> INFRASTRUCTURE</div>
+<h2 class="section-title reveal">물리적 인프라 체크리스트</h2>
+
+<div class="card reveal" style="--c:#22d3ee">
+<div class="card-title">🏢 필수 공간 구성</div>
+<div class="card-body">
+<table class="compare">
+<tr><th>공간</th><th>용도</th><th>규모</th></tr>
+<tr><td><strong>입주 사무실</strong></td><td>기업/그룹별 전용 연구 공간</td><td>기업당 1실 이상</td></tr>
+<tr><td><strong>협업 공간</strong></td><td>개방형 회의실, 화이트보드 존</td><td>20~50㎡</td></tr>
+<tr><td><strong>세미나실</strong></td><td>기술교류회, 외부 특강</td><td>20인 이상 수용</td></tr>
+<tr><td><strong>시제품 테스트</strong></td><td>프로토타입 조립·검수·시험</td><td>분야별 상이</td></tr>
+<tr><td><strong>장비실</strong></td><td>공용 연구장비 설치·운용</td><td>장비 규모에 따라</td></tr>
+</table>
+</div>
+</div>
+
+<div class="card reveal" style="--c:#a78bfa">
+<div class="card-title">🔧 공용 장비 (분야별 예시)</div>
+<div class="card-body">
+<table class="compare">
+<tr><th>분야</th><th>주요 장비</th></tr>
+<tr><td>배터리/에너지</td><td>사이클러, 환경 챔버, 고전압 시험기, 캘린더링</td></tr>
+<tr><td>전기차/모빌리티</td><td>다이나모미터, 차량 진단기, 충전 시험 장비</td></tr>
+<tr><td>SW/시뮬레이션</td><td>HPC 서버, GPU 워크스테이션, MATLAB/Simulink</td></tr>
+<tr><td>공통</td><td>3D프린터, 오실로스코프, 전자계측, 네트워크분석기</td></tr>
+</table>
+</div>
+</div>
+
+<div class="tip tip-warn reveal">
+<span class="tip-icon">⚠️</span>
+<div class="tip-content"><strong>장비 공동활용 관리:</strong> 예약 시스템, 우선순위 기준, 사용료 정산 방식을 운영규정에 반드시 명시해야 합니다. 분기별 활용률 보고(목표: 70% 이상)를 통해 가동률을 관리합니다.</div>
+</div>
+</div>
+</section>
+
+<!-- OPS -->
+<section class="section" id="ops">
+<div class="section-inner">
+<div class="section-label reveal"><span class="line"></span> OPERATIONS</div>
+<h2 class="section-title reveal">운영 체계</h2>
+<p class="section-desc reveal">센터가 실질적으로 작동하기 위한 4대 운영 메커니즘</p>
+
+<div class="card reveal" style="--c:#6366f1">
+<div class="card-num" style="background:#6366f115;color:#6366f1">📋</div>
+<div class="card-title">운영규정 핵심 항목</div>
+<div class="card-body">
+<div class="substep" style="--c:#6366f1"><div class="substep-num" style="background:#6366f120;color:#6366f1">1</div><div class="substep-text"><strong>장비·시설 공동활용</strong> — 예약 시스템, 우선순위, 사용료 정산, 유지보수 일정</div></div>
+<div class="substep" style="--c:#6366f1"><div class="substep-num" style="background:#6366f120;color:#6366f1">2</div><div class="substep-text"><strong>지식재산권(IP)</strong> — 공동 발명 지분 배분, 단독 발명 처리, 해외 출원 전략</div></div>
+<div class="substep" style="--c:#6366f1"><div class="substep-num" style="background:#6366f120;color:#6366f1">3</div><div class="substep-text"><strong>보안 관리</strong> — 기밀 등급 분류, NDA 체결, 공유 가능 정보 범위</div></div>
+<div class="substep" style="--c:#6366f1"><div class="substep-num" style="background:#6366f120;color:#6366f1">4</div><div class="substep-text"><strong>인력 교류</strong> — 인턴십 조건, 교차 세미나, 성과 평가 반영 방식</div></div>
+</div>
+</div>
+
+<div class="card reveal" style="--c:#22d3ee">
+<div class="card-num" style="background:#22d3ee15;color:#22d3ee">🔄</div>
+<div class="card-title">Tech Sync Meeting (정기 기술교류회)</div>
+<div class="card-body">
+<p><strong>빈도:</strong> 월 2회 이상 + 외부 전문가 특강 분기 1회</p>
+<p><strong>3대 어젠다:</strong></p>
+<div class="substep" style="--c:#22d3ee"><div class="substep-num" style="background:#22d3ee20;color:#22d3ee">A</div><div class="substep-text">인터페이스 이슈 점검 (서브시스템 간 정합성)</div></div>
+<div class="substep" style="--c:#22d3ee"><div class="substep-num" style="background:#22d3ee20;color:#22d3ee">B</div><div class="substep-text">기술 진척 상황 공유 (그룹별 마일스톤)</div></div>
+<div class="substep" style="--c:#22d3ee"><div class="substep-num" style="background:#22d3ee20;color:#22d3ee">C</div><div class="substep-text">리스크 조기 식별 및 대응 논의</div></div>
+</div>
+</div>
+
+<div class="card reveal" style="--c:#e879f9">
+<div class="card-num" style="background:#e879f915;color:#e879f9">💼</div>
+<div class="card-title">컨설팅 전담조직</div>
+<div class="card-body">
+<table class="compare">
+<tr><th>기능</th><th>세부 내용</th></tr>
+<tr><td><strong>IP 전략</strong></td><td>공동 출원 대상 선별, 출원 로드맵, 선행 특허 분석, 회피 설계</td></tr>
+<tr><td><strong>성장 컨설팅</strong></td><td>사업계획서 고도화, 투자유치 전략, 해외 진출 전략</td></tr>
+<tr><td><strong>기술이전</strong></td><td>가치평가, 계약 지원, 라이선스 협상</td></tr>
+<tr><td><strong>스케일업</strong></td><td>후속 투자 연계, 정부 R&D 과제 발굴, 엑셀러레이터 연결</td></tr>
+</table>
+</div>
+</div>
+</div>
+</section>
+
+<!-- TALENT -->
+<section class="section" id="talent">
+<div class="section-inner">
+<div class="section-label reveal"><span class="line"></span> TALENT</div>
+<h2 class="section-title reveal">인력 양성 프로그램</h2>
+
+<div class="card reveal" style="--c:#34d399">
+<div class="card-title">🎓 양방향 인력 교류 모델</div>
+<div class="card-body">
+<div class="substep" style="--c:#34d399"><div class="substep-num" style="background:#34d39920;color:#34d399">→</div><div class="substep-text"><strong>대학 → 기업:</strong> 석·박사생이 스타트업 실제 개발 과제에 인턴십 참여 (최소 3개월, 연 2명+)</div></div>
+<div class="substep" style="--c:#34d399"><div class="substep-num" style="background:#34d39920;color:#34d399">←</div><div class="substep-text"><strong>기업 → 대학:</strong> 기업 연구원이 전문 세미나, 논문 리뷰 워크숍, 장비 교육 참여</div></div>
+<p style="margin-top:12px"><strong>양성 목표:</strong> 과제 기간 내 석·박사 6명 이상 배출</p>
+<p><strong>성과 지표:</strong> 양성 인원수, 논문 게재, 특허 참여, 스타트업 채용 연계 실적</p>
+</div>
+</div>
+
+<div class="tip tip-success reveal">
+<span class="tip-icon">✅</span>
+<div class="tip-content">OIRC 모델의 핵심 장점: 양성된 인재가 과제 종료 후 <strong>참여 스타트업에 즉시 합류</strong>할 수 있는 인력 파이프라인 역할을 합니다.</div>
+</div>
+</div>
+</section>
+
+<!-- BUDGET -->
+<section class="section" id="budget">
+<div class="section-inner">
+<div class="section-label reveal"><span class="line"></span> BUDGET</div>
+<h2 class="section-title reveal">예산 구조</h2>
+<p class="section-desc reveal">실제 연구계획서 기반의 예산 규모 비교</p>
+
+<div class="card reveal" style="--c:#fbbf24">
+<div class="card-title">💰 3개 센터 예산 비교</div>
+<div class="card-body">
+<table class="compare">
+<tr><th>센터</th><th>총기간</th><th>정부출연금</th><th>총예산</th><th>참여기관</th></tr>
+<tr><td style="color:#f472b6;font-weight:700">SEVRC (2015)</td><td>79개월</td><td>140억</td><td>225.1억</td><td>15개 기관</td></tr>
+<tr><td style="color:#38bdf8;font-weight:700">V2G (2016)</td><td>79개월</td><td>132억</td><td>145.2억</td><td>2개 기관</td></tr>
+<tr><td style="color:#6366f1;font-weight:700">OIRC (2026)</td><td>45개월</td><td>미정</td><td>미정</td><td>5개 기관</td></tr>
+</table>
+</div>
+</div>
+
+<div class="card reveal" style="--c:#a78bfa">
+<div class="card-title">📊 일반적 예산 구성</div>
+<div class="card-body">
+<table class="compare">
+<tr><th>항목</th><th>비율</th><th>내용</th></tr>
+<tr><td>인건비</td><td>40~50%</td><td>핵심연구원 급여, 연구보조원, 학생인건비</td></tr>
+<tr><td>연구장비·재료비</td><td>20~30%</td><td>장비 구매·유지, 시약·소모품</td></tr>
+<tr><td>연구활동비</td><td>10~15%</td><td>여비, 학회참석, 기술교류회 운영</td></tr>
+<tr><td>간접비(위탁연구비 등)</td><td>10~15%</td><td>대학 간접비, 위탁연구, 협력협의회</td></tr>
+<tr><td>기업 부담금</td><td>현물 위주</td><td>기업 연구원 인건비, 장비, 시설 등</td></tr>
+</table>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ROADMAP -->
+<section class="section" id="roadmap">
+<div class="section-inner">
+<div class="section-label reveal"><span class="line"></span> ROADMAP</div>
+<h2 class="section-title reveal">단계별 로드맵</h2>
+<p class="section-desc reveal">7년 센터의 전형적인 3단계 구조 (OIRC는 4년/2단계)</p>
+
+<div class="timeline reveal">
+<div class="tl-item"><div class="tl-dot" style="border-color:#ef4444"></div>
+<div class="tl-year" style="color:#ef4444">1단계 (1~2차년도) — 기획 & 기반 구축</div>
+<div class="tl-desc">중점연구 분야 도출, 기술 로드맵 수립, 센터 물리적 구축, 스타트업 입주, 운영규정 제정, 시스템 아키텍처 설계, 프로토타입 개발 착수</div>
+</div>
+<div class="tl-item"><div class="tl-dot" style="border-color:#eab308"></div>
+<div class="tl-year" style="color:#eab308">2단계 (3~5차년도) — 핵심기술 개발 & 통합</div>
+<div class="tl-desc">서브시스템 개발·검증, 기술 융합 및 프로토타입 완성, 통합 시험, 인증 취득, 테스트베드 구축, 실증 시작</div>
+</div>
+<div class="tl-item"><div class="tl-dot" style="border-color:#22c55e"></div>
+<div class="tl-year" style="color:#22c55e">3단계 (6~7차년도) — 실증 & 사업화 & 자립</div>
+<div class="tl-desc">대규모 실증, 사업화 추진, 표준화·법제도 개선, 기술이전, 센터 자립 운영 모델 수립, 운영 매뉴얼 작성</div>
+</div>
+</div>
+
+<div class="tip tip-info reveal">
+<span class="tip-icon">📌</span>
+<div class="tip-content"><strong>OIRC 모델 특징:</strong> 전통적 7년 대신 <strong>4년 2단계</strong>로 압축 — 1단계(2년): OIRC 구축 + 핵심기술 개발, 2단계(2년): 통합 실증 + 사업화. 매년 스타트업 추가 선정·졸업이 가능한 유연 구조.</div>
+</div>
+</div>
+</section>
+
+<!-- CASES -->
+<section class="section" id="cases">
+<div class="section-inner">
+<div class="section-label reveal"><span class="line"></span> CASES</div>
+<h2 class="section-title reveal">실제 사례 비교</h2>
+
+<div class="tab-group" id="tabGroup">
+<button class="tab-btn active" data-tab="sevrc" onclick="showTab('sevrc')">SEVRC (2015)</button>
+<button class="tab-btn" data-tab="v2g" onclick="showTab('v2g')">V2G 센터 (2016)</button>
+<button class="tab-btn" data-tab="oirc" onclick="showTab('oirc')">OIRC (2026)</button>
+</div>
+
+<div class="tab-panel active" id="tab-sevrc">
+<div class="card" style="--c:#f472b6">
+<div class="card-title" style="color:#f472b6">🚗 스마트 EV 연구센터 (SEVRC)</div>
+<div class="card-body">
+<p><strong>유형:</strong> CRC (융합분야) | <strong>주관:</strong> 국민대학교 박준석 교수</p>
+<p><strong>비전:</strong> 공유와 서비스 중심의 S-EV 플랫폼 개발 및 S-EV 생태계 구축</p>
+<p><strong>특징:</strong></p>
+<div class="substep" style="--c:#f472b6"><div class="substep-num" style="background:#f472b620;color:#f472b6">•</div><div class="substep-text"><strong>초학제 융합</strong> — 과학기술(64%) + 인문사회(36%) 연구원 구성</div></div>
+<div class="substep" style="--c:#f472b6"><div class="substep-num" style="background:#f472b620;color:#f472b6">•</div><div class="substep-text"><strong>14명 핵심연구원</strong> + 9개 참여기업 (중소 7, 대기업 1, 외국 1)</div></div>
+<div class="substep" style="--c:#f472b6"><div class="substep-num" style="background:#f472b620;color:#f472b6">•</div><div class="substep-text"><strong>3단계 7년</strong> — 기획(2년) → 기술개발(3년) → 테스트베드·실증(2년)</div></div>
+<div class="substep" style="--c:#f472b6"><div class="substep-num" style="background:#f472b620;color:#f472b6">•</div><div class="substep-text"><strong>배터리/에너지 공유</strong>를 통한 전기차 가격 부담 절감 → 보급 확산</div></div>
+</div>
+</div>
+</div>
+
+<div class="tab-panel" id="tab-v2g">
+<div class="card" style="--c:#38bdf8">
+<div class="card-title" style="color:#38bdf8">⚡ V2G 플랫폼 연구센터</div>
+<div class="card-body">
+<p><strong>유형:</strong> ERC (공학분야) | <strong>주관:</strong> 국민대학교 박준석 교수</p>
+<p><strong>비전:</strong> Vehicle-to-Grid 양방향 전력 플랫폼 기술 개발</p>
+<p><strong>특징:</strong></p>
+<div class="substep" style="--c:#38bdf8"><div class="substep-num" style="background:#38bdf820;color:#38bdf8">•</div><div class="substep-text"><strong>3개 그룹</strong> — V2G EV, V2G 전력계통, V2G 프로슈머 서비스</div></div>
+<div class="substep" style="--c:#38bdf8"><div class="substep-num" style="background:#38bdf820;color:#38bdf8">•</div><div class="substep-text"><strong>15명 핵심연구원</strong> (신진교수 3명, 20%)</div></div>
+<div class="substep" style="--c:#38bdf8"><div class="substep-num" style="background:#38bdf820;color:#38bdf8">•</div><div class="substep-text"><strong>협동기관:</strong> 명지대학교 (이준명 교수)</div></div>
+<div class="substep" style="--c:#38bdf8"><div class="substep-num" style="background:#38bdf820;color:#38bdf8">•</div><div class="substep-text"><strong>지능형 전력망</strong> + 직류 송배전 + 에너지저장 기술 융합</div></div>
+</div>
+</div>
+</div>
+
+<div class="tab-panel" id="tab-oirc">
+<div class="card" style="--c:#6366f1">
+<div class="card-title" style="color:#6366f1">🔋 개방형 공동 혁신 R&D 센터 (OIRC)</div>
+<div class="card-body">
+<p><strong>유형:</strong> OIRC (대학-스타트업 공동혁신) | <strong>과제명:</strong> 공유 배터리 기반 자율주행 전기버스</p>
+<p><strong>비전:</strong> CTP 교환형 배터리 + 차고지 자율주행 + BaaS 사업모델의 세계 최초 통합</p>
+<p><strong>특징:</strong></p>
+<div class="substep" style="--c:#6366f1"><div class="substep-num" style="background:#6366f120;color:#6366f1">•</div><div class="substep-text"><strong>스타트업 물리적 입주</strong> — 4개사가 대학 캠퍼스 내 상주하며 초밀착 협업</div></div>
+<div class="substep" style="--c:#6366f1"><div class="substep-num" style="background:#6366f120;color:#6366f1">•</div><div class="substep-text"><strong>5대 서브시스템</strong> — 배터리팩(범한), 스테이션(무브투), 자율주행(무브투), E2E플랫폼(D2E), 차량(소디스)</div></div>
+<div class="substep" style="--c:#6366f1"><div class="substep-num" style="background:#6366f120;color:#6366f1">•</div><div class="substep-text"><strong>2단계 45개월</strong> — 1단계: 센터 구축+기술개발(21개월), 2단계: 통합실증+사업화(24개월)</div></div>
+<div class="substep" style="--c:#6366f1"><div class="substep-num" style="background:#6366f120;color:#6366f1">•</div><div class="substep-text"><strong>매년 추가 선정·졸업</strong> — 유연한 스타트업 순환 구조</div></div>
+<div class="substep" style="--c:#6366f1"><div class="substep-num" style="background:#6366f120;color:#6366f1">•</div><div class="substep-text"><strong>3개 국가전략기술</strong> 융합 — 이차전지, 첨단모빌리티, 인공지능</div></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- RISK -->
+<section class="section" id="risk">
+<div class="section-inner">
+<div class="section-label reveal"><span class="line"></span> RISK</div>
+<h2 class="section-title reveal">주요 리스크 & 대응</h2>
+
+<div class="card reveal" style="--c:#ef4444">
+<div class="card-body">
+<table class="compare">
+<tr><th>리스크</th><th>영향</th><th>대응 전략</th></tr>
+<tr><td>인증 지연</td><td>일정 차질</td><td>인증기관 사전 협의, 시험용 샘플 2세트 확보</td></tr>
+<tr><td>서브시스템 통합 실패</td><td>기술 실패</td><td>ICD(인터페이스 사양서) 조기 확정 + 가상 통합 시험</td></tr>
+<tr><td>법제도 변경</td><td>사업모델 변경</td><td>리스/렌탈 기반 대안 모델 병행 설계</td></tr>
+<tr><td>스타트업 경영 불안</td><td>과제 차질</td><td>분기별 모니터링 + 대체 기관 사전 발굴</td></tr>
+<tr><td>핵심인력 이탈</td><td>기술 공백</td><td>지식관리 시스템 + 공동 IP로 기술 분산</td></tr>
+<tr><td>보조금 정책 변동</td><td>경제성 변동</td><td>보조금 없이도 TCO 경쟁력 확보하는 모델 설계</td></tr>
+</table>
+</div>
+</div>
+</div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+<div class="section-inner">
+<div class="section-label reveal"><span class="line"></span> FAQ</div>
+<h2 class="section-title reveal">자주 묻는 질문</h2>
+
+<div class="faq-item reveal" onclick="this.classList.toggle('open')">
+<div class="faq-q">SRC, ERC, CRC, OIRC 차이가 뭔가요? <span class="faq-arrow">▼</span></div>
+<div class="faq-a"><strong>SRC</strong>(과학): 기초과학, <strong>ERC</strong>(공학): 공학기술, <strong>CRC</strong>(융합): 초학제 융합, <strong>OIRC</strong>(개방형 혁신): 대학-스타트업 공동 R&D. 모두 선도연구센터 사업의 하위 유형이며, 7~9년 장기 지원이 공통입니다.</div>
+</div>
+<div class="faq-item reveal" onclick="this.classList.toggle('open')">
+<div class="faq-q">센터장의 최소 참여율은? <span class="faq-arrow">▼</span></div>
+<div class="faq-a"><strong>60% 이상</strong>이 필수입니다. 센터장은 반드시 그룹 책임자를 겸임해야 하며, 센터 전체의 기획·관리를 총괄합니다.</div>
+</div>
+<div class="faq-item reveal" onclick="this.classList.toggle('open')">
+<div class="faq-q">신진교수 비율은 왜 중요한가요? <span class="faq-arrow">▼</span></div>
+<div class="faq-a">박사 취득 후 7년 이내(또는 만 40세 미만)의 신진교수를 핵심연구원의 <strong>20% 이상</strong> 포함하는 것이 권장됩니다. 이는 차세대 연구 리더 양성과 연구 역동성 확보를 위한 정책적 장치입니다.</div>
+</div>
+<div class="faq-item reveal" onclick="this.classList.toggle('open')">
+<div class="faq-q">기업 부담금 현금 비율은? <span class="faq-arrow">▼</span></div>
+<div class="faq-a">대기업 15%+, 중견기업 13%+, <strong>중소기업 10%+</strong>의 현금 비율이 필요합니다. 나머지는 현물(인건비, 장비 등)로 충당 가능합니다.</div>
+</div>
+<div class="faq-item reveal" onclick="this.classList.toggle('open')">
+<div class="faq-q">과제 종료 후 센터는 어떻게 되나요? <span class="faq-arrow">▼</span></div>
+<div class="faq-a">자립 운영 모델을 사전에 설계해야 합니다: <strong>후속 정부R&D, 기업 회비, 장비 활용료, 기술이전 수익, 대학 매칭 펀드</strong> 등 다원적 재원 확보 전략이 필요합니다.</div>
+</div>
+</div>
+</section>
+
+<footer>
+<p style="margin-bottom:8px">Based on: SEVRC(2015) · V2G Platform Center(2016) · OIRC 전기버스(2026)</p>
+<p style="color:#334155">국민대학교 스마트 EV 연구센터 · 선도연구센터지원사업 계획서 분석</p>
+</footer>
+
+<script>
+const obs=new IntersectionObserver(e=>{e.forEach((el,i)=>{if(el.isIntersecting){setTimeout(()=>el.target.classList.add('v'),i*60);obs.unobserve(el.target)}})},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+window.addEventListener('scroll',()=>{
+const h=document.documentElement;
+const p=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+document.getElementById('pBar').style.width=p+'%';
+document.getElementById('nav').classList.toggle('scrolled',scrollY>50);
+document.getElementById('scrollTopBtn').classList.toggle('show',scrollY>500);
+});
+
+function goto(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
+
+function showTab(id){
+document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+document.getElementById('tab-'+id)?.classList.add('active');
+}
+</script>
+</body>
+</html>

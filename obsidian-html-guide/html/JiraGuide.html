@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<!-- 원본: JiraGuide.jsx | 변환: 2026-02-24 | 대규모 업그레이드 -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jira 완벽 가이드</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { min-height: 100vh; }
+  #root { min-height: 100vh; display: flex; flex-direction: column; }
+  body { background: #f0f4f8; overflow-x: hidden; overflow-y: auto; font-family: -apple-system, "Segoe UI", "Noto Sans KR", sans-serif; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #DEEBFF; }
+  ::-webkit-scrollbar-thumb { background: #0052CC; border-radius: 3px; }
+
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeInLeft { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes pulse-glow { 0%,100% { box-shadow:0 0 0 0 rgba(0,82,204,0); } 50% { box-shadow:0 0 20px 6px rgba(0,82,204,0.2); } }
+  @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
+  @keyframes shimmer { 0% { background-position:-200% center; } 100% { background-position:200% center; } }
+  @keyframes spin-slow { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+  @keyframes blink-cursor { 0%,100% { opacity:1; } 50% { opacity:0; } }
+  @keyframes bounce { 0%,100% { transform:scale(1); } 50% { transform:scale(1.15); } }
+  @keyframes slide-in-card { from { opacity:0; transform:translateX(-30px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes drag-shadow { from { box-shadow:0 4px 12px rgba(0,0,0,0.2); } to { box-shadow:0 20px 50px rgba(0,82,204,0.2); } }
+  @keyframes check-pop { 0% { transform:scale(0); opacity:0; } 70% { transform:scale(1.3); } 100% { transform:scale(1); opacity:1; } }
+  @keyframes star-twinkle { 0%,100% { opacity:0.2; transform:scale(0.8); } 50% { opacity:1; transform:scale(1.2); } }
+  @keyframes flow-arrow { 0% { transform:translateY(-4px); opacity:0.4; } 100% { transform:translateY(4px); opacity:1; } }
+  @keyframes typing { from { width:0; } to { width:100%; } }
+  @keyframes progress-fill { from { width:0%; } to { width:var(--tw,100%); } }
+  @keyframes card-flip-in { from { transform:rotateY(-90deg); opacity:0; } to { transform:rotateY(0); opacity:1; } }
+  @keyframes notification-drop { 0% { transform:translateY(-20px); opacity:0; } 60% { transform:translateY(4px); } 100% { transform:translateY(0); opacity:1; } }
+  @keyframes particle { 0% { transform:translate(0,0) scale(1); opacity:0.8; } 100% { transform:translate(var(--tx,20px),var(--ty,-40px)) scale(0); opacity:0; } }
+  @keyframes kanban-slide { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes bar-grow { from { height:0; } to { height:var(--h,100%); } }
+  @keyframes orbit { from { transform:rotate(0deg) translateX(30px) rotate(0deg); } to { transform:rotate(360deg) translateX(30px) rotate(-360deg); } }
+
+  .section-reveal { opacity:0; transform:translateY(30px); transition:opacity 0.7s ease, transform 0.7s ease; }
+  .section-reveal.visible { opacity:1; transform:translateY(0); }
+  .hover-lift { transition:transform 0.2s ease, box-shadow 0.2s ease; }
+  .hover-lift:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,82,204,0.12); }
+  .kbd-key { display:inline-block; background:#fff; border:1px solid #dfe1e6; border-bottom:3px solid #c1c7d0; border-radius:6px; padding:3px 9px; font-family:Consolas,"Courier New",monospace; font-size:12px; color:#0052CC; transition:transform 0.1s, box-shadow 0.1s; }
+  .kbd-key:hover { transform:translateY(2px); border-bottom-width:1px; }
+  .drag-over { background:#DEEBFF !important; border:2px dashed #4C9AFF !important; }
+  @media(max-width:900px) { .toc-sidebar-wrap { display:none !important; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+function seededRandom(seed) { const x = Math.sin(seed*9301+49297)*233280; return x - Math.floor(x); }
+
+const C = {
+  bg:"#f0f4f8", surface:"#ffffff", card:"#ffffff", border:"#dfe1e6",
+  accent:"#0052CC", accentDim:"#4C9AFF", teal:"#00B8D9", green:"#00875A", red:"#DE350B",
+  orange:"#FF8B00", yellow:"#FF991F", purple:"#6554C0",
+  textPrimary:"#172B4D", textSecondary:"#5E6C84", textMuted:"#97A0AF",
+};
+
+function SectionDivider() { return <div style={{height:2,background:"linear-gradient(90deg,transparent,#0052CC44,#4C9AFF44,transparent)",margin:"40px 0"}} />; }
+
+function Tag({color="blue",children}) {
+  const colors={blue:{bg:"#DEEBFF",c:"#0052CC"},green:{bg:"#E3FCEF",c:"#00875A"},red:{bg:"#FFEBE6",c:"#DE350B"},purple:{bg:"#EAE6FF",c:"#6554C0"},orange:{bg:"#FFF0B3",c:"#FF8B00"},teal:{bg:"#E6FCFF",c:"#006680"}};
+  const s=colors[color]||colors.blue;
+  return <span style={{display:"inline-block",background:s.bg,color:s.c,borderRadius:4,padding:"2px 8px",fontSize:11,fontWeight:700}}>{children}</span>;
+}
+
+function TipBox({icon="\u{1F4A1}",children,color=C.accent}) {
+  return <div style={{background:"#DEEBFF",border:"1px solid #B3D4FF",borderLeft:`4px solid ${color}`,borderRadius:10,padding:"14px 18px",marginTop:16,display:"flex",gap:12}}>
+    <span style={{fontSize:18}}>{icon}</span>
+    <div style={{color:C.textSecondary,fontSize:13,lineHeight:1.7,flex:1}}>{children}</div>
+  </div>;
+}
+
+function StepBadge({num}) {
+  return <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#0052CC,#0065FF)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#fff",flexShrink:0,boxShadow:"0 2px 6px rgba(0,82,204,0.3)"}}>{num}</div>;
+}
+
+function JiraIcon({size=22}) {
+  return <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+    <defs><linearGradient id="jiraBlue" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#2684FF"/><stop offset="100%" stopColor="#0052CC"/></linearGradient></defs>
+    <path d="M27.3 14.7L17.3 4.7L16 3.4L6.7 12.7L4.7 14.7C4.3 15.1 4.3 15.9 4.7 16.3L13.3 24.9L16 27.6L25.3 18.3L25.5 18.1L27.3 16.3C27.7 15.9 27.7 15.1 27.3 14.7ZM16 20L12 16L16 12L20 16L16 20Z" fill="url(#jiraBlue)"/>
+  </svg>;
+}
+
+function SectionHeader({num,emoji,title,subtitle}) {
+  return <div style={{marginBottom:28,display:"flex",alignItems:"center",gap:14}}>
+    <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#DEEBFF,#EAE6FF)",border:"1px solid #B3D4FF",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{emoji}</div>
+    <div><div style={{fontSize:11,color:C.accent,fontWeight:700,letterSpacing:2,fontFamily:'Consolas,monospace'}}>SECTION {String(num).padStart(2,"0")}</div>
+    <h2 style={{fontSize:24,fontWeight:800,color:C.textPrimary,lineHeight:1.2}}>{title}</h2>
+    {subtitle&&<p style={{color:C.textSecondary,fontSize:14,marginTop:2}}>{subtitle}</p>}</div>
+  </div>;
+}
+
+function StageHeader({level,icon,title,subtitle}) {
+  const cfg={beginner:{bg:"linear-gradient(135deg,#00B8D9,#0065FF)",label:"STAGE 1 · 초급"},intermediate:{bg:"linear-gradient(135deg,#0052CC,#172B4D)",label:"STAGE 2 · 중급"},advanced:{bg:"linear-gradient(135deg,#6554C0,#172B4D)",label:"STAGE 3 · 고급"},appendix:{bg:"linear-gradient(135deg,#5E6C84,#172B4D)",label:"부록"}}[level]||{};
+  const stars=Array.from({length:18},(_,i)=>({id:i,x:seededRandom(i*7+1)*100,y:seededRandom(i*13+2)*100,s:1.5+seededRandom(i*3)*3,d:1.5+seededRandom(i*5)*3,dl:seededRandom(i*11)*3}));
+  return <div style={{position:"relative",overflow:"hidden",borderRadius:16,padding:"32px 36px",margin:"40px 0 28px",background:cfg.bg,boxShadow:"0 8px 32px rgba(0,82,204,0.25)"}}>
+    <div style={{position:"absolute",inset:0,pointerEvents:"none"}}>{stars.map(s=><div key={s.id} style={{position:"absolute",left:`${s.x}%`,top:`${s.y}%`,width:s.s,height:s.s,borderRadius:"50%",background:"#fff",animation:`star-twinkle ${s.d}s ${s.dl}s ease-in-out infinite`}} />)}</div>
+    <div style={{position:"relative",display:"flex",alignItems:"center",gap:20}}>
+      <div style={{width:56,height:56,borderRadius:14,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>{icon}</div>
+      <div><div style={{display:"inline-block",background:"rgba(255,255,255,0.2)",borderRadius:12,padding:"3px 12px",fontSize:11,fontWeight:800,letterSpacing:1,color:"#fff",marginBottom:6}}>{cfg.label}</div>
+      <div style={{fontSize:24,fontWeight:900,color:"#fff"}}>{title}</div>
+      {subtitle&&<div style={{fontSize:14,color:"rgba(255,255,255,0.8)",marginTop:4}}>{subtitle}</div>}</div>
+    </div>
+  </div>;
+}
+
+function HeroSection() {
+  const ps=Array.from({length:25},(_,i)=>({id:i,x:seededRandom(i*7+1)*100,y:seededRandom(i*13+2)*100,s:2+seededRandom(i*3+3)*3,d:2+seededRandom(i*5+4)*4,dl:seededRandom(i*11+5)*3}));
+  /* Mini kanban cards floating animation */
+  const kanbanCards=[
+    {label:"로그인 구현",col:"#00875A",x:8,y:25,delay:0},{label:"버그 수정",col:"#DE350B",x:82,y:20,delay:1.2},
+    {label:"API 설계",col:"#0052CC",x:5,y:65,delay:0.6},{label:"UI 테스트",col:"#6554C0",x:88,y:70,delay:1.8},
+    {label:"배포 준비",col:"#FF8B00",x:15,y:85,delay:2.4},{label:"코드리뷰",col:"#00B8D9",x:78,y:88,delay:0.3},
+  ];
+  return <div style={{position:"relative",overflow:"hidden",padding:"72px 0 56px",background:"linear-gradient(180deg,#DEEBFF 0%,#f0f4f8 100%)"}}>
+    <div style={{position:"absolute",inset:0,opacity:0.06,backgroundImage:"linear-gradient(#B3D4FF 1px,transparent 1px),linear-gradient(90deg,#B3D4FF 1px,transparent 1px)",backgroundSize:"50px 50px"}} />
+    {ps.map(p=><div key={p.id} style={{position:"absolute",left:`${p.x}%`,top:`${p.y}%`,width:p.s,height:p.s,borderRadius:"50%",background:"#4C9AFF",animation:`star-twinkle ${p.d}s ${p.dl}s ease-in-out infinite`}} />)}
+    {kanbanCards.map((c,i)=><div key={i} style={{position:"absolute",left:`${c.x}%`,top:`${c.y}%`,background:"#fff",border:`1px solid ${C.border}`,borderLeft:`3px solid ${c.col}`,borderRadius:6,padding:"6px 12px",fontSize:10,color:C.textSecondary,opacity:0.35,animation:`float ${3+i*0.5}s ${c.delay}s ease-in-out infinite`,pointerEvents:"none",boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>{c.label}</div>)}
+    <div style={{position:"relative",textAlign:"center",maxWidth:800,margin:"0 auto",padding:"0 24px"}}>
+      <div style={{marginBottom:20,animation:"fadeInUp 0.8s ease both"}}>
+        <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:80,height:80,borderRadius:20,background:"linear-gradient(135deg,#0052CC,#2684FF)",boxShadow:"0 8px 32px rgba(0,82,204,0.3)",animation:"float 3.5s ease-in-out infinite"}}>
+          <svg width="44" height="44" viewBox="0 0 32 32" fill="none"><path d="M27.3 14.7L17.3 4.7L16 3.4L6.7 12.7L4.7 14.7C4.3 15.1 4.3 15.9 4.7 16.3L13.3 24.9L16 27.6L25.3 18.3L25.5 18.1L27.3 16.3C27.7 15.9 27.7 15.1 27.3 14.7ZM16 20L12 16L16 12L20 16L16 20Z" fill="#fff"/></svg>
+        </div>
+      </div>
+      <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#fff",border:"1px solid #B3D4FF",borderRadius:20,padding:"6px 16px",marginBottom:20,animation:"fadeInUp 0.8s ease both",boxShadow:"0 2px 8px rgba(0,82,204,0.08)"}}>
+        <div style={{width:8,height:8,borderRadius:"50%",background:C.green,animation:"pulse-glow 2s ease-in-out infinite"}} />
+        <span style={{color:C.accent,fontSize:12,fontWeight:600,fontFamily:'Consolas,monospace',letterSpacing:1}}>JIRA CLOUD · 완전 초보자 ~ 고급</span>
+      </div>
+      <h1 style={{fontSize:"clamp(36px,6vw,68px)",fontWeight:800,lineHeight:1.1,background:"linear-gradient(135deg,#172B4D 0%,#0052CC 50%,#6554C0 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",animation:"fadeInUp 0.8s 0.15s ease both",marginBottom:18}}>Jira{'\n'}완벽 가이드</h1>
+      <p style={{color:C.textSecondary,fontSize:17,lineHeight:1.7,maxWidth:520,margin:"0 auto 32px",animation:"fadeInUp 0.8s 0.3s ease both",whiteSpace:"pre-line"}}>{'처음이라도 괜찮아요. 개념부터 실습까지\n단계별로 완벽하게 마스터하세요'}</p>
+      <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap",animation:"fadeInUp 0.8s 0.45s ease both"}}>
+        {["📚 18개 섹션","🎮 6개 시뮬레이터","🖱️ 드래그 보드 체험","🔍 JQL 빌더"].map((l,i)=><div key={i} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 16px",color:C.textSecondary,fontSize:13,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>{l}</div>)}
+      </div>
+    </div>
+  </div>;
+}
+
+const TOC_ITEMS=[
+  {id:"s1",num:"01",label:"Jira란?",g:"b"},{id:"s2",num:"02",label:"핵심 개념",g:"b"},{id:"s3",num:"03",label:"계정 만들기",g:"b"},{id:"s4",num:"04",label:"프로젝트 만들기",g:"b"},{id:"s5",num:"05",label:"이슈 관리",g:"b"},
+  {id:"s6",num:"06",label:"보드 사용",g:"m"},{id:"s7",num:"07",label:"상태 변경",g:"m"},{id:"s8",num:"08",label:"팀 협업",g:"m"},{id:"s9",num:"09",label:"이슈 검색 & JQL",g:"m"},{id:"s10",num:"10",label:"알림 & 대시보드",g:"m"},{id:"s11",num:"11",label:"애자일 기초",g:"m"},
+  {id:"s12",num:"12",label:"자동화",g:"a"},{id:"s13",num:"13",label:"로드맵",g:"a"},{id:"s14",num:"14",label:"필터 심화",g:"a"},
+  {id:"s15",num:"15",label:"Confluence 연동",g:"x"},{id:"s16",num:"16",label:"단축키",g:"x"},{id:"s17",num:"17",label:"자주 하는 실수",g:"x"},{id:"s18",num:"18",label:"용어 사전",g:"x"},
+];
+const groupMeta={b:{label:"초급",dot:C.teal},m:{label:"중급",dot:C.accent},a:{label:"고급",dot:C.purple},x:{label:"부록",dot:C.textMuted}};
+const TOTAL_SECTIONS=TOC_ITEMS.length;
+
+function TOCSidebar({active,visited}) {
+  const groups=["b","m","a","x"];
+  return <div className="toc-sidebar-wrap" style={{width:210,flexShrink:0,position:"sticky",top:20,height:"fit-content",background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:14,boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
+    {groups.map(g=>{const gm=groupMeta[g]; return <div key={g}>
+      <div style={{display:"flex",alignItems:"center",gap:6,padding:"8px 6px 4px",fontSize:10,fontWeight:700,letterSpacing:2,color:C.textMuted}}>
+        <span style={{width:7,height:7,borderRadius:"50%",background:gm.dot}} />{gm.label}
+      </div>
+      {TOC_ITEMS.filter(i=>i.g===g).map(item=>{const isA=active===item.id; return <a key={item.id} href={`#${item.id}`} style={{display:"flex",alignItems:"center",gap:7,padding:"5px 8px",borderRadius:6,textDecoration:"none",marginBottom:1,background:isA?"#DEEBFF":"transparent",borderLeft:isA?`3px solid ${C.accent}`:"3px solid transparent",transition:"all 0.15s"}}>
+        <span style={{fontSize:10,fontFamily:"Consolas,monospace",color:isA?C.accent:C.textMuted,width:18,flexShrink:0,fontWeight:700}}>{item.num}</span>
+        <span style={{fontSize:12,color:isA?C.textPrimary:C.textSecondary,fontWeight:isA?600:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.label}</span>
+        {visited.has(item.id)&&<span style={{marginLeft:"auto",color:C.green,fontSize:10}}>✓</span>}
+      </a>;})}
+    </div>;})}
+    <div style={{borderTop:`1px solid ${C.border}`,marginTop:10,paddingTop:10}}>
+      <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.textMuted,fontWeight:600}}><span>진도</span><span>{visited.size}/{TOTAL_SECTIONS}</span></div>
+      <div style={{background:"#F4F5F7",borderRadius:4,height:5,marginTop:5,overflow:"hidden"}}><div style={{height:"100%",borderRadius:4,background:`linear-gradient(90deg,${C.accent},${C.teal})`,transition:"width 0.5s",width:`${(visited.size/TOTAL_SECTIONS)*100}%`}} /></div>
+    </div>
+  </div>;
+}
+
+function Section1() {
+  const [hovered, setHovered] = useState(null);
+  const rows = [
+    {situation:"작업 배분",without:"카카오톡 공유 → 나중에 못 찾음",with:"이슈 등록 → 담당자 지정 → 추적"},
+    {situation:"진행 파악",without:"매번 물어봐야 함",with:"보드에서 한눈에 확인"},
+    {situation:"버그 발견",without:"구두 보고 → 잊어버림",with:"이슈 등록 → 완료까지 추적"},
+    {situation:"우선순위",without:"다들 다른 생각",with:"이슈에 우선순위 명시"},
+    {situation:"일정 관리",without:"엑셀로 관리 → 실시간 반영 안됨",with:"스프린트 기반 자동 일정 추적"},
+    {situation:"히스토리",without:"메신저 대화 유실 → 맥락 단절",with:"이슈 댓글로 결정 이력 보존"},
+  ];
+  const tools=[
+    {name:"Jira",icon:"🔷",agile:"⭐⭐⭐",kanban:"⭐⭐⭐",dev:"⭐⭐⭐",free:"10명",best:"개발팀, 애자일 팀"},
+    {name:"Trello",icon:"📋",agile:"⭐",kanban:"⭐⭐⭐",dev:"⭐",free:"무제한",best:"소규모, 개인 프로젝트"},
+    {name:"Asana",icon:"🎯",agile:"⭐⭐",kanban:"⭐⭐",dev:"⭐⭐",free:"15명",best:"마케팅, 일반 업무팀"},
+    {name:"Monday",icon:"📊",agile:"⭐⭐",kanban:"⭐⭐",dev:"⭐",free:"2명",best:"다양한 부서 범용"},
+  ];
+  return <div id="s1" className="section-reveal">
+    <SectionHeader num={1} emoji={<JiraIcon size={20}/>} title="Jira가 뭔가요?" subtitle="한 문장으로 설명하면 '할 일 관리 + 팀 협업 도구'입니다." />
+    <div style={{background:"linear-gradient(135deg,#DEEBFF,#EAE6FF)",border:"1px solid #B3D4FF",borderRadius:16,padding:28,marginBottom:28}}>
+      <p style={{fontSize:18,color:C.textPrimary,fontWeight:600,lineHeight:1.6}}>학교 조별 과제할 때 이런 혼란, 겪어보셨죠?</p>
+      <div style={{display:"flex",flexWrap:"wrap",gap:10,marginTop:14}}>
+        {["누가 뭘 하고 있지? 🤷","이 작업은 언제 끝나지? ⏰","이 버그는 누가 고치기로 했더라? 🐛","지난번에 뭐라고 결정했지? 🤔"].map((q,i)=>
+          <div key={i} style={{background:"rgba(255,255,255,0.7)",border:"1px solid rgba(0,82,204,0.15)",borderRadius:8,padding:"8px 14px",color:C.textSecondary,fontSize:13}}>{q}</div>
+        )}
+      </div>
+      <p style={{color:C.textSecondary,fontSize:14,marginTop:14,lineHeight:1.7}}>Jira는 이 혼란을 없애줍니다. 모든 작업을 <strong style={{color:C.accent}}>카드(이슈)</strong> 형태로 만들고, 누가 언제 무엇을 해야 하는지 한눈에 보여줍니다.</p>
+    </div>
+    <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:24,marginBottom:24,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+      <h3 style={{color:C.textPrimary,fontSize:15,fontWeight:700,marginBottom:14,display:"flex",alignItems:"center",gap:8}}><JiraIcon size={18}/> Jira는 어떤 도구인가요?</h3>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        {[
+          {icon:"📋",title:"프로젝트 관리",desc:"팀의 모든 작업을 체계적으로 관리합니다."},
+          {icon:"🔄",title:"애자일 방법론 지원",desc:"스크럼, 칸반 등 애자일 프레임워크를 기본 지원합니다."},
+          {icon:"📊",title:"진행 상황 시각화",desc:"보드, 번다운 차트, 대시보드 등으로 현황을 시각적으로 확인합니다."},
+          {icon:"🔗",title:"Atlassian 생태계 연동",desc:"Confluence, Bitbucket, Slack 등과 자연스럽게 연동됩니다."},
+        ].map((item,i)=><div key={i} className="hover-lift" style={{background:"#F4F5F7",borderRadius:10,padding:16,border:"1px solid #EBECF0"}}>
+          <div style={{fontSize:20,marginBottom:8}}>{item.icon}</div>
+          <div style={{fontWeight:700,color:C.textPrimary,fontSize:13,marginBottom:4}}>{item.title}</div>
+          <p style={{color:C.textSecondary,fontSize:12,lineHeight:1.6}}>{item.desc}</p>
+        </div>)}
+      </div>
+      <TipBox>Jira는 Atlassian사가 만든 도구로, 전 세계 25만 개 이상의 기업이 사용합니다.</TipBox>
+    </div>
+    {/* 비교표 + 도구 비교 */}
+    <h3 style={{color:C.textPrimary,fontSize:15,fontWeight:700,marginBottom:14}}>💡 Jira 있을 때 vs 없을 때</h3>
+    <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:28}}>
+      {rows.map((row,i)=><div key={i} onMouseEnter={()=>setHovered(i)} onMouseLeave={()=>setHovered(null)} style={{display:"grid",gridTemplateColumns:"90px 1fr 1fr",background:hovered===i?"#DEEBFF":"#fff",border:`1px solid ${hovered===i?"#B3D4FF":C.border}`,borderRadius:8,overflow:"hidden",transition:"all 0.2s"}}>
+        <div style={{padding:"10px 12px",borderRight:`1px solid ${C.border}`,color:C.accent,fontSize:12,fontWeight:700}}>{row.situation}</div>
+        <div style={{padding:"10px 12px",borderRight:`1px solid ${C.border}`,color:C.red,fontSize:12,display:"flex",alignItems:"center",gap:6}}>❌ {row.without}</div>
+        <div style={{padding:"10px 12px",color:C.green,fontSize:12,display:"flex",alignItems:"center",gap:6}}>✅ {row.with}</div>
+      </div>)}
+    </div>
+    <h3 style={{color:C.textPrimary,fontSize:15,fontWeight:700,marginBottom:14}}>📊 프로젝트 관리 도구 비교</h3>
+    <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+      <div style={{display:"grid",gridTemplateColumns:"100px repeat(5,1fr)",background:"#F4F5F7",borderBottom:`1px solid ${C.border}`}}>
+        {["도구","애자일","칸반","개발연동","무료","최적 대상"].map(h=><div key={h} style={{padding:"10px 12px",fontSize:11,color:C.textMuted,fontWeight:700}}>{h}</div>)}
+      </div>
+      {tools.map((t,i)=><div key={i} style={{display:"grid",gridTemplateColumns:"100px repeat(5,1fr)",borderBottom:i<tools.length-1?`1px solid ${C.border}`:"none",background:i===0?"#DEEBFF":"#fff"}}>
+        <div style={{padding:"10px 12px",fontSize:13,fontWeight:700,color:i===0?C.accent:C.textPrimary}}>{t.icon} {t.name}</div>
+        <div style={{padding:"10px 12px",fontSize:11,color:C.textSecondary}}>{t.agile}</div>
+        <div style={{padding:"10px 12px",fontSize:11,color:C.textSecondary}}>{t.kanban}</div>
+        <div style={{padding:"10px 12px",fontSize:11,color:C.textSecondary}}>{t.dev}</div>
+        <div style={{padding:"10px 12px",fontSize:11,color:C.textSecondary}}>{t.free}</div>
+        <div style={{padding:"10px 12px",fontSize:11,color:C.textSecondary}}>{t.best}</div>
+      </div>)}
+    </div>
+  </div>;
+}
+
+function ConceptCard({ emoji, title, subtitle, desc, color, delay = 0 }) {
+  const [vis, setVis] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setVis(true), delay); return () => clearTimeout(t); }, []);
+  return (
+    <div className="hover-lift" style={{
+      background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 22,
+      opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(20px)",
+      transition: "opacity 0.5s ease, transform 0.5s ease, box-shadow 0.2s",
+      borderTop: `3px solid ${color}`,
+      boxShadow: "0 1px 4px rgba(0,0,0,0.04)"
+    }}>
+      <div style={{ fontSize: 28, marginBottom: 10 }}>{emoji}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+        <span style={{ fontSize: 16, fontWeight: 700, color: C.textPrimary, fontFamily: '-apple-system, "Segoe UI", sans-serif' }}>{title}</span>
+        <Tag color="blue">{subtitle}</Tag>
+      </div>
+      <p style={{ color: C.textSecondary, fontSize: 14, lineHeight: 1.7 }}>{desc}</p>
+    </div>
+  );
+}
+
+function Section2() {
+  const [expandedConcept,setExpandedConcept]=useState(null);
+  const concepts = [
+    { emoji: "\u{1F4E6}", title: "프로젝트", subtitle: "Project", color: C.accent, desc: "커다란 상자. 모든 작업은 프로젝트 안에 담깁니다. 예: '쇼핑몰 앱 개발', '마케팅 캠페인 2024'. 팀 단위로 하나의 프로젝트를 만들고, 그 안에서 모든 이슈를 관리합니다." },
+    { emoji: "\u{1F3AB}", title: "이슈", subtitle: "Issue", color: C.green, desc: "할 일 카드 하나하나. 에픽, 스토리, 태스크, 버그 4가지 종류가 있습니다. Jira에서 가장 기본이 되는 단위로, 제목\xB7설명\xB7담당자\xB7우선순위\xB7상태 등의 속성을 가집니다." },
+    { emoji: "\u{1F3C3}", title: "스프린트", subtitle: "Sprint", color: C.orange, desc: "정해진 기간(보통 1~2주) 동안 완료할 목표 작업 묶음. '이번 주에 이것들을 끝내자!'라는 약속. 시작과 끝이 있어 팀의 속도를 측정할 수 있습니다." },
+    { emoji: "\u{1F4CB}", title: "백로그", subtitle: "Backlog", color: C.purple, desc: "언젠가 해야 할 일 목록. 냉장고 속 식재료처럼, 필요할 때 꺼내 스프린트에 넣습니다. 우선순위를 매겨 위에 있을수록 중요한 작업입니다." },
+    { emoji: "\u{1F5C2}\uFE0F", title: "보드", subtitle: "Board", color: "#FF991F", desc: "작업 현황판. 포스트잇 벽처럼 '할 일 \u2192 진행 중 \u2192 완료'로 카드를 옮깁니다. 팀 전체의 작업 진행 상황을 한눈에 파악할 수 있는 핵심 화면입니다." },
+  ];
+  const issueTypes = [
+    { icon: "\u{1F7E3}", name: "에픽 (Epic)", desc: "큰 단위 작업 (수주~수개월)", example: "사용자 인증 시스템 구축", detail: "여러 스토리와 태스크를 묶는 상위 단위. 로드맵에서 일정 막대로 표시됩니다." },
+    { icon: "\u{1F7E2}", name: "스토리 (Story)", desc: "사용자 관점 기능", example: "사용자가 소셜 로그인을 할 수 있다", detail: "사용자 가치 중심으로 작성합니다. 'OO가 \u25B3\u25B3를 할 수 있다' 형식이 좋습니다." },
+    { icon: "\u{1F535}", name: "태스크 (Task)", desc: "일반 작업", example: "DB 스키마 설계", detail: "개발, 설계, 리서치 등 구체적인 실행 작업 단위입니다." },
+    { icon: "\u{1F534}", name: "버그 (Bug)", desc: "수정해야 할 문제", example: "로그아웃 버튼 클릭 시 오류 발생", detail: "재현 과정, 기대 결과, 실제 결과를 포함하면 빠른 수정이 가능합니다." },
+  ];
+  return (
+    <div id="s2" className="section-reveal">
+      <SectionHeader num={2} emoji={<JiraIcon size={20}/>} title="핵심 개념 이해하기" subtitle="이 섹션이 가장 중요합니다. 개념을 이해해야 이후 모든 단계가 쉬워집니다." />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14, marginBottom: 36 }}>
+        {concepts.map((c, i) => <ConceptCard key={i} {...c} delay={i * 100} />)}
+      </div>
+      <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 14, padding: 24, marginBottom: 28, boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+        <h3 style={{ color: C.textPrimary, fontSize: 15, fontWeight: 700, marginBottom: 16 }}>{"\u{1F5FA}\uFE0F"} 개념 간의 관계</h3>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+          {[
+            { label: "프로젝트", color: C.accent, sub: "가장 큰 단위" },
+            { label: "\u2192" },
+            { label: "에픽", color: C.purple, sub: "큰 목표" },
+            { label: "\u2192" },
+            { label: "스토리/태스크/버그", color: C.green, sub: "실행 단위" },
+            { label: "\u2192" },
+            { label: "스프린트에 배치", color: C.orange, sub: "기간 설정" },
+            { label: "\u2192" },
+            { label: "보드에서 관리", color: "#FF991F", sub: "상태 변경" },
+          ].map((item, i) => (
+            item.color ? (
+              <div key={i} style={{ textAlign: "center" }}>
+                <div style={{ background: `${item.color}15`, border: `2px solid ${item.color}40`, borderRadius: 10, padding: "10px 16px", color: item.color, fontWeight: 700, fontSize: 13 }}>{item.label}</div>
+                <div style={{ color: C.textMuted, fontSize: 10, marginTop: 4 }}>{item.sub}</div>
+              </div>
+            ) : (
+              <div key={i} style={{ color: C.textMuted, fontSize: 18, fontWeight: 700 }}>{item.label}</div>
+            )
+          ))}
+        </div>
+      </div>
+      <h3 style={{ color: C.textPrimary, fontSize: 16, fontWeight: 700, marginBottom: 16 }}>{"\u{1F3AB}"} 이슈의 4가지 종류</h3>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 10 }}>
+        {issueTypes.map((t, i) => (
+          <div key={i} className="hover-lift" style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+            <div style={{ fontSize: 24, marginBottom: 8 }}>{t.icon}</div>
+            <div style={{ fontWeight: 700, color: C.textPrimary, fontSize: 14, marginBottom: 4 }}>{t.name}</div>
+            <div style={{ color: C.textSecondary, fontSize: 12, marginBottom: 6 }}>{t.desc}</div>
+            <p style={{ color: C.textSecondary, fontSize: 12, lineHeight: 1.6, marginBottom: 10 }}>{t.detail}</p>
+            <div style={{ background: "#DEEBFF", borderRadius: 6, padding: "6px 10px", color: C.accent, fontSize: 11, fontFamily: 'Consolas, "Courier New", monospace' }}>예) {t.example}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AccountMockup() {
+  const [step, setStep] = useState(0);
+  const steps = [
+    { label: "사이트 접속", icon: "\u{1F310}", desc: "atlassian.com/ko/software/jira 접속" },
+    { label: "이메일 입력", icon: "\u{1F4E7}", desc: "이메일 주소 입력" },
+    { label: "인증 코드", icon: "\u{1F511}", desc: "이메일로 받은 코드 입력" },
+    { label: "비밀번호 설정", icon: "\u{1F512}", desc: "안전한 비밀번호 설정" },
+    { label: "팀 이름 설정", icon: "\u{1F3E2}", desc: "팀/회사 이름 입력" },
+    { label: "완료!", icon: "\u{1F389}", desc: "Jira 사용 준비 완료" },
+  ];
+  useEffect(() => {
+    if (step < steps.length - 1) {
+      const t = setTimeout(() => setStep(s => s + 1), 1800);
+      return () => clearTimeout(t);
+    }
+  }, [step]);
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <span style={{ color: C.textSecondary, fontSize: 13 }}>계정 생성 프로세스</span>
+        <button onClick={() => setStep(0)} style={{ background: "#DEEBFF", border: "1px solid #B3D4FF", color: C.accent, borderRadius: 6, padding: "4px 12px", fontSize: 12, cursor: "pointer" }}>{"\u21BA"} 다시보기</button>
+      </div>
+      <div style={{ background: "#EBECF0", borderRadius: 4, height: 4, marginBottom: 24, overflow: "hidden" }}>
+        <div style={{ height: "100%", background: `linear-gradient(90deg, ${C.accent}, #6554C0)`, width: `${((step + 1) / steps.length) * 100}%`, transition: "width 0.4s ease", borderRadius: 4 }} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {steps.map((s, i) => (
+          <div key={i} style={{
+            display: "flex", alignItems: "center", gap: 14, padding: "12px 16px",
+            borderRadius: 10, background: i === step ? "#DEEBFF" : i < step ? "#E3FCEF" : "transparent",
+            border: `1px solid ${i === step ? "#4C9AFF" : i < step ? "#ABF5D1" : C.border}`,
+            transition: "all 0.3s ease"
+          }}>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, background: i < step ? "#E3FCEF" : i === step ? "#DEEBFF" : C.card }}>
+              {i < step ? "\u2713" : s.icon}
+            </div>
+            <div>
+              <div style={{ color: i <= step ? C.textPrimary : C.textMuted, fontSize: 14, fontWeight: i === step ? 700 : 400 }}>{s.label}</div>
+              {i === step && <div style={{ color: C.textSecondary, fontSize: 12, marginTop: 2 }}>{s.desc}</div>}
+            </div>
+            {i === step && <div style={{ marginLeft: "auto", width: 8, height: 8, borderRadius: "50%", background: C.accent, animation: "pulse-glow 1.5s ease-in-out infinite" }} />}
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 20, background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: 14 }}>
+        <div style={{ fontSize: 11, color: C.textMuted, marginBottom: 6, fontFamily: 'Consolas, "Courier New", monospace' }}>나만의 Jira URL</div>
+        <div style={{ fontFamily: 'Consolas, "Courier New", monospace', fontSize: 14 }}>
+          <span style={{ color: C.textMuted }}>https://</span>
+          <span style={{ color: C.accent, fontWeight: 700 }}>myteam</span>
+          <span style={{ color: C.textMuted }}>.atlassian.net</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Section3() {
+  return (
+    <div id="s3" className="section-reveal">
+      <SectionHeader num={3} emoji="🔑" title="계정 만들기 & 로그인" subtitle="Jira는 무료 플랜으로 시작할 수 있습니다. 5분이면 계정 생성 완료!" />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+        <div>
+          <h3 style={{ color: C.textPrimary, fontSize: 15, fontWeight: 700, marginBottom: 16 }}>계정 생성 단계</h3>
+          {["브라우저에서 atlassian.com/ko/software/jira 접속", '"무료로 시작하기" 버튼 클릭', "이메일 주소 입력", "이메일로 받은 인증 코드 입력", "비밀번호 설정", "이름과 팀/회사 이름 입력"].map((st, i) => (
+            <div key={i} style={{ display: "flex", gap: 12, marginBottom: 14, alignItems: "flex-start" }}>
+              <StepBadge num={i + 1} />
+              <p style={{ color: C.textSecondary, fontSize: 14, lineHeight: 1.6, paddingTop: 6 }}>{st}</p>
+            </div>
+          ))}
+          <TipBox icon="\u{1F4A1}">개인 학습용이라면 팀 이름에 자신의 이름을 넣어도 됩니다. 무료 플랜은 최대 10명까지 사용 가능하며, 스크럼 보드, 칸반 보드, 백로그 등 핵심 기능을 모두 사용할 수 있습니다.</TipBox>
+          <div style={{ marginTop: 16, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 10, padding: 14, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+            <div style={{ color: C.textPrimary, fontSize: 13, fontWeight: 700, marginBottom: 10 }}>{"\u{1F4B3}"} Jira 요금제 비교</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+              {[
+                { plan: "Free", price: "무료", features: "10명까지, 기본 기능", highlight: true },
+                { plan: "Standard", price: "$8.15/월", features: "250GB 저장, 고급 권한" },
+                { plan: "Premium", price: "$16/월", features: "무제한 저장, AI 기능" },
+              ].map((p, i) => (
+                <div key={i} style={{ background: p.highlight ? "#DEEBFF" : "#F4F5F7", border: `1px solid ${p.highlight ? "#B3D4FF" : "#EBECF0"}`, borderRadius: 8, padding: 12, textAlign: "center" }}>
+                  <div style={{ fontWeight: 700, color: p.highlight ? C.accent : C.textPrimary, fontSize: 13 }}>{p.plan}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: C.textPrimary, margin: "6px 0" }}>{p.price}</div>
+                  <div style={{ color: C.textSecondary, fontSize: 11 }}>{p.features}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <AccountMockup />
+      </div>
+    </div>
+  );
+}
+
+function SprintSimulator() {
+  const initBacklog=[
+    {id:"b1",title:"로그인 페이지 UI",type:"story",pts:3},{id:"b2",title:"DB 스키마 설계",type:"task",pts:5},
+    {id:"b3",title:"회원가입 API",type:"story",pts:5},{id:"b4",title:"비밀번호 암호화",type:"task",pts:2},
+    {id:"b5",title:"소셜 로그인 연동",type:"story",pts:8},{id:"b6",title:"이메일 인증 버그",type:"bug",pts:3},
+  ];
+  const [backlog,setBacklog]=useState(initBacklog);
+  const [sprint,setSprint]=useState([]);
+  const [phase,setPhase]=useState("plan"); // plan, active, done
+  const [burndown,setBurndown]=useState([]);
+  const typeColors={story:C.green,bug:C.red,task:C.accent};
+
+  const totalPts=sprint.reduce((s,i)=>s+i.pts,0);
+
+  const handleDragStart=(e,item,from)=>{e.dataTransfer.setData("text/plain",JSON.stringify({item,from}));};
+  const handleDrop=(e,to)=>{
+    e.preventDefault();e.currentTarget.classList.remove("drag-over");
+    const{item,from}=JSON.parse(e.dataTransfer.getData("text/plain"));
+    if(from===to)return;
+    if(to==="sprint"&&phase!=="plan")return;
+    if(from==="backlog"){setBacklog(p=>p.filter(x=>x.id!==item.id));setSprint(p=>[...p,item]);}
+    else{setSprint(p=>p.filter(x=>x.id!==item.id));setBacklog(p=>[...p,item]);}
+  };
+  const handleDragOver=(e)=>{e.preventDefault();e.currentTarget.classList.add("drag-over");};
+  const handleDragLeave=(e)=>{e.currentTarget.classList.remove("drag-over");};
+
+  const startSprint=()=>{
+    if(sprint.length===0)return;
+    setPhase("active");
+    const t=totalPts;const days=[t];
+    for(let d=1;d<=5;d++)days.push(Math.max(0,Math.round(t*(1-d/5)+seededRandom(d*3)*3-1.5)));
+    days[5]=0;setBurndown(days);
+  };
+  const completeSprint=()=>{setPhase("done");};
+  const resetSprint=()=>{setBacklog(initBacklog);setSprint([]);setPhase("plan");setBurndown([]);};
+
+  return <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:24,marginTop:20}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+      <h3 style={{fontSize:15,fontWeight:700,color:C.textPrimary}}>🏃 스프린트 시뮬레이터</h3>
+      <div style={{display:"flex",gap:8}}>
+        {phase==="plan"&&<button onClick={startSprint} disabled={sprint.length===0} style={{background:sprint.length>0?C.accent:"#ccc",color:"#fff",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:sprint.length>0?"pointer":"not-allowed"}}>🚀 스프린트 시작</button>}
+        {phase==="active"&&<button onClick={completeSprint} style={{background:C.green,color:"#fff",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:600,cursor:"pointer"}}>✅ 스프린트 완료</button>}
+        <button onClick={resetSprint} style={{background:"#DEEBFF",border:"1px solid #B3D4FF",color:C.accent,borderRadius:6,padding:"6px 14px",fontSize:12,cursor:"pointer"}}>↻ 리셋</button>
+      </div>
+    </div>
+    <div style={{display:"flex",gap:14}}>
+      <div style={{flex:1}} onDrop={e=>handleDrop(e,"backlog")} onDragOver={handleDragOver} onDragLeave={handleDragLeave}>
+        <div style={{fontSize:12,fontWeight:700,color:C.textMuted,marginBottom:8}}>📦 백로그 ({backlog.length})</div>
+        <div style={{background:"#F4F5F7",borderRadius:10,padding:10,minHeight:120,display:"flex",flexDirection:"column",gap:6}}>
+          {backlog.map(item=><div key={item.id} draggable={phase==="plan"} onDragStart={e=>handleDragStart(e,item,"backlog")} style={{background:"#fff",border:`1px solid ${C.border}`,borderLeft:`3px solid ${typeColors[item.type]}`,borderRadius:6,padding:"8px 12px",cursor:phase==="plan"?"grab":"default",fontSize:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{color:C.textPrimary}}>{item.title}</span>
+            <span style={{background:"#DEEBFF",borderRadius:4,padding:"1px 6px",fontSize:10,color:C.accent,fontWeight:700}}>{item.pts}pt</span>
+          </div>)}
+          {backlog.length===0&&<div style={{color:C.textMuted,fontSize:12,textAlign:"center",padding:20}}>비어있음</div>}
+        </div>
+      </div>
+      <div style={{flex:1}} onDrop={e=>handleDrop(e,"sprint")} onDragOver={handleDragOver} onDragLeave={handleDragLeave}>
+        <div style={{fontSize:12,fontWeight:700,color:C.accent,marginBottom:8}}>🏃 스프린트 ({sprint.length}) · {totalPts}pt</div>
+        <div style={{background:phase==="done"?"#E3FCEF":"#DEEBFF",borderRadius:10,padding:10,minHeight:120,display:"flex",flexDirection:"column",gap:6,border:phase==="active"?`2px solid ${C.accent}`:"none"}}>
+          {sprint.map(item=><div key={item.id} draggable={phase==="plan"} onDragStart={e=>handleDragStart(e,item,"sprint")} style={{background:"#fff",border:`1px solid ${C.border}`,borderLeft:`3px solid ${typeColors[item.type]}`,borderRadius:6,padding:"8px 12px",cursor:phase==="plan"?"grab":"default",fontSize:12,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{color:C.textPrimary}}>{item.title}</span>
+            <span style={{background:"#DEEBFF",borderRadius:4,padding:"1px 6px",fontSize:10,color:C.accent,fontWeight:700}}>{item.pts}pt</span>
+          </div>)}
+          {sprint.length===0&&<div style={{color:C.textMuted,fontSize:12,textAlign:"center",padding:20}}>이슈를 여기로 드래그하세요</div>}
+        </div>
+      </div>
+    </div>
+    {burndown.length>0&&<div style={{marginTop:16}}>
+      <div style={{fontSize:12,fontWeight:700,color:C.textPrimary,marginBottom:8}}>📉 번다운 차트</div>
+      <div style={{display:"flex",alignItems:"flex-end",gap:4,height:80,padding:"0 10px",background:"#F4F5F7",borderRadius:8}}>
+        {burndown.map((v,i)=><div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",height:"100%"}}>
+          <div style={{width:"100%",maxWidth:30,background:i===burndown.length-1&&v===0?C.green:`linear-gradient(to top,${C.accent},${C.accentDim})`,borderRadius:"4px 4px 0 0",height:`${(v/totalPts)*100}%`,transition:"height 0.5s",minHeight:v>0?4:0}} />
+          <div style={{fontSize:9,color:C.textMuted,marginTop:4}}>D{i}</div>
+        </div>)}
+      </div>
+    </div>}
+    {phase==="done"&&<div style={{marginTop:12,padding:12,background:"#E3FCEF",borderRadius:8,textAlign:"center",color:C.green,fontWeight:700,fontSize:13,animation:"check-pop 0.5s ease"}}>🎉 스프린트 완료! {totalPts}포인트를 달성했습니다!</div>}
+  </div>;
+}
+
+function Section4() {
+  const [selected,setSelected]=useState(null);
+  const types=[
+    {key:"scrum",icon:"🏃",name:"스크럼 (Scrum)",desc:"스프린트(1~2주) 단위로 개발하는 팀. 백로그, 스프린트 계획, 회고 등 지원.",recommended:true},
+    {key:"kanban",icon:"📌",name:"칸반 (Kanban)",desc:"고정 스프린트 없이 WIP 제한으로 흐름을 관리. 운영/유지보수 팀에 적합."},
+    {key:"business",icon:"💼",name:"비즈니스 (Business)",desc:"마케팅, 인사 등 일반 업무팀. 개발 용어 없이 직관적 워크플로우."},
+  ];
+  return <div id="s4" className="section-reveal">
+    <SectionHeader num={4} emoji="📁" title="첫 번째 프로젝트 만들기" subtitle="프로젝트는 모든 작업을 담는 커다란 상자입니다." />
+    <div style={{display:"flex",gap:12,marginBottom:20}}>
+      <StepBadge num={1}/>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:16,flex:1}}>
+        <div style={{fontWeight:700,color:C.textPrimary,fontSize:13,marginBottom:4}}>프로젝트 생성 시작</div>
+        <p style={{color:C.textSecondary,fontSize:13}}>왼쪽 사이드바 "프로젝트" → 오른쪽 상단 "프로젝트 만들기" 클릭</p>
+      </div>
+    </div>
+    <div style={{display:"flex",gap:12,marginBottom:20}}>
+      <StepBadge num={2}/>
+      <div style={{flex:1}}>
+        <div style={{fontWeight:700,color:C.textPrimary,marginBottom:10,paddingTop:4,fontSize:13}}>프로젝트 유형 선택</div>
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {types.map(t=><div key={t.key} onClick={()=>setSelected(t.key)} className="hover-lift" style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:selected===t.key?"#DEEBFF":C.card,border:`1px solid ${selected===t.key?"rgba(0,82,204,0.2)":C.border}`,borderRadius:10,cursor:"pointer",transition:"all 0.2s"}}>
+            <span style={{fontSize:20}}>{t.icon}</span>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:600,color:C.textPrimary,fontSize:13,display:"flex",alignItems:"center",gap:8}}>{t.name}{t.recommended&&<Tag color="blue">추천 ★</Tag>}</div>
+              <div style={{color:C.textSecondary,fontSize:11,marginTop:2}}>{t.desc}</div>
+            </div>
+            <div style={{width:18,height:18,borderRadius:"50%",border:`2px solid ${selected===t.key?C.accent:C.border}`,background:selected===t.key?C.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}}>{selected===t.key&&<span style={{color:"#fff",fontSize:10}}>✓</span>}</div>
+          </div>)}
+        </div>
+      </div>
+    </div>
+    <div style={{display:"flex",gap:12,marginBottom:16}}>
+      <StepBadge num={3}/>
+      <div style={{flex:1}}>
+        <div style={{fontWeight:700,color:C.textPrimary,marginBottom:10,paddingTop:4,fontSize:13}}>프로젝트 정보 입력</div>
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
+          <div style={{display:"grid",gridTemplateColumns:"110px 1fr 1fr",background:"#F4F5F7",borderBottom:`1px solid ${C.border}`}}>
+            {["항목","예시","설명"].map(h=><div key={h} style={{padding:"8px 12px",fontSize:11,color:C.textMuted,fontWeight:700}}>{h}</div>)}
+          </div>
+          {[["프로젝트 이름",'"쇼핑몰 앱"',"알아보기 쉽게"],["프로젝트 키",'"SHOP"',"→ SHOP-1, SHOP-2"],["접근 권한",'"팀 공개"',"팀원과 협업 시"]].map((r,i,a)=>
+            <div key={i} style={{display:"grid",gridTemplateColumns:"110px 1fr 1fr",borderBottom:i<a.length-1?`1px solid ${C.border}`:"none"}}>
+              <div style={{padding:"10px 12px",color:C.accent,fontSize:12,fontWeight:600}}>{r[0]}</div>
+              <div style={{padding:"10px 12px",color:C.textPrimary,fontSize:12,fontFamily:"Consolas,monospace"}}>{r[1]}</div>
+              <div style={{padding:"10px 12px",color:C.textSecondary,fontSize:11}}>{r[2]}</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+    <SprintSimulator />
+  </div>;
+}
+
+function IssueCreatorSim() {
+  const [form,setForm]=useState({project:"SHOP",type:"story",title:"",desc:"",assignee:"",priority:"Medium"});
+  const [preview,setPreview]=useState(null);
+  const typeOpts=[{v:"story",l:"🟢 스토리"},{v:"bug",l:"🔴 버그"},{v:"task",l:"🔵 태스크"},{v:"epic",l:"🟣 에픽"}];
+  const prioOpts=["Highest","High","Medium","Low","Lowest"];
+  const assignees=["김개발","이버그","박백엔","최프론","정디자"];
+  const typeColors={story:C.green,bug:C.red,task:C.accent,epic:C.purple};
+  const prioColors={Highest:C.red,High:C.orange,Medium:C.yellow,Low:C.green,Lowest:C.textMuted};
+
+  const handleCreate=()=>{
+    if(!form.title.trim())return;
+    setPreview({...form,id:`${form.project}-${Math.floor(Math.random()*100+1)}`,created:new Date().toLocaleDateString("ko-KR")});
+  };
+
+  return <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:24,marginTop:20}}>
+    <h3 style={{fontSize:15,fontWeight:700,color:C.textPrimary,marginBottom:16}}>🎮 이슈 생성 시뮬레이터</h3>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+      <div>
+        <label style={{fontSize:11,fontWeight:700,color:C.textMuted,display:"block",marginBottom:4}}>프로젝트</label>
+        <select value={form.project} onChange={e=>setForm(p=>({...p,project:e.target.value}))} style={{width:"100%",padding:"8px 10px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}>
+          <option value="SHOP">SHOP - 쇼핑몰 앱</option><option value="CRM">CRM - 고객 관리</option><option value="BLOG">BLOG - 블로그 플랫폼</option>
+        </select>
+      </div>
+      <div>
+        <label style={{fontSize:11,fontWeight:700,color:C.textMuted,display:"block",marginBottom:4}}>이슈 유형</label>
+        <select value={form.type} onChange={e=>setForm(p=>({...p,type:e.target.value}))} style={{width:"100%",padding:"8px 10px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}>
+          {typeOpts.map(o=><option key={o.v} value={o.v}>{o.l}</option>)}
+        </select>
+      </div>
+      <div style={{gridColumn:"1/-1"}}>
+        <label style={{fontSize:11,fontWeight:700,color:C.textMuted,display:"block",marginBottom:4}}>제목 (요약)</label>
+        <input value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} placeholder="무엇을 해야 하는지 구체적으로" style={{width:"100%",padding:"8px 10px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13,boxSizing:"border-box"}} />
+      </div>
+      <div>
+        <label style={{fontSize:11,fontWeight:700,color:C.textMuted,display:"block",marginBottom:4}}>담당자</label>
+        <select value={form.assignee} onChange={e=>setForm(p=>({...p,assignee:e.target.value}))} style={{width:"100%",padding:"8px 10px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}>
+          <option value="">선택...</option>{assignees.map(a=><option key={a} value={a}>{a}</option>)}
+        </select>
+      </div>
+      <div>
+        <label style={{fontSize:11,fontWeight:700,color:C.textMuted,display:"block",marginBottom:4}}>우선순위</label>
+        <select value={form.priority} onChange={e=>setForm(p=>({...p,priority:e.target.value}))} style={{width:"100%",padding:"8px 10px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:13}}>
+          {prioOpts.map(p=><option key={p} value={p}>{p}</option>)}
+        </select>
+      </div>
+    </div>
+    <button onClick={handleCreate} disabled={!form.title.trim()} style={{background:form.title.trim()?C.accent:"#ccc",color:"#fff",border:"none",borderRadius:8,padding:"10px 24px",fontSize:13,fontWeight:700,cursor:form.title.trim()?"pointer":"not-allowed",width:"100%"}}>이슈 생성하기</button>
+    {preview&&<div style={{marginTop:16,animation:"kanban-slide 0.3s ease"}}>
+      <div style={{fontSize:12,fontWeight:700,color:C.textMuted,marginBottom:8}}>📋 생성된 이슈 미리보기</div>
+      <div style={{background:"#F4F5F7",border:`1px solid ${C.border}`,borderLeft:`4px solid ${typeColors[preview.type]}`,borderRadius:10,padding:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+          <Tag color={preview.type==="bug"?"red":preview.type==="story"?"green":preview.type==="epic"?"purple":"blue"}>{preview.type.toUpperCase()}</Tag>
+          <span style={{fontFamily:"Consolas,monospace",fontSize:11,color:C.accent}}>{preview.id}</span>
+          <span style={{color:prioColors[preview.priority],fontSize:11,fontWeight:600,marginLeft:"auto"}}>{preview.priority}</span>
+        </div>
+        <div style={{fontSize:15,fontWeight:700,color:C.textPrimary,marginBottom:6}}>{preview.title}</div>
+        <div style={{display:"flex",gap:12,fontSize:11,color:C.textSecondary}}>
+          <span>👤 {preview.assignee||"미배정"}</span><span>📅 {preview.created}</span>
+        </div>
+      </div>
+    </div>}
+    <div style={{marginTop:16,padding:14,background:"#FFF0B3",borderRadius:8,border:"1px solid #FFE380"}}>
+      <div style={{fontSize:12,fontWeight:700,color:C.orange,marginBottom:8}}>✍️ 좋은 제목 vs 나쁜 제목</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+        <div style={{padding:8,background:"#FFEBE6",borderRadius:6,fontSize:11,color:C.red}}>❌ "로그인 수정"</div>
+        <div style={{padding:8,background:"#E3FCEF",borderRadius:6,fontSize:11,color:C.green}}>✅ "소셜 로그인 시 토큰 만료 오류 수정"</div>
+        <div style={{padding:8,background:"#FFEBE6",borderRadius:6,fontSize:11,color:C.red}}>❌ "버그 있음"</div>
+        <div style={{padding:8,background:"#E3FCEF",borderRadius:6,fontSize:11,color:C.green}}>✅ "장바구니 수량 변경 시 총 금액 갱신 안 됨"</div>
+      </div>
+    </div>
+  </div>;
+}
+
+function Section5() {
+  const issues=[
+    {id:1,type:"story",title:"로그인 페이지 UI",priority:"High",assignee:"김개발"},
+    {id:2,type:"bug",title:"장바구니 수량 오류",priority:"Highest",assignee:"이버그"},
+    {id:3,type:"task",title:"DB 인덱스 최적화",priority:"Medium",assignee:"박백엔"},
+  ];
+  const typeColors={story:C.green,bug:C.red,task:C.accent,epic:C.purple};
+  const typeLabels={story:"스토리",bug:"버그",task:"태스크",epic:"에픽"};
+  const prioColors={Highest:C.red,High:C.orange,Medium:C.yellow,Low:C.green,Lowest:C.textMuted};
+  return <div id="s5" className="section-reveal">
+    <SectionHeader num={5} emoji="🎫" title="이슈 만들고 관리하기" subtitle="이슈는 Jira의 가장 기본 단위입니다. 할 일 하나하나가 이슈입니다." />
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:24,marginBottom:20}}>
+      <h3 style={{color:C.textPrimary,fontSize:15,fontWeight:700,marginBottom:14}}>📝 이슈 생성 필수 항목</h3>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        {[{field:"프로젝트",desc:"이슈가 속할 프로젝트 선택",icon:"📦"},{field:"이슈 유형",desc:"스토리/태스크/버그/에픽",icon:"🎫"},{field:"제목 (요약)",desc:"무엇을 해야 하는지 한 줄로",icon:"📌"},{field:"설명",desc:"배경, 요구사항, 완료 조건",icon:"📝"},{field:"담당자",desc:"이 작업을 수행할 사람",icon:"👤"},{field:"우선순위",desc:"Highest~Lowest",icon:"🚨"}].map((item,i)=>
+          <div key={i} style={{display:"flex",gap:10,padding:12,background:"#F4F5F7",borderRadius:8,border:"1px solid #EBECF0"}}>
+            <span style={{fontSize:18}}>{item.icon}</span>
+            <div><div style={{fontWeight:700,color:C.textPrimary,fontSize:12}}>{item.field}</div><div style={{color:C.textSecondary,fontSize:11,marginTop:2}}>{item.desc}</div></div>
+          </div>
+        )}
+      </div>
+    </div>
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:24}}>
+      <h3 style={{color:C.textPrimary,fontSize:15,fontWeight:700,marginBottom:14}}>📋 등록된 이슈 예시</h3>
+      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+        {issues.map(issue=><div key={issue.id} className="hover-lift" style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"#F4F5F7",borderRadius:8,border:`1px solid ${C.border}`}}>
+          <div style={{width:8,height:8,borderRadius:2,background:typeColors[issue.type],flexShrink:0}} />
+          <Tag color={issue.type==="bug"?"red":issue.type==="story"?"green":"blue"}>{typeLabels[issue.type]}</Tag>
+          <span style={{color:C.textPrimary,fontSize:13,fontWeight:500,flex:1}}>{issue.title}</span>
+          <span style={{color:prioColors[issue.priority],fontSize:11,fontWeight:600}}>{issue.priority}</span>
+          <span style={{color:C.textSecondary,fontSize:11}}>{issue.assignee}</span>
+        </div>)}
+      </div>
+    </div>
+    <IssueCreatorSim />
+  </div>;
+}
+
+function Section6() {
+  const initCols={
+    todo:[{id:"k1",title:"API 문서 작성",type:"task",assignee:"박백엔"},{id:"k2",title:"메인 페이지 디자인",type:"story",assignee:"최프론"},{id:"k3",title:"검색 API 설계",type:"task",assignee:"김개발"}],
+    progress:[{id:"k4",title:"결제 모듈 연동",type:"story",assignee:"김개발"},{id:"k5",title:"검색 버그 수정",type:"bug",assignee:"이버그"}],
+    done:[{id:"k6",title:"회원가입 구현",type:"story",assignee:"최프론"}]
+  };
+  const [cols,setCols]=useState(initCols);
+  const [dragInfo,setDragInfo]=useState(null);
+  const [moveCount,setMoveCount]=useState(0);
+  const [lastMoved,setLastMoved]=useState(null);
+  const typeColors={story:C.green,bug:C.red,task:C.accent};
+  const colMeta=[{key:"todo",label:"할 일",color:C.textMuted,icon:"⬜"},{key:"progress",label:"진행 중",color:C.accent,icon:"🔵"},{key:"done",label:"완료",color:C.green,icon:"🟢"}];
+
+  const handleDragStart=(e,item,fromCol)=>{setDragInfo({item,fromCol});e.dataTransfer.effectAllowed="move";};
+  const handleDrop=(e,toCol)=>{
+    e.preventDefault();e.currentTarget.classList.remove("drag-over");
+    if(!dragInfo||dragInfo.fromCol===toCol)return;
+    setCols(prev=>{
+      const n={...prev};
+      n[dragInfo.fromCol]=n[dragInfo.fromCol].filter(x=>x.id!==dragInfo.item.id);
+      n[toCol]=[...n[toCol],dragInfo.item];
+      return n;
+    });
+    setMoveCount(p=>p+1);setLastMoved({title:dragInfo.item.title,to:colMeta.find(c=>c.key===toCol)?.label});
+    setDragInfo(null);
+  };
+  const handleDragOver=(e)=>{e.preventDefault();e.currentTarget.classList.add("drag-over");};
+  const handleDragLeave=(e)=>{e.currentTarget.classList.remove("drag-over");};
+  const resetBoard=()=>{setCols(initCols);setMoveCount(0);setLastMoved(null);};
+
+  return <div id="s6" className="section-reveal">
+    <SectionHeader num={6} emoji="🗂️" title="보드 사용법 — 드래그 앤 드롭" subtitle="카드를 열 사이로 드래그하여 상태를 변경해보세요!" />
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:24}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div style={{display:"flex",gap:12,alignItems:"center"}}>
+          <span style={{fontSize:12,color:C.textSecondary}}>이동 횟수: <strong style={{color:C.accent}}>{moveCount}</strong></span>
+          {lastMoved&&<span style={{fontSize:11,color:C.green,animation:"kanban-slide 0.3s ease"}}>✓ "{lastMoved.title}" → {lastMoved.to}</span>}
+        </div>
+        <button onClick={resetBoard} style={{background:"#DEEBFF",border:"1px solid #B3D4FF",color:C.accent,borderRadius:6,padding:"5px 12px",fontSize:11,cursor:"pointer"}}>↻ 리셋</button>
+      </div>
+      <div style={{display:"flex",gap:14}}>
+        {colMeta.map(col=><div key={col.key} style={{flex:1,minWidth:0}} onDrop={e=>handleDrop(e,col.key)} onDragOver={handleDragOver} onDragLeave={handleDragLeave}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+            <span>{col.icon}</span>
+            <span style={{fontWeight:700,color:C.textPrimary,fontSize:13}}>{col.label}</span>
+            <span style={{color:C.textMuted,fontSize:11,background:"#F4F5F7",borderRadius:10,padding:"1px 7px"}}>{cols[col.key].length}</span>
+          </div>
+          <div style={{background:"#F4F5F7",borderRadius:10,padding:10,minHeight:140,display:"flex",flexDirection:"column",gap:8,transition:"all 0.2s"}}>
+            {cols[col.key].map(item=><div key={item.id} draggable onDragStart={e=>handleDragStart(e,item,col.key)} className="hover-lift" style={{background:"#fff",border:`1px solid ${C.border}`,borderLeft:`3px solid ${typeColors[item.type]}`,borderRadius:8,padding:"10px 14px",cursor:"grab",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",animation:lastMoved&&lastMoved.title===item.title?"kanban-slide 0.3s ease":"none"}}>
+              <div style={{fontSize:13,color:C.textPrimary,fontWeight:500,marginBottom:4}}>{item.title}</div>
+              <div style={{fontSize:10,color:C.textSecondary}}>👤 {item.assignee}</div>
+            </div>)}
+            {cols[col.key].length===0&&<div style={{color:C.textMuted,fontSize:11,textAlign:"center",padding:30,border:"2px dashed #DFE1E6",borderRadius:8}}>여기에 드롭하세요</div>}
+          </div>
+        </div>)}
+      </div>
+      <TipBox icon="🖱️">카드를 드래그하여 열 사이를 이동해보세요! 실제 Jira에서도 같은 방식으로 상태를 변경합니다.</TipBox>
+    </div>
+  </div>;
+}
+
+function Section7() {
+  const [status,setStatus]=useState("todo");
+  const statuses=[
+    {key:"todo",label:"할 일",color:C.textMuted,icon:"🟠"},
+    {key:"progress",label:"진행 중",color:C.accent,icon:"🔵"},
+    {key:"review",label:"검토 중",color:C.purple,icon:"🟣"},
+    {key:"done",label:"완료",color:C.green,icon:"🟢"},
+  ];
+  return <div id="s7" className="section-reveal">
+    <SectionHeader num={7} emoji="🔄" title="상태 변경 & 워크플로우" subtitle="이슈의 생애주기. 할 일 → 진행 중 → 검토 → 완료까지의 흐름입니다." />
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:24}}>
+      <h3 style={{color:C.textPrimary,fontSize:15,fontWeight:700,marginBottom:16}}>상태를 클릭해보세요</h3>
+      <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
+        {statuses.map((s,i)=><React.Fragment key={s.key}>
+          <button onClick={()=>setStatus(s.key)} style={{padding:"10px 20px",borderRadius:10,border:`2px solid ${status===s.key?s.color:C.border}`,background:status===s.key?`${s.color}15`:"#fff",cursor:"pointer",transition:"all 0.2s",display:"flex",alignItems:"center",gap:8}}>
+            <span>{s.icon}</span>
+            <span style={{fontWeight:700,color:status===s.key?s.color:C.textSecondary,fontSize:13}}>{s.label}</span>
+          </button>
+          {i<statuses.length-1&&<span style={{color:C.textMuted,fontSize:18}}>→</span>}
+        </React.Fragment>)}
+      </div>
+      <div style={{textAlign:"center",marginTop:16,padding:14,background:"#F4F5F7",borderRadius:8}}>
+        <p style={{color:C.textSecondary,fontSize:13}}>현재 상태: <strong style={{color:statuses.find(s=>s.key===status)?.color}}>{statuses.find(s=>s.key===status)?.label}</strong></p>
+      </div>
+      <TipBox>보드에서 카드를 드래그하거나, 이슈 상세 화면에서 상태 버튼을 클릭하여 변경합니다.</TipBox>
+    </div>
+  </div>;
+}
+
+function Section8() {
+  const [mentionDemo,setMentionDemo]=useState("");
+  const [mentionResults,setMentionResults]=useState([]);
+  const members=["김개발","이버그","박백엔","최프론","정디자","한기획"];
+  const handleMentionInput=(e)=>{
+    const v=e.target.value;setMentionDemo(v);
+    const at=v.lastIndexOf("@");
+    if(at>=0){const q=v.slice(at+1).toLowerCase();setMentionResults(members.filter(m=>m.toLowerCase().includes(q)));}
+    else setMentionResults([]);
+  };
+  const selectMention=(name)=>{const at=mentionDemo.lastIndexOf("@");setMentionDemo(mentionDemo.slice(0,at)+`@${name} `);setMentionResults([]);};
+
+  return <div id="s8" className="section-reveal">
+    <SectionHeader num={8} emoji="👥" title="팀 협업 기능" subtitle="Jira의 진정한 힘은 팀과 함께 사용할 때 나옵니다." />
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
+      {[
+        {icon:"💬",title:"댓글",desc:"이슈에 댓글을 달아 맥락을 기록합니다. @멘션으로 특정 팀원에게 알림을 보냅니다.",color:C.accent},
+        {icon:"📎",title:"첨부파일",desc:"스크린샷, 디자인 파일, 문서 등을 이슈에 직접 첨부합니다.",color:C.green},
+        {icon:"🔗",title:"이슈 연결",desc:"'blocks', 'is blocked by', 'relates to' 등으로 관계를 설정합니다.",color:C.orange},
+        {icon:"👤",title:"담당자 지정",desc:"각 이슈에 책임자를 명확하게 지정하여 소유권을 부여합니다.",color:C.purple},
+        {icon:"👀",title:"관찰자 (Watcher)",desc:"직접 담당하지 않아도 관심 이슈의 변경 알림을 받을 수 있습니다.",color:"#FF991F"},
+        {icon:"📅",title:"마감일 설정",desc:"이슈에 Due Date를 설정하여 일정을 관리합니다.",color:C.red},
+      ].map((item,i)=><div key={i} className="hover-lift" style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`3px solid ${item.color}`,borderRadius:12,padding:16}}>
+        <div style={{fontSize:22,marginBottom:8}}>{item.icon}</div>
+        <div style={{fontWeight:700,color:C.textPrimary,fontSize:13,marginBottom:4}}>{item.title}</div>
+        <p style={{color:C.textSecondary,fontSize:12,lineHeight:1.6}}>{item.desc}</p>
+      </div>)}
+    </div>
+    {/* @멘션 데모 */}
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20}}>
+      <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:12}}>💬 @멘션 데모 — @ 를 입력해보세요</h3>
+      <div style={{position:"relative"}}>
+        <input value={mentionDemo} onChange={handleMentionInput} placeholder="댓글을 입력하세요... @를 입력하면 팀원 목록이 표시됩니다" style={{width:"100%",padding:"10px 14px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:13,boxSizing:"border-box"}} />
+        {mentionResults.length>0&&<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:`1px solid ${C.border}`,borderRadius:8,marginTop:4,boxShadow:"0 4px 12px rgba(0,0,0,0.1)",zIndex:10}}>
+          {mentionResults.map(m=><div key={m} onClick={()=>selectMention(m)} style={{padding:"8px 14px",cursor:"pointer",fontSize:13,color:C.textPrimary,borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:8}}>
+            <div style={{width:24,height:24,borderRadius:"50%",background:C.accentDim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{m[0]}</div>
+            {m}
+          </div>)}
+        </div>}
+      </div>
+    </div>
+  </div>;
+}
+
+function JQLBuilder() {
+  const [conditions,setConditions]=useState([{field:"assignee",op:"=",value:"currentUser()"}]);
+  const [joiner,setJoiner]=useState("AND");
+  const fields=["assignee","status","priority","created","project","issuetype","reporter"];
+  const ops=["=","!=",">","<",">=","<=","IN","NOT IN","~"];
+  const valueMap={assignee:["currentUser()","김개발","이버그","박백엔"],status:["할 일","진행 중","완료","검토 중"],priority:["Highest","High","Medium","Low","Lowest"],created:["-1d","-7d","-30d","-90d"],project:["SHOP","CRM","BLOG"],issuetype:["Story","Bug","Task","Epic"],reporter:["currentUser()","김개발","이버그"]};
+
+  const dummyIssues=[
+    {id:"SHOP-1",title:"로그인 페이지 UI",assignee:"김개발",status:"진행 중",priority:"High",project:"SHOP",issuetype:"Story",created:"-3d",reporter:"김개발"},
+    {id:"SHOP-2",title:"장바구니 수량 오류",assignee:"이버그",status:"할 일",priority:"Highest",project:"SHOP",issuetype:"Bug",created:"-1d",reporter:"이버그"},
+    {id:"SHOP-3",title:"DB 인덱스 최적화",assignee:"박백엔",status:"완료",priority:"Medium",project:"SHOP",issuetype:"Task",created:"-14d",reporter:"박백엔"},
+    {id:"CRM-1",title:"고객 대시보드",assignee:"currentUser()",status:"진행 중",priority:"High",project:"CRM",issuetype:"Story",created:"-5d",reporter:"currentUser()"},
+    {id:"BLOG-1",title:"댓글 알림 기능",assignee:"currentUser()",status:"할 일",priority:"Low",project:"BLOG",issuetype:"Task",created:"-2d",reporter:"currentUser()"},
+  ];
+
+  const addCondition=()=>{setConditions(p=>[...p,{field:"status",op:"=",value:"진행 중"}]);};
+  const removeCondition=(i)=>{if(conditions.length>1)setConditions(p=>p.filter((_,j)=>j!==i));};
+  const updateCondition=(i,key,val)=>{setConditions(p=>p.map((c,j)=>j===i?{...c,[key]:val,...(key==="field"?{value:(valueMap[val]||[""])[0]}:{})}:c));};
+
+  const queryStr=conditions.map((c,i)=>{
+    const v=c.value.includes("()")? c.value : `"${c.value}"`;
+    return (i>0?` ${joiner} `:"")+`${c.field} ${c.op} ${v}`;
+  }).join("");
+
+  const matchCount=dummyIssues.filter(issue=>{
+    return conditions.every(c=>{
+      let issueVal=issue[c.field]||"";
+      let condVal=c.value;
+      if(c.op==="=")return issueVal===condVal;
+      if(c.op==="!=")return issueVal!==condVal;
+      return true;
+    });
+  }).length;
+
+  return <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:24,marginTop:20}}>
+    <h3 style={{fontSize:15,fontWeight:700,color:C.textPrimary,marginBottom:14}}>🔧 JQL 빌더</h3>
+    {conditions.map((c,i)=><div key={i} style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
+      {i>0&&<select value={joiner} onChange={e=>setJoiner(e.target.value)} style={{padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12,fontWeight:700,color:C.accent,background:"#DEEBFF",width:65}}>
+        <option>AND</option><option>OR</option>
+      </select>}
+      {i===0&&<div style={{width:65}} />}
+      <select value={c.field} onChange={e=>updateCondition(i,"field",e.target.value)} style={{padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12,flex:1}}>
+        {fields.map(f=><option key={f} value={f}>{f}</option>)}
+      </select>
+      <select value={c.op} onChange={e=>updateCondition(i,"op",e.target.value)} style={{padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12,width:60}}>
+        {ops.map(o=><option key={o} value={o}>{o}</option>)}
+      </select>
+      <select value={c.value} onChange={e=>updateCondition(i,"value",e.target.value)} style={{padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12,flex:1}}>
+        {(valueMap[c.field]||[""]).map(v=><option key={v} value={v}>{v}</option>)}
+      </select>
+      {conditions.length>1&&<button onClick={()=>removeCondition(i)} style={{background:"#FFEBE6",border:"1px solid #FFBDAD",color:C.red,borderRadius:6,padding:"4px 8px",fontSize:12,cursor:"pointer"}}>✕</button>}
+    </div>)}
+    <button onClick={addCondition} style={{background:"#DEEBFF",border:"1px solid #B3D4FF",color:C.accent,borderRadius:6,padding:"6px 14px",fontSize:12,cursor:"pointer",marginTop:4}}>+ 조건 추가</button>
+    <div style={{marginTop:14,background:"#172B4D",borderRadius:8,padding:"14px 18px",fontFamily:"Consolas,monospace",fontSize:13,color:"#4C9AFF",overflowX:"auto",whiteSpace:"nowrap"}}>{queryStr}</div>
+    <div style={{marginTop:10,fontSize:12,color:C.textSecondary}}>💡 매칭 이슈: <strong style={{color:C.accent}}>{matchCount}</strong>개 (더미 데이터 기준)</div>
+  </div>;
+}
+
+function Section9() {
+  const [query,setQuery]=useState("");
+  const examples=[
+    {jql:'assignee = currentUser()',desc:"내게 배정된 이슈"},
+    {jql:'status = "진행 중"',desc:"진행 중인 이슈"},
+    {jql:'priority = Highest AND status != Done',desc:"미완료 긴급 이슈"},
+    {jql:'created >= -7d',desc:"최근 7일 내 생성된 이슈"},
+  ];
+  return <div id="s9" className="section-reveal">
+    <SectionHeader num={9} emoji="🔍" title="이슈 검색 & JQL" subtitle="JQL(Jira Query Language)로 원하는 이슈를 정확히 찾을 수 있습니다." />
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:24}}>
+      <h3 style={{color:C.textPrimary,fontSize:15,fontWeight:700,marginBottom:14}}>💻 JQL 예시 — 클릭해보세요</h3>
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {examples.map((ex,i)=><div key={i} onClick={()=>setQuery(ex.jql)} style={{display:"flex",alignItems:"center",gap:14,padding:"10px 14px",background:query===ex.jql?"#DEEBFF":"#F4F5F7",border:`1px solid ${query===ex.jql?"#B3D4FF":"#EBECF0"}`,borderRadius:8,cursor:"pointer",transition:"all 0.2s"}}>
+          <code style={{fontFamily:"Consolas,monospace",fontSize:12,color:C.accent,flex:1}}>{ex.jql}</code>
+          <span style={{color:C.textSecondary,fontSize:11}}>{ex.desc}</span>
+        </div>)}
+      </div>
+      <TipBox>JQL은 SQL과 비슷합니다. 필드 = 값 형태로 작성하며, AND/OR로 조건을 결합할 수 있습니다.</TipBox>
+    </div>
+    <JQLBuilder />
+  </div>;
+}
+
+function Section10() {
+  const barData=[{label:"할 일",val:8,color:C.textMuted},{label:"진행 중",val:12,color:C.accent},{label:"검토",val:4,color:C.purple},{label:"완료",val:18,color:C.green}];
+  const maxVal=Math.max(...barData.map(d=>d.val));
+  return <div id="s10" className="section-reveal">
+    <SectionHeader num={10} emoji="🔔" title="알림 & 대시보드" subtitle="중요한 변경을 놓치지 않고, 프로젝트 현황을 한눈에 파악하세요." />
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:20}}>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20}}>
+        <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:14}}>🔔 알림 설정</h3>
+        {[{label:"내게 배정된 이슈 변경",desc:"담당 이슈의 상태, 댓글 변경 시 알림"},{label:"@멘션 알림",desc:"댓글에서 @로 호출되면 알림"},{label:"관찰 중인 이슈 변경",desc:"Watcher로 등록한 이슈의 변경 알림"}].map((item,i)=>
+          <div key={i} style={{padding:"10px 0",borderBottom:i<2?`1px solid ${C.border}`:"none"}}>
+            <div style={{fontWeight:600,color:C.textPrimary,fontSize:12}}>{item.label}</div>
+            <div style={{color:C.textSecondary,fontSize:11,marginTop:2}}>{item.desc}</div>
+          </div>
+        )}
+      </div>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20}}>
+        <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:14}}>📊 대시보드 위젯</h3>
+        {[{label:"배정된 이슈",desc:"나에게 할당된 이슈 목록"},{label:"활동 스트림",desc:"팀의 최근 활동 피드"},{label:"파이 차트",desc:"상태/담당자별 이슈 분포"}].map((item,i)=>
+          <div key={i} style={{padding:"10px 0",borderBottom:i<2?`1px solid ${C.border}`:"none"}}>
+            <div style={{fontWeight:600,color:C.textPrimary,fontSize:12}}>{item.label}</div>
+            <div style={{color:C.textSecondary,fontSize:11,marginTop:2}}>{item.desc}</div>
+          </div>
+        )}
+      </div>
+    </div>
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20}}>
+      <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:14}}>📊 이슈 상태 분포 (애니메이션 차트)</h3>
+      <div style={{display:"flex",alignItems:"flex-end",gap:16,height:120,padding:"0 20px"}}>
+        {barData.map((d,i)=><div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>
+          <div style={{fontSize:12,fontWeight:700,color:d.color,marginBottom:4}}>{d.val}</div>
+          <div style={{width:"100%",maxWidth:50,background:d.color,borderRadius:"6px 6px 0 0",height:`${(d.val/maxVal)*100}%`,animation:`bar-grow 0.8s ${i*0.15}s ease both`}} />
+          <div style={{fontSize:10,color:C.textSecondary,marginTop:6,textAlign:"center"}}>{d.label}</div>
+        </div>)}
+      </div>
+    </div>
+  </div>;
+}
+
+/* ======= NEW SECTIONS: S11-S18 ======= */
+
+function Section11() {
+  const [activeTab,setActiveTab]=useState("scrum");
+  const ceremonies=[
+    {name:"데일리 스탠드업",icon:"🌅",time:"매일 15분",desc:"어제 한 일, 오늘 할 일, 블로커 공유. 서서 빠르게 진행합니다."},
+    {name:"스프린트 계획",icon:"📋",time:"스프린트 시작 시 2~4시간",desc:"이번 스프린트에서 완료할 이슈를 백로그에서 선택하고 계획합니다."},
+    {name:"스프린트 리뷰",icon:"🎯",time:"스프린트 종료 시 1~2시간",desc:"완성된 기능을 이해관계자에게 시연하고 피드백을 받습니다."},
+    {name:"스프린트 회고",icon:"🔄",time:"스프린트 종료 시 1시간",desc:"잘한 점/개선할 점/시도할 점을 논의하여 프로세스를 개선합니다."},
+  ];
+  return <div id="s11" className="section-reveal">
+    <SectionHeader num={11} emoji="🏃" title="애자일 방법론 기초" subtitle="Jira를 제대로 쓰려면 애자일을 이해해야 합니다." />
+    {/* 스크럼 vs 칸반 비교 */}
+    <div style={{display:"flex",gap:8,marginBottom:16}}>
+      {[{key:"scrum",label:"스크럼"},{key:"kanban",label:"칸반"}].map(t=><button key={t.key} onClick={()=>setActiveTab(t.key)} style={{padding:"8px 20px",borderRadius:8,border:`2px solid ${activeTab===t.key?C.accent:C.border}`,background:activeTab===t.key?"#DEEBFF":"#fff",color:activeTab===t.key?C.accent:C.textSecondary,fontWeight:700,fontSize:13,cursor:"pointer"}}>{t.label}</button>)}
+    </div>
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:20}}>
+      {activeTab==="scrum"?<div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:16}}>
+          {[{label:"스프린트",val:"1~2주 고정 주기",icon:"📅"},{label:"핵심",val:"반복적 개선 + 속도 측정",icon:"📈"},{label:"적합한 팀",val:"제품 개발, 기능 출시 팀",icon:"👥"}].map((x,i)=>
+            <div key={i} style={{background:"#F4F5F7",borderRadius:8,padding:14,textAlign:"center"}}>
+              <div style={{fontSize:20,marginBottom:6}}>{x.icon}</div>
+              <div style={{fontSize:12,fontWeight:700,color:C.accent,marginBottom:4}}>{x.label}</div>
+              <div style={{fontSize:11,color:C.textSecondary}}>{x.val}</div>
+            </div>
+          )}
+        </div>
+        {/* 스프린트 사이클 다이어그램 */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:16,background:"#F4F5F7",borderRadius:10}}>
+          {["📋 계획","→","⚡ 실행","→","🎯 리뷰","→","🔄 회고","→","📋 ..."].map((s,i)=>
+            <span key={i} style={{fontSize:i%2===0?12:16,color:i%2===0?C.accent:C.textMuted,fontWeight:i%2===0?700:400,animation:i%2===1?`flow-arrow 1.5s ${i*0.2}s ease-in-out infinite`:undefined}}>{s}</span>
+          )}
+        </div>
+      </div>:<div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:16}}>
+          {[{label:"스프린트",val:"없음 (연속 흐름)",icon:"♾️"},{label:"핵심",val:"WIP 제한 + 흐름 최적화",icon:"🌊"},{label:"적합한 팀",val:"운영, 지원, 유지보수 팀",icon:"🔧"}].map((x,i)=>
+            <div key={i} style={{background:"#F4F5F7",borderRadius:8,padding:14,textAlign:"center"}}>
+              <div style={{fontSize:20,marginBottom:6}}>{x.icon}</div>
+              <div style={{fontSize:12,fontWeight:700,color:C.accent,marginBottom:4}}>{x.label}</div>
+              <div style={{fontSize:11,color:C.textSecondary}}>{x.val}</div>
+            </div>
+          )}
+        </div>
+        <TipBox icon="💡">칸반에서는 "진행 중" 열의 카드 수를 제한(WIP Limit)하여 팀이 동시에 너무 많은 일을 하지 않도록 관리합니다.</TipBox>
+      </div>}
+    </div>
+    {/* 4대 세레모니 */}
+    <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:12}}>🎪 스크럼 4대 세레모니</h3>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+      {ceremonies.map((c,i)=><div key={i} className="hover-lift" style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+          <span style={{fontSize:20}}>{c.icon}</span>
+          <div><div style={{fontWeight:700,color:C.textPrimary,fontSize:13}}>{c.name}</div>
+          <div style={{fontSize:10,color:C.accent}}>{c.time}</div></div>
+        </div>
+        <p style={{color:C.textSecondary,fontSize:12,lineHeight:1.6}}>{c.desc}</p>
+      </div>)}
+    </div>
+    {/* 역할 */}
+    <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:12}}>👥 스크럼 핵심 역할</h3>
+    <div style={{display:"flex",gap:10}}>
+      {[{role:"Product Owner",icon:"👔",desc:"무엇을 만들지 결정. 백로그 우선순위 관리."},{role:"Scrum Master",icon:"🎯",desc:"프로세스 퍼실리테이터. 장애물 제거."},{role:"Development Team",icon:"💻",desc:"실제 작업을 수행하는 자기 조직화 팀."}].map((r,i)=>
+        <div key={i} style={{flex:1,background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:14,textAlign:"center"}}>
+          <div style={{fontSize:28,marginBottom:6}}>{r.icon}</div>
+          <div style={{fontWeight:700,color:C.accent,fontSize:12,marginBottom:4}}>{r.role}</div>
+          <p style={{color:C.textSecondary,fontSize:11,lineHeight:1.5}}>{r.desc}</p>
+        </div>
+      )}
+    </div>
+  </div>;
+}
+
+function Section12() {
+  const [trigger,setTrigger]=useState("이슈 생성됨");
+  const [condition,setCondition]=useState("이슈 유형 = Bug");
+  const [action,setAction]=useState("담당자 자동 배정");
+  const triggers=["이슈 생성됨","이슈 상태 변경됨","댓글 추가됨","스프린트 시작됨","스프린트 완료됨"];
+  const conditions=["이슈 유형 = Bug","우선순위 = Highest","프로젝트 = SHOP","담당자 = 비어있음","조건 없음"];
+  const actions=["담당자 자동 배정","Slack 알림 전송","이메일 알림 전송","이슈 상태 변경","댓글 자동 추가","라벨 추가"];
+  const templates=[
+    {name:"버그 자동 배정",trigger:"이슈 생성됨",cond:"이슈 유형 = Bug",act:"담당자 자동 배정",icon:"🐛"},
+    {name:"긴급 이슈 알림",trigger:"이슈 생성됨",cond:"우선순위 = Highest",act:"Slack 알림 전송",icon:"🚨"},
+    {name:"완료 시 알림",trigger:"이슈 상태 변경됨",cond:"조건 없음",act:"이메일 알림 전송",icon:"✅"},
+    {name:"스프린트 시작 알림",trigger:"스프린트 시작됨",cond:"조건 없음",act:"Slack 알림 전송",icon:"🚀"},
+    {name:"미배정 이슈 경고",trigger:"이슈 생성됨",cond:"담당자 = 비어있음",act:"댓글 자동 추가",icon:"⚠️"},
+  ];
+  return <div id="s12" className="section-reveal">
+    <SectionHeader num={12} emoji="⚡" title="Jira 자동화" subtitle="반복 작업을 자동화하여 팀의 생산성을 높이세요." />
+    {/* 플로차트 */}
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:20}}>
+      <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:14}}>🔧 자동화 규칙 구조</h3>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,padding:16,background:"#F4F5F7",borderRadius:10}}>
+        {[{label:"트리거",icon:"⚡",color:C.orange},{label:"→",isArrow:true},{label:"조건",icon:"🔍",color:C.purple},{label:"→",isArrow:true},{label:"액션",icon:"▶️",color:C.green}].map((x,i)=>
+          x.isArrow?<span key={i} style={{fontSize:20,color:C.textMuted,animation:`flow-arrow 1.5s ${i*0.3}s ease-in-out infinite`}}>→</span>:
+          <div key={i} style={{background:`${x.color}15`,border:`2px solid ${x.color}40`,borderRadius:10,padding:"14px 20px",textAlign:"center"}}>
+            <div style={{fontSize:20,marginBottom:4}}>{x.icon}</div>
+            <div style={{fontSize:13,fontWeight:700,color:x.color}}>{x.label}</div>
+          </div>
+        )}
+      </div>
+    </div>
+    {/* 규칙 조합 시뮬레이터 */}
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:20}}>
+      <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:14}}>🎮 규칙 조합 시뮬레이터</h3>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:14}}>
+        <div><label style={{fontSize:11,fontWeight:700,color:C.orange,display:"block",marginBottom:4}}>⚡ 트리거</label>
+          <select value={trigger} onChange={e=>setTrigger(e.target.value)} style={{width:"100%",padding:"8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12}}>{triggers.map(t=><option key={t}>{t}</option>)}</select></div>
+        <div><label style={{fontSize:11,fontWeight:700,color:C.purple,display:"block",marginBottom:4}}>🔍 조건</label>
+          <select value={condition} onChange={e=>setCondition(e.target.value)} style={{width:"100%",padding:"8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12}}>{conditions.map(t=><option key={t}>{t}</option>)}</select></div>
+        <div><label style={{fontSize:11,fontWeight:700,color:C.green,display:"block",marginBottom:4}}>▶️ 액션</label>
+          <select value={action} onChange={e=>setAction(e.target.value)} style={{width:"100%",padding:"8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12}}>{actions.map(t=><option key={t}>{t}</option>)}</select></div>
+      </div>
+      <div style={{background:"#172B4D",borderRadius:8,padding:"12px 16px",fontFamily:"Consolas,monospace",fontSize:12,color:"#4C9AFF"}}>
+        WHEN <span style={{color:"#FF8B00"}}>{trigger}</span>{condition!=="조건 없음"&&<> IF <span style={{color:"#6554C0"}}>{condition}</span></>} THEN <span style={{color:"#00875A"}}>{action}</span>
+      </div>
+    </div>
+    {/* 템플릿 */}
+    <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:12}}>📋 자주 쓰는 자동화 템플릿</h3>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+      {templates.map((t,i)=><div key={i} className="hover-lift" onClick={()=>{setTrigger(t.trigger);setCondition(t.cond);setAction(t.act);}} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:12,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
+        <span style={{fontSize:20}}>{t.icon}</span>
+        <div><div style={{fontWeight:600,color:C.textPrimary,fontSize:12}}>{t.name}</div>
+        <div style={{fontSize:10,color:C.textSecondary,marginTop:2}}>{t.trigger} → {t.act}</div></div>
+      </div>)}
+    </div>
+  </div>;
+}
+
+function Section13() {
+  const epics=[
+    {name:"사용자 인증 시스템",color:C.purple,start:0,width:35,issues:8,done:6},
+    {name:"상품 관리 모듈",color:C.accent,start:15,width:40,issues:12,done:4},
+    {name:"결제 시스템 연동",color:C.green,start:40,width:30,issues:6,done:0},
+    {name:"배송 추적 기능",color:C.orange,start:55,width:35,issues:5,done:0},
+    {name:"관리자 대시보드",color:C.red,start:70,width:30,issues:10,done:0},
+  ];
+  const [hoveredEpic,setHoveredEpic]=useState(null);
+  const months=["1월","2월","3월","4월","5월","6월"];
+  return <div id="s13" className="section-reveal">
+    <SectionHeader num={13} emoji="🗺️" title="로드맵 & 타임라인" subtitle="에픽 단위로 프로젝트의 전체 일정을 시각적으로 계획합니다." />
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:20}}>
+      <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:14}}>📅 로드맵 타임라인</h3>
+      <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
+        {months.map(m=><div key={m} style={{flex:1,textAlign:"center",padding:"6px 0",fontSize:11,color:C.textMuted,fontWeight:600}}>{m}</div>)}
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {epics.map((ep,i)=><div key={i} style={{position:"relative",height:36}} onMouseEnter={()=>setHoveredEpic(i)} onMouseLeave={()=>setHoveredEpic(null)}>
+          <div style={{position:"absolute",left:`${ep.start}%`,width:`${ep.width}%`,top:0,height:"100%",background:`${ep.color}30`,border:`2px solid ${ep.color}`,borderRadius:8,display:"flex",alignItems:"center",paddingLeft:10,cursor:"pointer",transition:"all 0.2s",transform:hoveredEpic===i?"scale(1.02)":"scale(1)"}}>
+            <span style={{fontSize:11,fontWeight:700,color:ep.color,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{ep.name}</span>
+          </div>
+          {hoveredEpic===i&&<div style={{position:"absolute",left:`${ep.start+ep.width/2}%`,top:-50,transform:"translateX(-50%)",background:"#172B4D",color:"#fff",padding:"8px 12px",borderRadius:8,fontSize:11,whiteSpace:"nowrap",zIndex:10,boxShadow:"0 4px 12px rgba(0,0,0,0.2)"}}>
+            {ep.name} · 이슈 {ep.done}/{ep.issues} 완료
+          </div>}
+        </div>)}
+      </div>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+      {[{icon:"🗓️",title:"타임라인 뷰",desc:"에픽을 수평 막대로 배치하여 전체 일정 파악"},{icon:"📋",title:"보드 뷰",desc:"에픽을 칸반 보드 형태로 상태별 관리"},{icon:"📊",title:"리스트 뷰",desc:"에픽을 테이블 형태로 상세 정보 확인"}].map((v,i)=>
+        <div key={i} className="hover-lift" style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:14,textAlign:"center"}}>
+          <div style={{fontSize:24,marginBottom:6}}>{v.icon}</div>
+          <div style={{fontWeight:700,color:C.textPrimary,fontSize:12,marginBottom:4}}>{v.title}</div>
+          <p style={{color:C.textSecondary,fontSize:11,lineHeight:1.5}}>{v.desc}</p>
+        </div>
+      )}
+    </div>
+  </div>;
+}
+
+function Section14() {
+  const [gadgets,setGadgets]=useState([
+    {id:"g1",name:"파이 차트",icon:"🥧",desc:"상태별 이슈 분포"},
+    {id:"g2",name:"이슈 통계",icon:"📊",desc:"담당자별 이슈 수"},
+    {id:"g3",name:"활동 스트림",icon:"📰",desc:"최근 변경 사항"},
+    {id:"g4",name:"번다운 차트",icon:"📉",desc:"스프린트 진행률"},
+  ]);
+  const [dashboard,setDashboard]=useState([]);
+  const addToDashboard=(gadget)=>{if(!dashboard.find(g=>g.id===gadget.id))setDashboard(p=>[...p,gadget]);};
+  const removeFromDashboard=(id)=>{setDashboard(p=>p.filter(g=>g.id!==id));};
+  return <div id="s14" className="section-reveal">
+    <SectionHeader num={14} emoji="📊" title="필터 & 대시보드 심화" subtitle="필터를 저장/공유하고, 대시보드를 나만의 방식으로 구성하세요." />
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:20}}>
+      <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:12}}>💾 필터 저장 & 공유</h3>
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {[{step:1,title:"필터 만들기",desc:"이슈 검색 → JQL로 조건 설정 → '다른 이름으로 저장'"},{step:2,title:"즐겨찾기 등록",desc:"저장된 필터에 ⭐ 클릭 → 왼쪽 사이드바에 표시"},{step:3,title:"팀과 공유",desc:"필터 설정 → '권한' → 팀/프로젝트 단위로 공유"}].map(s=>
+          <div key={s.step} style={{display:"flex",gap:10,alignItems:"flex-start"}}>
+            <StepBadge num={s.step}/><div style={{paddingTop:4}}><div style={{fontWeight:700,color:C.textPrimary,fontSize:12}}>{s.title}</div><div style={{color:C.textSecondary,fontSize:11,marginTop:2}}>{s.desc}</div></div>
+          </div>
+        )}
+      </div>
+    </div>
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20}}>
+      <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:12}}>🎮 대시보드 가젯 배치 시뮬레이터</h3>
+      <div style={{display:"flex",gap:14}}>
+        <div style={{width:180}}>
+          <div style={{fontSize:11,fontWeight:700,color:C.textMuted,marginBottom:8}}>가젯 목록 (클릭하여 추가)</div>
+          {gadgets.map(g=><div key={g.id} onClick={()=>addToDashboard(g)} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:dashboard.find(x=>x.id===g.id)?"#E3FCEF":"#F4F5F7",border:`1px solid ${C.border}`,borderRadius:6,marginBottom:4,cursor:"pointer",fontSize:12}}>
+            <span>{g.icon}</span><span style={{color:C.textPrimary,fontWeight:500}}>{g.name}</span>
+          </div>)}
+        </div>
+        <div style={{flex:1,background:"#F4F5F7",borderRadius:10,padding:14,minHeight:160}}>
+          <div style={{fontSize:11,fontWeight:700,color:C.textMuted,marginBottom:10}}>내 대시보드</div>
+          {dashboard.length===0?<div style={{color:C.textMuted,fontSize:12,textAlign:"center",padding:40}}>왼쪽에서 가젯을 클릭하여 추가하세요</div>:
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {dashboard.map(g=><div key={g.id} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:8,padding:12,position:"relative",animation:"kanban-slide 0.3s ease"}}>
+              <button onClick={()=>removeFromDashboard(g.id)} style={{position:"absolute",top:4,right:6,background:"none",border:"none",color:C.textMuted,cursor:"pointer",fontSize:12}}>✕</button>
+              <div style={{fontSize:18,marginBottom:4}}>{g.icon}</div>
+              <div style={{fontSize:11,fontWeight:700,color:C.textPrimary}}>{g.name}</div>
+              <div style={{fontSize:10,color:C.textSecondary,marginTop:2}}>{g.desc}</div>
+            </div>)}
+          </div>}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+function Section15() {
+  return <div id="s15" className="section-reveal">
+    <SectionHeader num={15} emoji="🔗" title="Confluence 연동" subtitle="Jira와 Confluence를 연동하여 문서와 이슈를 자연스럽게 연결하세요." />
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:20}}>
+      <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:14}}>🔄 양방향 연동</h3>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:16,padding:20,background:"#F4F5F7",borderRadius:10,marginBottom:14}}>
+        <div style={{background:"linear-gradient(135deg,#0052CC,#2684FF)",borderRadius:12,padding:14,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <JiraIcon size={30}/>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+          <span style={{fontSize:18,animation:"flow-arrow 1.5s ease-in-out infinite"}}>→</span>
+          <span style={{fontSize:10,color:C.textMuted}}>양방향</span>
+          <span style={{fontSize:18,animation:"flow-arrow 1.5s 0.5s ease-in-out infinite",transform:"rotate(180deg)"}}>→</span>
+        </div>
+        <div style={{background:"linear-gradient(135deg,#0052CC,#00B8D9)",borderRadius:12,padding:14,color:"#fff",fontWeight:800,fontSize:16}}>C</div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        {[{dir:"Jira → Confluence",items:["이슈에서 Confluence 페이지 링크","이슈 목록을 Confluence에 매크로로 삽입"]},{dir:"Confluence → Jira",items:["문서에서 Jira 이슈 생성 가능","Jira 이슈 매크로로 상태 실시간 표시"]}].map((d,i)=>
+          <div key={i} style={{background:"#F4F5F7",borderRadius:8,padding:14}}>
+            <div style={{fontWeight:700,color:C.accent,fontSize:12,marginBottom:8}}>{d.dir}</div>
+            {d.items.map((item,j)=><div key={j} style={{fontSize:11,color:C.textSecondary,marginBottom:4,display:"flex",gap:6}}>✓ {item}</div>)}
+          </div>
+        )}
+      </div>
+    </div>
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20}}>
+      <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:12}}>⚙️ 연동 설정 단계</h3>
+      {[{s:1,t:"Confluence 접속",d:"Confluence 사이트에 로그인합니다."},{s:2,t:"앱 링크 확인",d:"같은 Atlassian 계정이면 자동 연동됩니다."},{s:3,t:"Jira 이슈 매크로 삽입",d:"Confluence 페이지에서 /jira 입력 → Jira Issues 매크로 선택"},{s:4,t:"JQL로 이슈 필터링",d:"표시할 이슈를 JQL로 필터링하여 원하는 목록만 표시"}].map(s=>
+        <div key={s.s} style={{display:"flex",gap:10,marginBottom:10,alignItems:"flex-start"}}>
+          <StepBadge num={s.s}/><div style={{paddingTop:3}}><div style={{fontWeight:700,color:C.textPrimary,fontSize:12}}>{s.t}</div><div style={{color:C.textSecondary,fontSize:11,marginTop:2}}>{s.d}</div></div>
+        </div>
+      )}
+    </div>
+  </div>;
+}
+
+function Section16() {
+  const shortcuts=[
+    {keys:"C",desc:"새 이슈 만들기"},{keys:"G → B",desc:"보드로 이동"},{keys:"G → K",desc:"백로그로 이동"},
+    {keys:"/",desc:"검색 열기"},{keys:"J / K",desc:"이슈 목록 위/아래 이동"},{keys:"O / Enter",desc:"이슈 열기"},
+    {keys:"A",desc:"이슈를 나에게 배정"},{keys:"M",desc:"댓글 작성"},{keys:"E",desc:"이슈 편집"},{keys:".",desc:"작업 메뉴 열기"},
+  ];
+  const quizData=[
+    {q:"새 이슈를 빠르게 만드는 단축키는?",a:"C",opts:["C","N","I","A"]},
+    {q:"보드로 이동하는 단축키 조합은?",a:"G → B",opts:["G → B","G → D","B","Ctrl+B"]},
+    {q:"이슈를 나에게 배정하는 단축키는?",a:"A",opts:["M","A","E","S"]},
+  ];
+  const [quizIdx,setQuizIdx]=useState(0);
+  const [selected,setSelected]=useState(null);
+  const [score,setScore]=useState(0);
+  const [done,setDone]=useState(false);
+
+  const handleAnswer=(opt)=>{
+    if(selected!==null)return;
+    setSelected(opt);
+    if(opt===quizData[quizIdx].a)setScore(p=>p+1);
+    setTimeout(()=>{
+      if(quizIdx<quizData.length-1){setQuizIdx(p=>p+1);setSelected(null);}
+      else setDone(true);
+    },1000);
+  };
+
+  return <div id="s16" className="section-reveal">
+    <SectionHeader num={16} emoji="⌨️" title="키보드 단축키 & 퀴즈" subtitle="단축키를 익히면 마우스 없이도 Jira를 빠르게 조작할 수 있습니다." />
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:20}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+        {shortcuts.map((s,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",background:"#F4F5F7",borderRadius:6,border:"1px solid #EBECF0"}}>
+          <span className="kbd-key">{s.keys}</span>
+          <span style={{color:C.textSecondary,fontSize:12}}>{s.desc}</span>
+        </div>)}
+      </div>
+      <TipBox>Jira에서 <strong>?</strong> 키를 누르면 전체 단축키 목록을 볼 수 있습니다.</TipBox>
+    </div>
+    {/* 퀴즈 */}
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:20}}>
+      <h3 style={{fontSize:14,fontWeight:700,color:C.textPrimary,marginBottom:14}}>🎮 단축키 퀴즈</h3>
+      {!done?<div>
+        <div style={{fontSize:12,color:C.textMuted,marginBottom:8}}>문제 {quizIdx+1}/{quizData.length}</div>
+        <div style={{fontSize:15,fontWeight:700,color:C.textPrimary,marginBottom:14}}>{quizData[quizIdx].q}</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          {quizData[quizIdx].opts.map(opt=>{
+            const isCorrect=opt===quizData[quizIdx].a;
+            const bg=selected===null?"#F4F5F7":selected===opt?(isCorrect?"#E3FCEF":"#FFEBE6"):(isCorrect&&selected!==null?"#E3FCEF":"#F4F5F7");
+            const border=selected===null?C.border:selected===opt?(isCorrect?"#ABF5D1":"#FFBDAD"):(isCorrect&&selected!==null?"#ABF5D1":C.border);
+            return <button key={opt} onClick={()=>handleAnswer(opt)} style={{padding:"10px 14px",borderRadius:8,border:`2px solid ${border}`,background:bg,cursor:selected===null?"pointer":"default",fontSize:13,fontWeight:600,color:C.textPrimary,textAlign:"center"}}>
+              <span className="kbd-key" style={{marginRight:8}}>{opt}</span>
+            </button>;
+          })}
+        </div>
+      </div>:<div style={{textAlign:"center",padding:20}}>
+        <div style={{fontSize:36,marginBottom:10,animation:"check-pop 0.5s ease"}}>{score===quizData.length?"🎉":"👏"}</div>
+        <div style={{fontSize:18,fontWeight:700,color:C.textPrimary,marginBottom:6}}>{score}/{quizData.length} 정답!</div>
+        <p style={{color:C.textSecondary,fontSize:13,marginBottom:14}}>{score===quizData.length?"완벽합니다! 단축키 마스터!":"좋은 시작이에요! 단축키를 더 연습해보세요."}</p>
+        <button onClick={()=>{setQuizIdx(0);setSelected(null);setScore(0);setDone(false);}} style={{background:C.accent,color:"#fff",border:"none",borderRadius:8,padding:"8px 20px",fontSize:13,cursor:"pointer"}}>다시 도전</button>
+      </div>}
+    </div>
+  </div>;
+}
+
+function Section17() {
+  const mistakes=[
+    {mistake:"이슈 제목을 너무 모호하게 작성",fix:"'수정 필요' 대신 '결제 페이지 카드번호 유효성 검사 오류 수정'",severity:"high"},
+    {mistake:"상태 변경 없이 방치",fix:"작업 시작하면 바로 '진행 중'으로 변경하는 습관",severity:"high"},
+    {mistake:"담당자 미지정",fix:"이슈 생성 시 반드시 담당자 지정. 모르면 팀 리드에게 배정",severity:"medium"},
+    {mistake:"댓글 대신 메신저로 논의",fix:"결정 사항은 반드시 이슈 댓글에 기록하여 히스토리 보존",severity:"medium"},
+    {mistake:"하나의 이슈에 여러 작업 묶기",fix:"작업 단위를 작게 분리. 하나의 이슈 = 하나의 명확한 작업",severity:"low"},
+    {mistake:"스프린트 종료 없이 새 스프린트 시작",fix:"스프린트 완료 → 미완료 이슈 처리 → 새 스프린트 시작",severity:"low"},
+  ];
+  const sevColors={high:C.red,medium:C.orange,low:C.yellow};
+  return <div id="s17" className="section-reveal">
+    <SectionHeader num={17} emoji="⚠️" title="자주 하는 실수 TOP 6" subtitle="초보자가 흔히 하는 실수와 올바른 사용법입니다." />
+    <div style={{display:"flex",flexDirection:"column",gap:10}}>
+      {mistakes.map((m,i)=><div key={i} className="hover-lift" style={{background:C.card,border:`1px solid ${C.border}`,borderLeft:`4px solid ${sevColors[m.severity]}`,borderRadius:10,padding:16,display:"flex",gap:14}}>
+        <div style={{fontSize:18,flexShrink:0}}>❌</div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:700,color:C.textPrimary,fontSize:13,marginBottom:4}}>{m.mistake}</div>
+          <div style={{display:"flex",alignItems:"flex-start",gap:6}}>
+            <span style={{color:C.green,flexShrink:0}}>✅</span>
+            <p style={{color:C.textSecondary,fontSize:12,lineHeight:1.6}}>{m.fix}</p>
+          </div>
+        </div>
+      </div>)}
+    </div>
+  </div>;
+}
+
+function Section18() {
+  const [q,setQ]=useState("");
+  const [activeConsonant,setActiveConsonant]=useState("ALL");
+  const [expandedTerm,setExpandedTerm]=useState(null);
+
+  const terms=[
+    ["프로젝트","Project","모든 이슈를 담는 최상위 컨테이너","프로젝트는 Jira에서 작업을 조직하는 가장 큰 단위입니다. 팀, 제품, 또는 이니셔티브별로 생성하며, 고유한 프로젝트 키(예: SHOP)를 가집니다."],
+    ["이슈","Issue","할 일 카드. 스토리/태스크/버그/에픽 4가지 유형","Jira의 기본 작업 단위. 제목, 설명, 담당자, 우선순위, 상태 등의 속성을 가지며, 생성부터 완료까지 추적됩니다."],
+    ["에픽","Epic","큰 단위 작업 (수주~수개월)","여러 스토리와 태스크를 묶는 상위 단위입니다. 로드맵에서 타임라인 막대로 표시되며, 대규모 기능이나 이니셔티브를 나타냅니다."],
+    ["스토리","Story","사용자 관점의 기능 단위","'사용자가 OO를 할 수 있다' 형식으로 작성하며, 사용자에게 가치를 전달하는 기능을 설명합니다."],
+    ["태스크","Task","일반적인 작업 단위","기술적 작업, 리서치, 설정 변경 등 구체적인 실행 작업을 나타냅니다."],
+    ["버그","Bug","수정이 필요한 문제/오류","재현 방법, 기대 결과, 실제 결과를 포함하여 작성하면 빠른 수정이 가능합니다."],
+    ["스프린트","Sprint","1~2주 고정 기간의 작업 묶음","팀이 정한 기간 동안 완료할 작업의 집합. 시작과 끝이 있어 팀의 속도(Velocity)를 측정할 수 있습니다."],
+    ["백로그","Backlog","우선순위가 매겨진 할 일 목록","아직 스프린트에 배치되지 않은 이슈들의 대기열. 위에 있을수록 우선순위가 높습니다."],
+    ["보드","Board","작업 현황을 열 형태로 시각화","칸반/스크럼 보드로 이슈 카드를 열 사이에 드래그하여 상태를 변경합니다."],
+    ["워크플로우","Workflow","이슈의 상태 전환 규칙","할 일 → 진행 중 → 완료 등의 상태 흐름을 정의합니다. 커스텀 가능합니다."],
+    ["칸반","Kanban","지속적 흐름 기반 프로젝트 관리 방식","고정 스프린트 없이 WIP 제한으로 작업 흐름을 관리합니다."],
+    ["스크럼","Scrum","스프린트 기반 애자일 프레임워크","1~2주 주기로 계획-실행-리뷰-회고를 반복하는 방법론입니다."],
+    ["JQL","Jira Query Language","Jira 전용 검색 쿼리 언어","필드 = 값 형태로 이슈를 검색. AND/OR 조합 가능. 예: assignee = currentUser()"],
+    ["번다운 차트","Burndown Chart","스프린트 남은 작업량 시각화","시간 경과에 따른 남은 작업량을 보여주어 스프린트 완료 가능성을 예측합니다."],
+    ["벨로시티","Velocity","스프린트당 완료한 스토리 포인트","팀의 작업 속도를 측정하여 향후 스프린트 계획에 활용합니다."],
+    ["대시보드","Dashboard","프로젝트 현황 요약 화면","가젯(위젯)을 배치하여 이슈 통계, 차트, 활동 스트림 등을 한눈에 봅니다."],
+    ["필터","Filter","JQL 기반 저장된 검색 조건","자주 사용하는 검색 조건을 저장하여 재사용하고 팀과 공유할 수 있습니다."],
+    ["컴포넌트","Component","프로젝트 내 논리적 하위 분류","프론트엔드, 백엔드, DB 등으로 이슈를 분류하여 관리합니다."],
+    ["라벨","Label","이슈에 붙이는 태그","자유롭게 생성 가능한 태그로, 이슈를 주제별로 분류합니다."],
+    ["관찰자","Watcher","이슈 변경 알림 구독자","직접 담당하지 않아도 관심 이슈의 변경사항을 알림으로 받을 수 있습니다."],
+    ["스토리 포인트","Story Point","작업 복잡도/규모 추정 단위","시간이 아닌 상대적 크기로 작업량을 추정합니다. 피보나치 수열(1,2,3,5,8,13) 사용이 일반적입니다."],
+    ["로드맵","Roadmap","에픽 기반 장기 일정 계획","에픽을 타임라인에 배치하여 프로젝트의 전체적인 방향과 일정을 시각화합니다."],
+  ];
+
+  const consonants=["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+  const navConsonants=["ㄱ","ㄴ","ㄷ","ㄹ","ㅁ","ㅂ","ㅅ","ㅇ","ㅈ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ","ALL"];
+  const getInitial=useCallback((char)=>{const code=char.charCodeAt(0);if(code<0xAC00||code>0xD7A3)return null;return consonants[Math.floor((code-0xAC00)/588)]||null;},[]);
+  const consonantGroup=useCallback((c)=>({"ㄲ":"ㄱ","ㄸ":"ㄷ","ㅃ":"ㅂ","ㅆ":"ㅅ","ㅉ":"ㅈ"}[c]||c),[]);
+
+  const filtered=useMemo(()=>{
+    let r=terms;
+    if(q.trim()){const lq=q.toLowerCase();r=r.filter(([a,b,c])=>(a+b+c).toLowerCase().includes(lq));}
+    if(activeConsonant!=="ALL")r=r.filter(([ko])=>{const ini=getInitial(ko[0]);return ini&&consonantGroup(ini)===activeConsonant;});
+    return r;
+  },[q,activeConsonant]);
+
+  return <div id="s18" className="section-reveal">
+    <SectionHeader num={18} emoji="📖" title="Jira 용어 사전" subtitle="Jira에서 자주 사용하는 용어를 한눈에 정리합니다." />
+    <div style={{marginBottom:14}}>
+      <input value={q} onChange={e=>{setQ(e.target.value);setActiveConsonant("ALL");}} placeholder="🔍 용어 검색..." style={{width:"100%",maxWidth:400,padding:"10px 14px",borderRadius:8,border:`2px solid ${C.border}`,fontSize:13,outline:"none",boxSizing:"border-box"}} />
+    </div>
+    <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:16,padding:"8px 10px",background:C.surface,borderRadius:10,border:`1px solid ${C.border}`}}>
+      {navConsonants.map(c=><button key={c} onClick={()=>{setActiveConsonant(c);if(c!=="ALL")setQ("");}} style={{padding:c==="ALL"?"5px 10px":"5px 8px",minWidth:c==="ALL"?40:28,background:activeConsonant===c?C.accent:"transparent",color:activeConsonant===c?"#fff":C.textPrimary,border:activeConsonant===c?`1px solid ${C.accent}`:"1px solid transparent",borderRadius:6,fontSize:12,fontWeight:activeConsonant===c?700:500,cursor:"pointer"}}>{c}</button>)}
+    </div>
+    <div style={{overflowX:"auto"}}>
+      <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+        <thead><tr style={{background:C.accent,color:"#fff"}}>
+          {["용어","영문","설명",""].map((h,i)=><th key={i} style={{padding:"8px 12px",textAlign:"left",fontWeight:600,width:i===3?36:"auto"}}>{h}</th>)}
+        </tr></thead>
+        <tbody>{filtered.map(([ko,en,desc,detail],i)=><React.Fragment key={ko}>
+          <tr onClick={()=>setExpandedTerm(expandedTerm===ko?null:ko)} style={{background:expandedTerm===ko?"#e8f0fe":(i%2===0?"#f8f9fa":C.surface),borderBottom:expandedTerm===ko?"none":`1px solid ${C.border}`,cursor:detail?"pointer":"default",transition:"background 0.2s"}}>
+            <td style={{padding:"8px 12px",fontWeight:600,color:C.accent}}>{ko}</td>
+            <td style={{padding:"8px 12px",color:C.textSecondary,fontSize:12}}>{en}</td>
+            <td style={{padding:"8px 12px",color:C.textPrimary,fontSize:12}}>{desc}</td>
+            <td style={{padding:"8px 12px",textAlign:"center",fontSize:14,color:detail?C.accent:C.border}}>{detail?(expandedTerm===ko?"▲":"▼"):""}</td>
+          </tr>
+          {expandedTerm===ko&&detail&&<tr style={{background:"#e8f0fe"}}><td colSpan={4} style={{padding:0,borderBottom:`1px solid ${C.border}`}}>
+            <div style={{padding:"12px 16px",margin:"0 12px 12px",background:C.surface,borderRadius:8,border:`1px solid ${C.border}`}}>
+              <p style={{color:C.textSecondary,fontSize:12,lineHeight:1.7}}>{detail}</p>
+            </div>
+          </td></tr>}
+        </React.Fragment>)}</tbody>
+      </table>
+    </div>
+  </div>;
+}
+
+function App() {
+  const [active,setActive]=useState("s1");
+  const [visited,setVisited]=useState(new Set());
+
+  useEffect(()=>{
+    const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){setActive(e.target.id);setVisited(prev=>{const n=new Set(prev);n.add(e.target.id);return n;});}});},{rootMargin:"-20% 0px -60% 0px"});
+    TOC_ITEMS.forEach(item=>{const el=document.getElementById(item.id);if(el)obs.observe(el);});
+    return ()=>obs.disconnect();
+  },[]);
+
+  useEffect(()=>{
+    document.querySelectorAll('.section-reveal').forEach(el=>{
+      const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1});
+      obs.observe(el);
+    });
+  },[]);
+
+  return <div style={{background:C.bg,minHeight:"100vh"}}>
+    <HeroSection />
+    <div style={{maxWidth:1100,margin:"0 auto",padding:"32px 24px 80px",display:"flex",gap:28}}>
+      <TOCSidebar active={active} visited={visited} />
+      <div style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",gap:0}}>
+        <StageHeader level="beginner" icon="🌟" title="Jira 입문하기" subtitle="Jira의 기본 개념을 배우고, 첫 프로젝트와 이슈를 만들어봅니다" />
+        <Section1 /><SectionDivider />
+        <Section2 /><SectionDivider />
+        <Section3 /><SectionDivider />
+        <Section4 /><SectionDivider />
+        <Section5 />
+
+        <StageHeader level="intermediate" icon="🚀" title="Jira 활용하기" subtitle="보드, 워크플로우, JQL, 애자일 방법론으로 팀 협업을 강화합니다" />
+        <Section6 /><SectionDivider />
+        <Section7 /><SectionDivider />
+        <Section8 /><SectionDivider />
+        <Section9 /><SectionDivider />
+        <Section10 /><SectionDivider />
+        <Section11 />
+
+        <StageHeader level="advanced" icon="🌌" title="Jira 마스터하기" subtitle="자동화, 로드맵, 고급 대시보드로 프로젝트 관리의 달인이 됩니다" />
+        <Section12 /><SectionDivider />
+        <Section13 /><SectionDivider />
+        <Section14 />
+
+        <StageHeader level="appendix" icon="📎" title="부록" subtitle="Confluence 연동, 단축키, 실수 방지, 용어 사전" />
+        <Section15 /><SectionDivider />
+        <Section16 /><SectionDivider />
+        <Section17 /><SectionDivider />
+        <Section18 />
+      </div>
+    </div>
+    <div style={{borderTop:`1px solid ${C.border}`,padding:"24px",textAlign:"center"}}><p style={{color:C.textMuted,fontSize:12}}>Jira 완벽 가이드 · 초보자부터 고급 사용자까지</p></div>
+  </div>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

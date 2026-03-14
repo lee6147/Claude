@@ -1,0 +1,2075 @@
+<!-- 원본: git-lecture.jsx | 변환: 2026-02-23 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git 강의 시뮬레이터</title>
+<style>
+  html, body, #root { min-height: 100vh; margin: 0; }
+  body { background: #0a0e1a; overflow-x: hidden; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #1e2d45; border-radius: 3px; }
+</style>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#0a0e1a; --surface:#111827; --surface2:#1a2236; --border:#1e2d45;
+    --accent:#00d4ff; --accent2:#7c3aed; --accent3:#f59e0b; --accent4:#10b981;
+    --text:#e2e8f0; --text-muted:#64748b; --danger:#ef4444; --green:#22c55e; --orange:#f97316;
+  }
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeInLeft { from{opacity:0;transform:translateX(-40px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes fadeInRight { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes zoomIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,212,255,0.4)} 50%{box-shadow:0 0 0 10px rgba(0,212,255,0)} }
+  @keyframes glow { 0%,100%{text-shadow:0 0 10px #00d4ff,0 0 20px #00d4ff} 50%{text-shadow:0 0 20px #00d4ff,0 0 40px #00d4ff,0 0 60px #7c3aed} }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 30%{transform:translateY(-18px)} 55%{transform:translateY(-8px)} 75%{transform:translateY(-13px)} }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes slideDown { from{opacity:0;max-height:0;transform:translateY(-10px)} to{opacity:1;max-height:3000px;transform:translateY(0)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+  @keyframes flip { from{transform:rotateY(90deg);opacity:0} to{transform:rotateY(0deg);opacity:1} }
+  @keyframes staggerReveal { from{opacity:0;transform:translateY(16px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }
+  @keyframes scanline { 0%{top:-5%} 100%{top:105%} }
+  @keyframes gridMove { 0%{transform:translateY(0)} 100%{transform:translateY(40px)} }
+  @keyframes orbFloat { 0%{transform:translate(0,0) scale(1)} 33%{transform:translate(30px,-30px) scale(1.1)} 66%{transform:translate(-20px,20px) scale(0.9)} 100%{transform:translate(0,0) scale(1)} }
+  @keyframes progressFill { from{width:0%} to{width:var(--target)} }
+  @keyframes commitAppear { from{opacity:0;transform:scale(0) rotate(-180deg)} to{opacity:1;transform:scale(1) rotate(0deg)} }
+  @keyframes lineGrow { from{width:0} to{width:100%} }
+  @keyframes branchSlide { from{opacity:0;transform:translateY(-20px) translateX(-10px)} to{opacity:1;transform:translateY(0) translateX(0)} }
+  @keyframes conflictFlash { 0%,100%{background:rgba(239,68,68,0.1)} 50%{background:rgba(239,68,68,0.25)} }
+  @keyframes successPop { 0%{transform:scale(0)} 60%{transform:scale(1.15)} 100%{transform:scale(1)} }
+  @keyframes typeChar { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes ripple { from{transform:scale(0);opacity:1} to{transform:scale(3);opacity:0} }
+  @keyframes prBadge { from{opacity:0;transform:translateY(-10px) scale(0.8)} to{opacity:1;transform:translateY(0) scale(1)} }
+  @keyframes mergeAnim { from{stroke-dashoffset:200} to{stroke-dashoffset:0} }
+
+  .sim-btn {
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    border:none; color:white; padding:8px 20px; border-radius:8px;
+    font-family:'DM Mono',monospace; font-size:12px; cursor:pointer;
+    transition:transform 0.2s,box-shadow 0.2s;
+    box-shadow:0 4px 16px rgba(0,212,255,0.25);
+  }
+  .sim-btn:hover { transform:translateY(-2px) scale(1.03); box-shadow:0 8px 24px rgba(0,212,255,0.35); }
+  .sim-btn:active { transform:scale(0.97); }
+  .sim-btn:disabled { background:var(--border); color:var(--text-muted); cursor:default; transform:none; box-shadow:none; }
+  .ghost-btn {
+    background:transparent; border:1px solid var(--border); color:var(--text-muted);
+    padding:8px 18px; border-radius:8px; font-family:'DM Mono',monospace;
+    font-size:12px; cursor:pointer; transition:all 0.2s;
+  }
+  .ghost-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  .sim-grid { display:grid; grid-template-columns:1fr 300px; min-height:340px; }
+  .sim-grid-eq { display:grid; grid-template-columns:1fr 1fr; }
+  .sim-grid-narrow { display:grid; grid-template-columns:1fr 280px; }
+  @media (max-width:780px) {
+    .sim-grid, .sim-grid-eq, .sim-grid-narrow { grid-template-columns:1fr; }
+    .sim-grid { min-height:auto; }
+  }
+`;
+
+/* ─── helpers ─── */
+function useReveal(threshold = 0.12) {
+  const ref = useRef(null);
+  const [v, setV] = useState(false);
+  useEffect(() => {
+    const ob = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setV(true); ob.disconnect(); } }, { threshold });
+    if (ref.current) ob.observe(ref.current);
+    return () => ob.disconnect();
+  }, []);
+  return [ref, v];
+}
+function Reveal({ children, delay = 0, style = {} }) {
+  const [ref, v] = useReveal();
+  return (
+    <div ref={ref} style={{ opacity: v ? 1 : 0, transform: v ? "translateY(0)" : "translateY(36px)", transition: `opacity .65s ease ${delay}s, transform .65s cubic-bezier(.34,1.2,.64,1) ${delay}s`, ...style }}>
+      {children}
+    </div>
+  );
+}
+
+function Typewriter({ texts, speed = 75 }) {
+  const [d, setD] = useState(""); const [ti, setTi] = useState(0); const [ci, setCi] = useState(0); const [del, setDel] = useState(false);
+  useEffect(() => {
+    const cur = texts[ti];
+    const t = setTimeout(() => {
+      if (!del) { if (ci < cur.length) { setD(cur.slice(0, ci + 1)); setCi(c => c + 1); } else setTimeout(() => setDel(true), 1800); }
+      else { if (ci > 0) { setD(cur.slice(0, ci - 1)); setCi(c => c - 1); } else { setDel(false); setTi(i => (i + 1) % texts.length); } }
+    }, del ? speed / 2 : speed);
+    return () => clearTimeout(t);
+  }, [ci, del, ti, texts, speed]);
+  return <span style={{ color: "var(--accent)" }}>{d}<span style={{ animation: "blink 1s infinite" }}>|</span></span>;
+}
+
+function CmdBadge({ cmd, desc, color = "var(--accent)" }) {
+  const [h, setH] = useState(false);
+  return (
+    <div onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
+      style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 14px", background: h ? `${color}08` : "transparent", borderLeft: `3px solid ${h ? color : "transparent"}`, borderRadius: "0 8px 8px 0", transition: "all .3s cubic-bezier(.34,1.56,.64,1)", transform: h ? "translateX(5px)" : "translateX(0)", cursor: "default" }}>
+      <code style={{ background: "rgba(0,0,0,0.45)", color, padding: "3px 10px", borderRadius: 5, fontFamily: "DM Mono,monospace", fontSize: 12, border: `1px solid ${color}28`, whiteSpace: "nowrap", flexShrink: 0, boxShadow: h ? `0 0 12px ${color}40` : "none", transition: "box-shadow .3s" }}>{cmd}</code>
+      <span style={{ color: "var(--text-muted)", fontSize: 13, lineHeight: 1.6 }}>{desc}</span>
+    </div>
+  );
+}
+
+function ModuleCard({ module, index, color, icon, children }) {
+  const [open, setOpen] = useState(false);
+  const [ref, v] = useReveal();
+  const pal = { green: "#22c55e", yellow: "#f59e0b", orange: "#f97316", blue: "#00d4ff", red: "#ef4444", purple: "#7c3aed" };
+  const c = pal[color] || pal.blue;
+  return (
+    <div ref={ref} style={{ opacity: v ? 1 : 0, transform: v ? "none" : "translateY(40px) scale(.96)", transition: `all .55s cubic-bezier(.34,1.2,.64,1) ${index * 0.1}s` }}>
+      <div onClick={() => setOpen(o => !o)} style={{ background: "var(--surface)", border: `1px solid ${open ? c + "55" : "var(--border)"}`, borderRadius: 14, overflow: "hidden", cursor: "pointer", boxShadow: open ? `0 0 28px ${c}22, 0 8px 28px rgba(0,0,0,.3)` : "0 4px 18px rgba(0,0,0,.2)", transition: "all .35s cubic-bezier(.34,1.2,.64,1)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "18px 22px", background: open ? `${c}0e` : "transparent", borderBottom: open ? `1px solid ${c}22` : "1px solid transparent", transition: "all .3s" }}>
+          <div style={{ width: 46, height: 46, borderRadius: 11, background: `${c}18`, border: `2px solid ${c}45`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: open ? `0 0 18px ${c}45` : "none", transition: "all .3s", animation: open ? "pulse 2s infinite" : "none" }}>{icon}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 10, color: c, fontFamily: "DM Mono,monospace", letterSpacing: 2, marginBottom: 3 }}>MODULE {String(index + 1).padStart(2, "0")}</div>
+            <div style={{ fontSize: 16, fontFamily: "Syne,sans-serif", fontWeight: 700, color: "var(--text)" }}>{module}</div>
+          </div>
+          <div style={{ color: c, fontSize: 20, transform: open ? "rotate(180deg)" : "none", transition: "transform .35s cubic-bezier(.34,1.56,.64,1)" }}>▾</div>
+        </div>
+        {open && <div style={{ padding: 22, animation: "slideDown .35s ease" }}>{children}</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   SIMULATION 1 — BRANCH & MERGE
+══════════════════════════════════════════════ */
+function BranchMergeSim() {
+  const INIT = {
+    commits: [
+      { id: "a1b2c3d", msg: "Initial commit", branch: "main", author: "you", ts: "10:00", x: 80, y: 90, parent: null },
+      { id: "e4f5g6h", msg: "Add README.md", branch: "main", author: "you", ts: "10:15", x: 200, y: 90, parent: "a1b2c3d" },
+    ],
+    branches: { main: "e4f5g6h" },
+    head: "main",
+    log: [
+      { type: "cmd", text: "git init" },
+      { type: "out", text: "Initialized empty Git repository in ~/project/.git/" },
+      { type: "cmd", text: "git commit -m 'Initial commit'" },
+      { type: "out", text: "[main (root-commit) a1b2c3d] Initial commit" },
+      { type: "cmd", text: "git commit -m 'Add README.md'" },
+      { type: "out", text: "[main e4f5g6h] Add README.md" },
+    ],
+    step: 0,
+    merged: false,
+    cleaned: false,
+  };
+
+  const [state, setState] = useState(INIT);
+  const [hoveredCommit, setHoveredCommit] = useState(null);
+  const logEndRef = useRef(null);
+
+  useEffect(() => {
+    if (logEndRef.current) logEndRef.current.scrollIntoView({ behavior: "smooth" });
+  }, [state.log.length]);
+
+  const STEP_INFO = [
+    { title: "feature 브랜치 생성", desc: "main에서 새 브랜치를 만듭니다. 두 브랜치가 같은 커밋을 가리킵니다.", concept: "브랜치 = 특정 커밋을 가리키는 포인터. 생성 비용이 거의 없습니다.", icon: "🌿" },
+    { title: "feature에서 첫 커밋", desc: "로그인 폼을 구현합니다. feature/login만 전진하고 main은 그대로입니다.", concept: "각 브랜치의 작업은 서로 독립적입니다.", icon: "✏️" },
+    { title: "feature에서 두 번째 커밋", desc: "입력 검증 로직을 추가합니다. feature/login이 main보다 2커밋 앞서게 됩니다.", concept: "커밋이 쌓이면서 feature만의 히스토리가 만들어집니다.", icon: "✏️" },
+    { title: "main 브랜치로 전환", desc: "HEAD가 main으로 이동합니다. Working Directory가 main 상태로 복원됩니다.", concept: "git switch는 HEAD를 이동시키고 파일을 해당 브랜치 상태로 복원합니다.", icon: "🔄" },
+    { title: "main에서도 커밋 발생", desc: "main에서도 독립적으로 작업합니다. 이제 두 브랜치가 갈라졌습니다(diverge).", concept: "공통 조상(e4f5g6h) 이후 각자 다른 커밋이 생겼습니다.", icon: "✏️" },
+    { title: "feature → main 병합", desc: "3-way merge로 두 브랜치를 합칩니다. 부모가 2개인 Merge 커밋이 생성됩니다.", concept: "Merge 커밋 = 양쪽 변경사항을 모두 포함하는 특수 커밋.", icon: "🔀" },
+    { title: "병합된 브랜치 정리", desc: "feature/login 작업이 main에 포함되었으므로 브랜치를 삭제합니다.", concept: "브랜치 삭제는 포인터만 제거합니다. 커밋은 그대로 남습니다.", icon: "🗑️" },
+  ];
+
+  const steps = [
+    {
+      label: "git switch -c feature/login", color: "#00d4ff",
+      action: (s) => ({ ...s, branches: { ...s.branches, "feature/login": "e4f5g6h" }, head: "feature/login",
+        log: [...s.log, { type: "cmd", text: "git switch -c feature/login" }, { type: "out", text: "Switched to a new branch 'feature/login'" }], step: 1 })
+    },
+    {
+      label: "git commit -m 'Add login form'", color: "#00d4ff",
+      action: (s) => {
+        const nc = { id: "f1a2b3c", msg: "Add login form", branch: "feature/login", author: "you", ts: "11:00", x: 320, y: 190, parent: "e4f5g6h" };
+        return { ...s, commits: [...s.commits, nc], branches: { ...s.branches, "feature/login": "f1a2b3c" },
+          log: [...s.log, { type: "cmd", text: "git add src/Login.jsx" }, { type: "cmd", text: "git commit -m 'Add login form'" },
+            { type: "out", text: "[feature/login f1a2b3c] Add login form" }, { type: "stat", text: " 1 file changed, 42 insertions(+)" }], step: 2 };
+      }
+    },
+    {
+      label: "git commit -m 'Add validation'", color: "#00d4ff",
+      action: (s) => {
+        const nc = { id: "d4e5f6g", msg: "Add input validation", branch: "feature/login", author: "you", ts: "11:30", x: 440, y: 190, parent: "f1a2b3c" };
+        return { ...s, commits: [...s.commits, nc], branches: { ...s.branches, "feature/login": "d4e5f6g" },
+          log: [...s.log, { type: "cmd", text: "git commit -m 'Add input validation'" },
+            { type: "out", text: "[feature/login d4e5f6g] Add input validation" }, { type: "stat", text: " 2 files changed, 28 insertions(+), 3 deletions(-)" }], step: 3 };
+      }
+    },
+    {
+      label: "git switch main", color: "#22c55e",
+      action: (s) => ({ ...s, head: "main",
+        log: [...s.log, { type: "cmd", text: "git switch main" }, { type: "out", text: "Switched to branch 'main'" }], step: 4 })
+    },
+    {
+      label: "git commit -m 'Update styles'", color: "#22c55e",
+      action: (s) => {
+        const nc = { id: "h7i8j9k", msg: "Update global styles", branch: "main", author: "you", ts: "12:00", x: 320, y: 90, parent: "e4f5g6h" };
+        return { ...s, commits: [...s.commits, nc], branches: { ...s.branches, main: "h7i8j9k" },
+          log: [...s.log, { type: "cmd", text: "git commit -m 'Update global styles'" },
+            { type: "out", text: "[main h7i8j9k] Update global styles" }, { type: "stat", text: " 1 file changed, 15 insertions(+), 8 deletions(-)" }], step: 5 };
+      }
+    },
+    {
+      label: "git merge feature/login", color: "#f59e0b",
+      action: (s) => {
+        const nc = { id: "m9g8e7r", msg: "Merge branch 'feature/login' into main", branch: "main", author: "you", ts: "12:15", x: 560, y: 90, parent: "h7i8j9k", parent2: "d4e5f6g", isMerge: true };
+        return { ...s, commits: [...s.commits, nc], branches: { ...s.branches, main: "m9g8e7r" }, head: "main", merged: true,
+          log: [...s.log, { type: "cmd", text: "git merge feature/login" }, { type: "out", text: "Merge made by the 'ort' strategy." },
+            { type: "stat", text: " src/Login.jsx  | 42 +++++++++++++++" }, { type: "stat", text: " src/validate.js | 28 ++++++++++--" },
+            { type: "out", text: " 2 files changed, 67 insertions(+), 3 deletions(-)" }], step: 6 };
+      }
+    },
+    {
+      label: "git branch -d feature/login", color: "#7c3aed",
+      action: (s) => {
+        const nb = { ...s.branches }; delete nb["feature/login"];
+        return { ...s, branches: nb, cleaned: true,
+          log: [...s.log, { type: "cmd", text: "git branch -d feature/login" }, { type: "out", text: "Deleted branch feature/login (was d4e5f6g)." },
+            { type: "blank", text: "" }, { type: "cmd", text: "git log --oneline --graph" },
+            { type: "graph", text: "*   m9g8e7r (HEAD -> main) Merge branch 'feature/login'" },
+            { type: "graph", text: "|\\  " }, { type: "graph", text: "| * d4e5f6g Add input validation" },
+            { type: "graph", text: "| * f1a2b3c Add login form" }, { type: "graph", text: "* | h7i8j9k Update global styles" },
+            { type: "graph", text: "|/  " }, { type: "graph", text: "* e4f5g6h Add README.md" },
+            { type: "graph", text: "* a1b2c3d Initial commit" }], step: 7 };
+      }
+    },
+  ];
+
+  const canStep = state.step < steps.length;
+  const doStep = () => { if (canStep) setState(s => steps[s.step].action(s)); };
+  const reset = () => { setState(INIT); setHoveredCommit(null); };
+
+  const branchColor = { main: "#22c55e", "feature/login": "#00d4ff" };
+  const commitColor = (c) => c.isMerge ? "#f59e0b" : branchColor[c.branch] || "#64748b";
+
+  /* Bezier curve edges */
+  const edges = [];
+  state.commits.forEach(c => {
+    if (c.parent) {
+      const p = state.commits.find(x => x.id === c.parent);
+      if (p) edges.push({ x1: p.x, y1: p.y, x2: c.x, y2: c.y, color: commitColor(c), id: c.id + "-" + c.parent, curve: p.y !== c.y });
+    }
+    if (c.parent2) {
+      const p2 = state.commits.find(x => x.id === c.parent2);
+      if (p2) edges.push({ x1: p2.x, y1: p2.y, x2: c.x, y2: c.y, color: "#f59e0b", id: c.id + "-" + c.parent2, dashed: true, curve: true });
+    }
+  });
+  const edgePath = (e) => {
+    if (!e.curve) return `M${e.x1},${e.y1} L${e.x2},${e.y2}`;
+    const mx = (e.x1 + e.x2) / 2;
+    return `M${e.x1},${e.y1} C${mx},${e.y1} ${mx},${e.y2} ${e.x2},${e.y2}`;
+  };
+
+  const curInfo = state.step > 0 ? STEP_INFO[state.step - 1] : null;
+
+  return (
+    <div style={{ background: "var(--surface2)", borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)" }}>
+      {/* Header */}
+      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ fontFamily: "DM Mono,monospace", fontSize: 13, color: "var(--accent)" }}>🌿 Branch & Merge 시뮬레이터</div>
+          <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "DM Mono,monospace" }}>Step {state.step}/{steps.length}</span>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          {Object.entries(state.branches).map(([name, tip]) => {
+            const bc = branchColor[name] || "#64748b"; const isHead = state.head === name;
+            return (
+              <div key={name} style={{ padding: "4px 12px", borderRadius: 6, background: isHead ? `${bc}20` : `${bc}0c`, color: bc,
+                border: `1px solid ${isHead ? bc + "60" : bc + "30"}`, fontSize: 11, fontFamily: "DM Mono,monospace",
+                display: "flex", alignItems: "center", gap: 6, transition: "all .4s cubic-bezier(.34,1.56,.64,1)",
+                boxShadow: isHead ? `0 0 10px ${bc}30` : "none" }}>
+                {isHead && <span style={{ width: 6, height: 6, borderRadius: "50%", background: bc, animation: "pulse 2s infinite" }} />}
+                {isHead && <span style={{ fontSize: 9, color: "#a78bfa" }}>HEAD →</span>}
+                {name}
+                <span style={{ fontSize: 9, color: "var(--text-muted)" }}>@{tip.slice(0, 7)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Step explanation banner */}
+      {curInfo && (
+        <div style={{ padding: "12px 18px", background: `${steps[state.step - 1]?.color || "var(--accent)"}08`,
+          borderBottom: `1px solid ${steps[state.step - 1]?.color || "var(--accent)"}20`, animation: "slideDown .3s ease",
+          display: "flex", gap: 12, alignItems: "flex-start" }}>
+          <span style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>{curInfo.icon}</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 13, color: "var(--text)", marginBottom: 3 }}>Step {state.step}: {curInfo.title}</div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 5 }}>{curInfo.desc}</div>
+            <div style={{ fontSize: 11, color: steps[state.step - 1]?.color || "var(--accent)", fontFamily: "DM Mono,monospace",
+              padding: "4px 10px", background: `${steps[state.step - 1]?.color || "var(--accent)"}0e`, borderRadius: 5,
+              display: "inline-block", border: `1px solid ${steps[state.step - 1]?.color || "var(--accent)"}25` }}>
+              💡 {curInfo.concept}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="sim-grid">
+        {/* Graph Canvas */}
+        <div style={{ padding: 20, borderRight: "1px solid var(--border)", position: "relative" }}>
+          <svg viewBox="0 0 640 280" style={{ display: "block", width: "100%", height: "auto" }}>
+            <defs>
+              <pattern id="bm-dots" width="20" height="20" patternUnits="userSpaceOnUse">
+                <circle cx="10" cy="10" r="0.7" fill="rgba(100,116,139,0.12)" />
+              </pattern>
+              <marker id="bm-arr" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M1,1 L1,7 L7,4 z" fill="#7c3aed" /></marker>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#bm-dots)" />
+
+            {/* Branch lane backgrounds */}
+            <rect x="0" y="65" width="640" height="50" rx="4" fill="rgba(34,197,94,0.03)" />
+            {state.step >= 1 && state.branches["feature/login"] && <rect x="0" y="165" width="640" height="50" rx="4" fill="rgba(0,212,255,0.03)" style={{ animation: "fadeInUp .3s ease" }} />}
+
+            {/* Branch lane labels */}
+            <g><rect x="4" y="78" width="42" height="18" rx="3" fill="rgba(34,197,94,0.1)" stroke="rgba(34,197,94,0.25)" strokeWidth="0.5" />
+              <text x="25" y="91" textAnchor="middle" fill="#22c55e" fontSize="9" fontFamily="DM Mono,monospace">main</text></g>
+            {state.step >= 1 && state.branches["feature/login"] && (
+              <g style={{ animation: "fadeInLeft .3s ease" }}><rect x="4" y="178" width="72" height="18" rx="3" fill="rgba(0,212,255,0.1)" stroke="rgba(0,212,255,0.25)" strokeWidth="0.5" />
+                <text x="40" y="191" textAnchor="middle" fill="#00d4ff" fontSize="8" fontFamily="DM Mono,monospace">feature/login</text></g>
+            )}
+
+            {/* Edges (bezier curves) */}
+            {edges.map(e => (
+              <path key={e.id} d={edgePath(e)} fill="none" stroke={e.color} strokeWidth="2.5" strokeOpacity=".65"
+                strokeDasharray={e.dashed ? "6,4" : "none"} strokeLinecap="round" style={{ animation: "fadeInUp .4s ease" }} />
+            ))}
+
+            {/* Commits */}
+            {state.commits.map((c) => {
+              const color = commitColor(c); const isH = hoveredCommit === c.id;
+              const isTip = Object.values(state.branches).includes(c.id);
+              return (
+                <g key={c.id} onMouseEnter={() => setHoveredCommit(c.id)} onMouseLeave={() => setHoveredCommit(null)} style={{ cursor: "pointer" }}>
+                  {(isH || isTip) && <circle cx={c.x} cy={c.y} r={c.isMerge ? 20 : 17} fill="none" stroke={color} strokeWidth="1"
+                    strokeOpacity={isH ? ".4" : ".15"} style={{ animation: isH ? "pulse 1.5s infinite" : "none" }} />}
+                  <circle cx={c.x} cy={c.y} r={c.isMerge ? 14 : 11} fill={isH ? `${color}44` : `${color}18`}
+                    stroke={color} strokeWidth={c.isMerge ? 3 : 2}
+                    style={{ animation: "commitAppear .4s cubic-bezier(.34,1.56,.64,1) both",
+                      filter: c.isMerge || isH ? `drop-shadow(0 0 ${isH ? 12 : 8}px ${color})` : "none", transition: "fill .2s, filter .2s" }} />
+                  {c.isMerge && <text x={c.x} y={c.y + 4} textAnchor="middle" fill={color} fontSize="11" fontWeight="bold">M</text>}
+                  <text x={c.x} y={c.y + (c.isMerge ? 30 : 26)} textAnchor="middle" fill={isH ? color : "#64748b"} fontSize="9"
+                    fontFamily="DM Mono,monospace" style={{ transition: "fill .2s" }}>{c.id.slice(0, 7)}</text>
+                  {isH && (
+                    <foreignObject x={c.x - 85} y={c.y + 34} width="170" height="56">
+                      <div style={{ background: "rgba(17,24,39,0.95)", border: `1px solid ${color}50`, borderRadius: 7,
+                        padding: "6px 10px", textAlign: "center", animation: "fadeInUp .2s ease", backdropFilter: "blur(4px)" }}>
+                        <div style={{ fontSize: 10, color, fontFamily: "DM Mono,monospace", marginBottom: 2 }}>{c.branch} · {c.ts}</div>
+                        <div style={{ fontSize: 11, color: "#e2e8f0", fontFamily: "Syne,sans-serif" }}>{c.msg}</div>
+                      </div>
+                    </foreignObject>
+                  )}
+                </g>
+              );
+            })}
+
+            {/* HEAD pointer */}
+            {(() => {
+              const tip = state.branches[state.head]; const c = state.commits.find(x => x.id === tip);
+              if (!c) return null;
+              return (
+                <g>
+                  <rect x={c.x - 24} y={c.y - 40} width={48} height={18} rx={4} fill="rgba(124,58,237,0.15)" stroke="rgba(124,58,237,0.5)" strokeWidth={1} />
+                  <text x={c.x} y={c.y - 27} textAnchor="middle" fill="#a78bfa" fontSize="10" fontFamily="DM Mono,monospace" fontWeight="bold">HEAD</text>
+                  <line x1={c.x} y1={c.y - 22} x2={c.x} y2={c.y - 13} stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" markerEnd="url(#bm-arr)" />
+                </g>
+              );
+            })()}
+          </svg>
+
+          {/* Step buttons */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14, alignItems: "center" }}>
+            <button className="sim-btn" onClick={doStep} disabled={!canStep}
+              style={canStep && state.step === 0 ? { animation: "pulse 2s infinite" } : {}}>
+              {canStep ? `▶ ${steps[state.step].label}` : "✓ 모든 단계 완료"}
+            </button>
+            <button className="ghost-btn" onClick={reset}>↺ 초기화</button>
+            {state.step > 0 && <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "DM Mono,monospace" }}>{state.step}/{steps.length} 단계</span>}
+          </div>
+
+          {/* Step progress with labels */}
+          <div style={{ marginTop: 14 }}>
+            <div style={{ display: "flex", gap: 3 }}>
+              {steps.map((s, i) => (
+                <div key={i} style={{ flex: 1, height: 5, borderRadius: 3,
+                  background: i < state.step ? s.color : i === state.step ? `${s.color}50` : "var(--border)",
+                  transition: "all .4s ease", boxShadow: i < state.step ? `0 0 6px ${s.color}60` : "none" }}
+                  title={STEP_INFO[i].title} />
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 3, marginTop: 4 }}>
+              {steps.map((s, i) => (
+                <div key={i} style={{ flex: 1, fontSize: 8, textAlign: "center", color: i < state.step ? s.color : "var(--text-muted)",
+                  fontFamily: "DM Mono,monospace", transition: "color .3s", opacity: i < state.step ? 1 : 0.5 }}>
+                  {i < state.step ? "✓" : i + 1}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Terminal Log */}
+        <div style={{ background: "#0d1117", fontFamily: "DM Mono,monospace", fontSize: 11, padding: 0, overflowY: "auto", maxHeight: 400, display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: "8px 14px", borderBottom: "1px solid #1e2d45", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b" }} />
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
+            <span style={{ flex: 1, textAlign: "center", fontSize: 9, color: "#374151" }}>~/project</span>
+          </div>
+          <div style={{ padding: 14, flex: 1, overflowY: "auto" }}>
+            {state.log.map((l, i) => (
+              <div key={i} style={{ lineHeight: 1.8, animation: "fadeInLeft .2s ease",
+                color: l.type === "cmd" ? "var(--accent)" : l.type === "out" ? "#22c55e" : l.type === "stat" ? "#f59e0b" : l.type === "graph" ? "#a78bfa" : "#64748b",
+                paddingLeft: l.type === "stat" || l.type === "graph" ? 8 : 0 }}>
+                {l.type === "cmd" && <><span style={{ color: "#7c3aed" }}>❯ </span>{l.text}</>}
+                {l.type === "out" && l.text}
+                {l.type === "stat" && <span style={{ opacity: 0.7 }}>{l.text}</span>}
+                {l.type === "graph" && <span>{l.text}</span>}
+                {l.type === "blank" && <br />}
+              </div>
+            ))}
+            <div ref={logEndRef} />
+            {state.merged && !state.cleaned && (
+              <div style={{ marginTop: 10, padding: "8px 10px", background: "rgba(34,197,94,0.1)", borderRadius: 6, border: "1px solid rgba(34,197,94,0.25)", color: "#22c55e", animation: "successPop .5s cubic-bezier(.34,1.56,.64,1)" }}>
+                ✓ Merge 성공! 다음: 브랜치 정리
+              </div>
+            )}
+            {state.cleaned && (
+              <div style={{ marginTop: 10, padding: "10px 12px", background: "rgba(124,58,237,0.1)", borderRadius: 6, border: "1px solid rgba(124,58,237,0.25)", animation: "successPop .5s cubic-bezier(.34,1.56,.64,1)" }}>
+                <div style={{ color: "#a78bfa", marginBottom: 4 }}>🎉 전체 워크플로우 완료!</div>
+                <div style={{ color: "#64748b", fontSize: 10, lineHeight: 1.6 }}>브랜치 생성 → 커밋 → 전환 → 병합 → 정리<br />실무에서 가장 흔한 Git 워크플로우입니다.</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   SIMULATION 2 — MERGE CONFLICT RESOLVER
+══════════════════════════════════════════════ */
+function ConflictSim() {
+  const INIT_SECTIONS = [
+    { id: "s1", line: 1, label: "import 구문",
+      base: 'import React from "react";',
+      ours: 'import React, { useState } from "react";',
+      theirs: 'import React, { useEffect } from "react";',
+      both: 'import React, { useState, useEffect } from "react";',
+      resolved: null, choice: null },
+    { id: "s2", line: 3, label: "컴포넌트 선언",
+      base: "function App() {",
+      ours: "function MyApp() {",
+      theirs: "function Application() {",
+      both: "function MyApp() {",
+      resolved: null, choice: null },
+    { id: "s3", line: 5, label: "상태 변수",
+      base: "  const data = [];",
+      ours: "  const [count, setCount] = useState(0);",
+      theirs: "  const [items, setItems] = useState([]);",
+      both: "  const [count, setCount] = useState(0);\n  const [items, setItems] = useState([]);",
+      resolved: null, choice: null },
+    { id: "s4", line: 12, label: "반환값 JSX",
+      base: '  return <div>Hello</div>;',
+      ours: '  return <div className="app">Hello World</div>;',
+      theirs: '  return <main>Hello World</main>;',
+      both: '  return <main className="app">Hello World</main>;',
+      resolved: null, choice: null },
+  ];
+
+  const [sections, setSections] = useState(INIT_SECTIONS);
+  const [phase, setPhase] = useState("conflict"); // conflict | resolving | staging | done
+  const [viewMode, setViewMode] = useState("split"); // split | markers
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState("");
+  const [log, setLog] = useState([
+    { type: "cmd", text: "git merge feature/new-component" },
+    { type: "err", text: "Auto-merging src/App.jsx" },
+    { type: "err", text: "CONFLICT (content): Merge conflict in src/App.jsx" },
+    { type: "err", text: "Automatic merge failed; fix conflicts and then commit the result." },
+  ]);
+  const logEndRef = useRef(null);
+
+  useEffect(() => { if (logEndRef.current) logEndRef.current.scrollIntoView({ behavior: "smooth" }); }, [log.length]);
+
+  const resolvedCount = sections.filter(s => s.resolved !== null).length;
+  const allResolved = resolvedCount === sections.length;
+
+  // Auto-advance phase
+  useEffect(() => {
+    if (resolvedCount > 0 && phase === "conflict") setPhase("resolving");
+  }, [resolvedCount, phase]);
+
+  const choose = (id, choice) => {
+    const sec = sections.find(s => s.id === id);
+    const value = choice === "both" ? sec.both : sec[choice];
+    setSections(prev => prev.map(s => s.id === id ? { ...s, resolved: value, choice } : s));
+    const labels = { ours: "Accept Current Change", theirs: "Accept Incoming Change", both: "Accept Both Changes" };
+    setLog(prev => [...prev, { type: "info", text: `  ✓ [${sec.label}] ${labels[choice]}` }]);
+  };
+
+  const startEdit = (id) => {
+    const sec = sections.find(s => s.id === id);
+    setEditingId(id);
+    setEditText(sec.ours);
+  };
+
+  const confirmEdit = (id) => {
+    if (!editText.trim()) return;
+    const sec = sections.find(s => s.id === id);
+    setSections(prev => prev.map(s => s.id === id ? { ...s, resolved: editText, choice: "custom" } : s));
+    setLog(prev => [...prev, { type: "info", text: `  ✓ [${sec.label}] 직접 편집으로 해결` }]);
+    setEditingId(null); setEditText("");
+  };
+
+  const undoResolve = (id) => {
+    const sec = sections.find(s => s.id === id);
+    setSections(prev => prev.map(s => s.id === id ? { ...s, resolved: null, choice: null } : s));
+    setLog(prev => [...prev, { type: "warn", text: `  ↩ 해결 취소: ${sec.label}` }]);
+    if (phase === "staging") setPhase("resolving");
+  };
+
+  const stageFile = () => {
+    setPhase("staging");
+    setLog(prev => [...prev, { type: "blank", text: "" },
+      { type: "cmd", text: "git add src/App.jsx" },
+      { type: "out", text: "충돌 해결 파일이 Staging Area에 추가되었습니다." }]);
+  };
+
+  const commitResolve = () => {
+    setPhase("done");
+    setLog(prev => [...prev,
+      { type: "cmd", text: "git commit -m 'Resolve merge conflict in App.jsx'" },
+      { type: "out", text: "[main 7f8g9h0] Resolve merge conflict in App.jsx" },
+      { type: "stat", text: " 1 file changed, 23 insertions(+), 5 deletions(-)" }]);
+  };
+
+  const reset = () => {
+    setSections(INIT_SECTIONS); setPhase("conflict"); setViewMode("split");
+    setEditingId(null); setEditText("");
+    setLog([
+      { type: "cmd", text: "git merge feature/new-component" },
+      { type: "err", text: "Auto-merging src/App.jsx" },
+      { type: "err", text: "CONFLICT (content): Merge conflict in src/App.jsx" },
+      { type: "err", text: "Automatic merge failed; fix conflicts and then commit the result." },
+    ]);
+  };
+
+  const PHASE_INFO = {
+    conflict: { title: "충돌 감지됨", desc: "git merge가 자동 병합에 실패했습니다. 동일한 부분을 양쪽 브랜치가 다르게 수정하여 충돌이 발생했습니다.", icon: "⚠️", color: "#ef4444" },
+    resolving: { title: "충돌 해결 중", desc: "각 섹션마다 Current(Ours), Incoming(Theirs), Both, 또는 직접 편집 중 선택하세요.", icon: "🔧", color: "#f59e0b" },
+    staging: { title: "스테이징 완료", desc: "해결된 파일이 Staging Area에 추가되었습니다. commit으로 병합을 완료하세요.", icon: "📋", color: "#00d4ff" },
+    done: { title: "병합 완료!", desc: "모든 충돌이 해결되고 Merge 커밋이 생성되었습니다.", icon: "🎉", color: "#22c55e" },
+  };
+  const pi = PHASE_INFO[phase];
+
+  const choiceLabels = { ours: "Current", theirs: "Incoming", both: "Both", custom: "편집됨" };
+  const choiceColors = { ours: "#22c55e", theirs: "#00d4ff", both: "#f59e0b", custom: "#a78bfa" };
+
+  return (
+    <div style={{ background: "var(--surface2)", borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)" }}>
+      {/* Header */}
+      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontFamily: "DM Mono,monospace", fontSize: 13, color: "#ef4444" }}>⚔️ Merge Conflict 해결 시뮬레이터</span>
+          <span style={{ fontSize: 10, color: pi.color, fontFamily: "DM Mono,monospace", padding: "2px 8px", background: `${pi.color}14`, borderRadius: 4, border: `1px solid ${pi.color}30` }}>
+            {pi.icon} {pi.title}
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <span style={{ fontSize: 11, fontFamily: "DM Mono,monospace", color: "var(--text-muted)" }}>
+            {resolvedCount}/{sections.length} 해결
+          </span>
+          <div style={{ width: 90, height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${(resolvedCount / sections.length) * 100}%`, background: allResolved ? "#22c55e" : "linear-gradient(90deg,#ef4444,#f59e0b)", transition: "all .5s ease", borderRadius: 3 }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Phase explanation banner */}
+      <div style={{ padding: "10px 18px", background: `${pi.color}08`, borderBottom: `1px solid ${pi.color}18`,
+        display: "flex", gap: 10, alignItems: "center", animation: "slideDown .3s ease" }}>
+        <span style={{ fontSize: 18 }}>{pi.icon}</span>
+        <div>
+          <span style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 12, color: pi.color }}>{pi.title}</span>
+          <span style={{ fontSize: 11, color: "var(--text-muted)", marginLeft: 10 }}>{pi.desc}</span>
+        </div>
+      </div>
+
+      <div className="sim-grid-narrow">
+        {/* Editor Area */}
+        <div style={{ borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column" }}>
+          {/* File tab + view toggle */}
+          <div style={{ padding: "8px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(0,0,0,0.15)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 12 }}>📄</span>
+              <span style={{ fontFamily: "DM Mono,monospace", fontSize: 11, color: "var(--text)" }}>src/App.jsx</span>
+              <span style={{ fontSize: 9, padding: "1px 6px", borderRadius: 3, background: "rgba(239,68,68,0.15)", color: "#ef4444", fontFamily: "DM Mono,monospace", border: "1px solid rgba(239,68,68,0.3)" }}>
+                {allResolved ? "RESOLVED" : `${sections.length - resolvedCount} CONFLICTS`}
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: 4 }}>
+              {[{ id: "split", label: "분할 뷰" }, { id: "markers", label: "마커 뷰" }].map(v => (
+                <button key={v.id} onClick={() => setViewMode(v.id)}
+                  style={{ padding: "3px 10px", borderRadius: 4, fontSize: 9, fontFamily: "DM Mono,monospace", cursor: "pointer", border: "1px solid",
+                    background: viewMode === v.id ? "rgba(0,212,255,0.12)" : "transparent",
+                    borderColor: viewMode === v.id ? "rgba(0,212,255,0.3)" : "var(--border)",
+                    color: viewMode === v.id ? "var(--accent)" : "var(--text-muted)", transition: "all .2s" }}>
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ padding: 16, overflowY: "auto", flex: 1 }}>
+            {/* 3-way column headers (split view only) */}
+            {viewMode === "split" && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
+                {[{ label: "BASE (공통 조상)", color: "#64748b" }, { label: "OURS (현재 브랜치 · main)", color: "#22c55e" }, { label: "THEIRS (수신 · feature)", color: "#00d4ff" }].map((h, i) => (
+                  <div key={i} style={{ textAlign: "center", padding: "6px 8px", background: `${h.color}10`, borderRadius: 6, border: `1px solid ${h.color}20`, fontSize: 9, color: h.color, fontFamily: "DM Mono,monospace" }}>{h.label}</div>
+                ))}
+              </div>
+            )}
+
+            {/* Marker view header */}
+            {viewMode === "markers" && (
+              <div style={{ marginBottom: 12, padding: "8px 12px", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", borderRadius: 8 }}>
+                <div style={{ fontSize: 10, color: "#ef4444", fontFamily: "DM Mono,monospace", marginBottom: 4 }}>충돌 마커 뷰</div>
+                <div style={{ fontSize: 11, color: "var(--text-muted)" }}>실제 Git이 파일에 삽입하는 충돌 마커를 보여줍니다. 에디터에서 이 마커를 직접 편집하여 해결합니다.</div>
+              </div>
+            )}
+
+            {/* Conflict sections */}
+            {sections.map((sec, si) => (
+              <div key={sec.id} style={{ marginBottom: 16, animation: `staggerReveal .3s ease ${si * .06}s both` }}>
+                {/* Section header */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontFamily: "DM Mono,monospace", fontSize: 9, color: sec.resolved ? "#22c55e" : "#ef4444",
+                    padding: "1px 6px", borderRadius: 3, background: sec.resolved ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
+                    border: `1px solid ${sec.resolved ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}` }}>
+                    {sec.resolved ? "✓ RESOLVED" : `CONFLICT #${si + 1}`}
+                  </span>
+                  <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "DM Mono,monospace" }}>Line {sec.line} · {sec.label}</span>
+                  {sec.choice && <span style={{ fontSize: 9, color: choiceColors[sec.choice], fontFamily: "DM Mono,monospace" }}>({choiceLabels[sec.choice]})</span>}
+                </div>
+
+                {/* Resolved state */}
+                {sec.resolved ? (
+                  <div style={{ position: "relative", padding: "10px 14px", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: 8,
+                    fontFamily: "DM Mono,monospace", fontSize: 11, color: "#22c55e", animation: "successPop .4s cubic-bezier(.34,1.56,.64,1)", whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
+                    {sec.resolved}
+                    {phase !== "done" && (
+                      <button onClick={() => undoResolve(sec.id)}
+                        style={{ position: "absolute", top: 6, right: 8, background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)",
+                          color: "#ef4444", fontSize: 9, padding: "2px 8px", borderRadius: 4, cursor: "pointer", fontFamily: "DM Mono,monospace", transition: "all .2s" }}
+                        onMouseEnter={e => e.target.style.background = "rgba(239,68,68,0.25)"}
+                        onMouseLeave={e => e.target.style.background = "rgba(239,68,68,0.12)"}>
+                        ↩ 되돌리기
+                      </button>
+                    )}
+                  </div>
+                ) : editingId === sec.id ? (
+                  /* Custom edit mode */
+                  <div style={{ animation: "slideDown .3s ease" }}>
+                    <textarea value={editText} onChange={e => setEditText(e.target.value)}
+                      style={{ width: "100%", minHeight: 60, padding: "10px 12px", background: "rgba(167,139,250,0.06)", border: "1px solid rgba(167,139,250,0.35)",
+                        borderRadius: 8, fontFamily: "DM Mono,monospace", fontSize: 11, color: "#a78bfa", resize: "vertical",
+                        outline: "none", lineHeight: 1.7 }}
+                      placeholder="해결할 코드를 직접 작성하세요..." />
+                    <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                      <button onClick={() => confirmEdit(sec.id)} className="sim-btn" style={{ padding: "5px 14px", fontSize: 10 }}>✓ 적용</button>
+                      <button onClick={() => { setEditingId(null); setEditText(""); }} className="ghost-btn" style={{ padding: "5px 14px", fontSize: 10 }}>취소</button>
+                    </div>
+                  </div>
+                ) : viewMode === "markers" ? (
+                  /* Marker view */
+                  <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid rgba(239,68,68,0.25)" }}>
+                    <div style={{ padding: "6px 12px", fontFamily: "DM Mono,monospace", fontSize: 10, lineHeight: 1.8 }}>
+                      <div style={{ color: "#ef4444", fontWeight: "bold" }}>{"<<<<<<< HEAD (main)"}</div>
+                      <div style={{ color: "#22c55e", background: "rgba(34,197,94,0.06)", padding: "2px 8px", margin: "2px 0", borderRadius: 3 }}>{sec.ours}</div>
+                      <div style={{ color: "#ef4444", fontWeight: "bold" }}>{"======="}</div>
+                      <div style={{ color: "#00d4ff", background: "rgba(0,212,255,0.06)", padding: "2px 8px", margin: "2px 0", borderRadius: 3 }}>{sec.theirs}</div>
+                      <div style={{ color: "#ef4444", fontWeight: "bold" }}>{">>>>>>> feature/new-component"}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 4, padding: "6px 8px", borderTop: "1px solid var(--border)", background: "rgba(0,0,0,0.15)" }}>
+                      {[{ k: "ours", l: "Accept Current", c: "#22c55e" }, { k: "theirs", l: "Accept Incoming", c: "#00d4ff" },
+                        { k: "both", l: "Accept Both", c: "#f59e0b" }].map(b => (
+                        <button key={b.k} onClick={() => choose(sec.id, b.k)}
+                          style={{ flex: 1, padding: "4px 0", background: `${b.c}10`, border: `1px solid ${b.c}30`, color: b.c, borderRadius: 4,
+                            fontSize: 9, fontFamily: "DM Mono,monospace", cursor: "pointer", transition: "all .2s" }}
+                          onMouseEnter={e => e.target.style.background = `${b.c}28`}
+                          onMouseLeave={e => e.target.style.background = `${b.c}10`}>{b.l}</button>
+                      ))}
+                      <button onClick={() => startEdit(sec.id)}
+                        style={{ flex: 1, padding: "4px 0", background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.3)", color: "#a78bfa", borderRadius: 4,
+                          fontSize: 9, fontFamily: "DM Mono,monospace", cursor: "pointer", transition: "all .2s" }}
+                        onMouseEnter={e => e.target.style.background = "rgba(167,139,250,0.25)"}
+                        onMouseLeave={e => e.target.style.background = "rgba(167,139,250,0.1)"}
+                      >✏️ 편집</button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Split 3-column view */
+                  <div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+                      {[{ key: "base", code: sec.base, color: "#64748b" }, { key: "ours", code: sec.ours, color: "#22c55e" }, { key: "theirs", code: sec.theirs, color: "#00d4ff" }].map(opt => (
+                        <div key={opt.key}>
+                          <div style={{ padding: "8px 10px", background: `${opt.color}08`, border: `1px solid ${opt.color}20`, borderRadius: 6,
+                            fontFamily: "DM Mono,monospace", fontSize: 10, color: opt.color, lineHeight: 1.6,
+                            animation: opt.key !== "base" ? "conflictFlash 2.5s infinite" : "none", minHeight: 48 }}>
+                            {opt.code}
+                          </div>
+                          {opt.key !== "base" && (
+                            <button onClick={() => choose(sec.id, opt.key)}
+                              style={{ width: "100%", marginTop: 4, padding: "4px 0", background: `${opt.color}12`, border: `1px solid ${opt.color}35`,
+                                color: opt.color, borderRadius: 5, fontSize: 9, fontFamily: "DM Mono,monospace", cursor: "pointer", transition: "all .2s" }}
+                              onMouseEnter={e => e.target.style.background = `${opt.color}30`}
+                              onMouseLeave={e => e.target.style.background = `${opt.color}12`}>
+                              {opt.key === "ours" ? "Accept Current" : "Accept Incoming"}
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Accept Both + Edit buttons */}
+                    <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                      <button onClick={() => choose(sec.id, "both")}
+                        style={{ flex: 1, padding: "5px 0", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.3)",
+                          color: "#f59e0b", borderRadius: 5, fontSize: 9, fontFamily: "DM Mono,monospace", cursor: "pointer", transition: "all .2s" }}
+                        onMouseEnter={e => e.target.style.background = "rgba(245,158,11,0.2)"}
+                        onMouseLeave={e => e.target.style.background = "rgba(245,158,11,0.08)"}>
+                        ⚡ Accept Both Changes
+                      </button>
+                      <button onClick={() => startEdit(sec.id)}
+                        style={{ flex: 1, padding: "5px 0", background: "rgba(167,139,250,0.08)", border: "1px solid rgba(167,139,250,0.3)",
+                          color: "#a78bfa", borderRadius: 5, fontSize: 9, fontFamily: "DM Mono,monospace", cursor: "pointer", transition: "all .2s" }}
+                        onMouseEnter={e => e.target.style.background = "rgba(167,139,250,0.2)"}
+                        onMouseLeave={e => e.target.style.background = "rgba(167,139,250,0.08)"}>
+                        ✏️ 직접 편집
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Action buttons */}
+            <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+              {allResolved && phase === "resolving" && (
+                <button className="sim-btn" onClick={stageFile} style={{ animation: "pulse 2s infinite" }}>
+                  📋 git add — 스테이징
+                </button>
+              )}
+              {phase === "staging" && (
+                <button className="sim-btn" onClick={commitResolve} style={{ animation: "pulse 2s infinite" }}>
+                  ✓ git commit — 병합 완료
+                </button>
+              )}
+              <button className="ghost-btn" onClick={reset}>↺ 초기화</button>
+            </div>
+
+            {/* Final merged file preview */}
+            {phase === "done" && (
+              <div style={{ marginTop: 16, animation: "successPop .5s cubic-bezier(.34,1.56,.64,1)" }}>
+                <div style={{ padding: "14px 16px", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: 10 }}>
+                  <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, color: "#22c55e", marginBottom: 8, fontSize: 14 }}>🎉 Merge 완료!</div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 10 }}>최종 병합된 App.jsx:</div>
+                  <div style={{ background: "#0d1117", borderRadius: 8, padding: 12, fontFamily: "DM Mono,monospace", fontSize: 11, lineHeight: 2, color: "#22c55e" }}>
+                    {sections.map((sec, i) => (
+                      <div key={sec.id} style={{ color: choiceColors[sec.choice] || "#22c55e", whiteSpace: "pre-wrap" }}>{sec.resolved}</div>
+                    ))}
+                    <div style={{ color: "#64748b" }}>{"}"}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Terminal */}
+        <div style={{ background: "#0d1117", fontFamily: "DM Mono,monospace", fontSize: 11, display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: "8px 14px", borderBottom: "1px solid #1e2d45", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b" }} />
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
+            <span style={{ flex: 1, textAlign: "center", fontSize: 9, color: "#374151" }}>~/project</span>
+          </div>
+          <div style={{ padding: 14, flex: 1, overflowY: "auto", maxHeight: 400 }}>
+            {log.map((l, i) => (
+              <div key={i} style={{ lineHeight: 1.8, animation: "fadeInLeft .2s ease",
+                color: l.type === "cmd" ? "var(--accent)" : l.type === "err" ? "#ef4444" : l.type === "out" ? "#22c55e"
+                  : l.type === "stat" ? "#f59e0b" : l.type === "info" ? "#a78bfa" : l.type === "warn" ? "#f97316" : "#64748b",
+                paddingLeft: l.type === "info" || l.type === "warn" || l.type === "stat" ? 4 : 0 }}>
+                {l.type === "cmd" && <><span style={{ color: "#7c3aed" }}>❯ </span>{l.text}</>}
+                {l.type === "err" && <span style={{ fontWeight: l.text.includes("CONFLICT") ? "bold" : "normal" }}>{l.text}</span>}
+                {l.type === "out" && l.text}
+                {l.type === "stat" && <span style={{ opacity: 0.7 }}>{l.text}</span>}
+                {l.type === "info" && l.text}
+                {l.type === "warn" && l.text}
+                {l.type === "blank" && <br />}
+              </div>
+            ))}
+            <div ref={logEndRef} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   SIMULATION 3 — GIT RESET STEP BY STEP
+══════════════════════════════════════════════ */
+function ResetSim() {
+  const COMMITS_INIT = [
+    { id: "a1b2c3d", msg: "Initial commit", files: ["index.html"] },
+    { id: "e4f5g6h", msg: "Add feature A", files: ["feature-a.js"] },
+    { id: "i7j8k9l", msg: "Fix bug #12", files: ["bugfix.js"] },
+    { id: "m1n2o3p", msg: "Add feature B", files: ["feature-b.js", "styles.css"] },
+  ];
+
+  const MODES = [
+    { id: "soft", label: "--soft", color: "#f59e0b", icon: "🟡", risk: 1, riskLabel: "낮음",
+      desc: "커밋만 되돌립니다. 변경사항은 Staging Area에 남아있어 바로 다시 커밋할 수 있습니다.",
+      useCase: "커밋 메시지를 수정하거나, 여러 커밋을 하나로 합칠 때 사용합니다.",
+      staging: true, working: true },
+    { id: "mixed", label: "--mixed (기본값)", color: "#f97316", icon: "🟠", risk: 2, riskLabel: "보통",
+      desc: "커밋을 되돌리고 Staging도 해제합니다. 변경사항은 Working Directory에 남습니다.",
+      useCase: "실수로 add한 파일을 다시 선별적으로 add하고 싶을 때 사용합니다.",
+      staging: false, working: true },
+    { id: "hard", label: "--hard", color: "#ef4444", icon: "🔴", risk: 3, riskLabel: "높음",
+      desc: "커밋, Staging, Working 모두 삭제합니다. 변경사항이 완전히 사라집니다!",
+      useCase: "실험적 변경을 완전히 폐기하고 깨끗한 상태로 돌아갈 때 사용합니다.",
+      staging: false, working: false },
+  ];
+
+  const [mode, setMode] = useState(null);
+  const [commits, setCommits] = useState(COMMITS_INIT);
+  const [staging, setStaging] = useState([]);
+  const [working, setWorking] = useState([]);
+  const [done, setDone] = useState(false);
+  const [log, setLog] = useState([]);
+  const logEndRef = useRef(null);
+
+  useEffect(() => { if (logEndRef.current) logEndRef.current.scrollIntoView({ behavior: "smooth" }); }, [log.length]);
+
+  const removedFiles = COMMITS_INIT[COMMITS_INIT.length - 1].files;
+  const headIdx = commits.length - 1;
+
+  const doReset = (m) => {
+    if (!m) return;
+    const newCommits = COMMITS_INIT.slice(0, -1);
+    setCommits(newCommits);
+
+    const newLog = [
+      { type: "cmd", text: `git reset ${m.label.split(" ")[0]} HEAD~1` },
+      { type: "out", text: `HEAD is now at i7j8k9l Fix bug #12` },
+      { type: "blank", text: "" },
+    ];
+
+    if (m.id === "soft") {
+      setStaging(removedFiles);
+      setWorking([]);
+      newLog.push({ type: "info", text: "변경사항이 Staging Area에 유지됩니다." });
+      newLog.push({ type: "blank", text: "" });
+      newLog.push({ type: "cmd", text: "git status" });
+      newLog.push({ type: "out", text: "On branch main" });
+      newLog.push({ type: "out", text: "Changes to be committed:" });
+      removedFiles.forEach(f => newLog.push({ type: "stat", text: `  new file:   ${f}` }));
+    } else if (m.id === "mixed") {
+      setStaging([]);
+      setWorking(removedFiles);
+      newLog.push({ type: "info", text: "변경사항이 Working Directory에 유지됩니다." });
+      newLog.push({ type: "blank", text: "" });
+      newLog.push({ type: "cmd", text: "git status" });
+      newLog.push({ type: "out", text: "On branch main" });
+      newLog.push({ type: "out", text: "Untracked files:" });
+      removedFiles.forEach(f => newLog.push({ type: "warn", text: `  ${f}` }));
+    } else {
+      setStaging([]);
+      setWorking([]);
+      newLog.push({ type: "err", text: "⚠️  모든 변경사항이 삭제되었습니다!" });
+      newLog.push({ type: "blank", text: "" });
+      newLog.push({ type: "cmd", text: "git status" });
+      newLog.push({ type: "out", text: "On branch main" });
+      newLog.push({ type: "out", text: "nothing to commit, working tree clean" });
+    }
+
+    newLog.push({ type: "blank", text: "" });
+    newLog.push({ type: "cmd", text: "git reflog" });
+    newLog.push({ type: "graph", text: "i7j8k9l (HEAD -> main) HEAD@{0}: reset: moving to HEAD~1" });
+    newLog.push({ type: "graph", text: "m1n2o3p HEAD@{1}: commit: Add feature B" });
+    newLog.push({ type: "graph", text: "i7j8k9l HEAD@{2}: commit: Fix bug #12" });
+
+    setLog(newLog);
+    setDone(true);
+  };
+
+  const reset = () => { setMode(null); setCommits(COMMITS_INIT); setStaging([]); setWorking([]); setDone(false); setLog([]); };
+
+  const ResetZone = ({ title, icon, color, files, active, check }) => (
+    <div style={{ padding: 14, background: active ? `${color}0c` : "rgba(0,0,0,0.15)", border: `1px solid ${active ? color + "40" : "var(--border)"}`,
+      borderRadius: 10, transition: "all .5s cubic-bezier(.34,1.2,.64,1)", minHeight: 90, flex: 1,
+      boxShadow: active ? `0 0 16px ${color}20` : "none" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+        <span style={{ fontSize: 14 }}>{icon}</span>
+        <span style={{ fontSize: 10, color: active ? color : "var(--text-muted)", fontFamily: "DM Mono,monospace", letterSpacing: 1 }}>{title}</span>
+        {done && <span style={{ marginLeft: "auto", fontSize: 10, fontFamily: "DM Mono,monospace", color: check ? "#22c55e" : "#ef4444" }}>{check ? "✓ 유지" : "✗ 비어있음"}</span>}
+      </div>
+      {files.length > 0 ? files.map((f, i) => (
+        <div key={f} style={{ fontSize: 11, color, fontFamily: "DM Mono,monospace", padding: "3px 8px", marginBottom: 3,
+          background: `${color}0a`, borderRadius: 4, border: `1px solid ${color}18`,
+          animation: `staggerReveal .4s ease ${i * .08}s both`, display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 10 }}>📄</span> {f}
+        </div>
+      )) : (
+        <div style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "10px 0" }}>{done ? "비어있음" : "—"}</div>
+      )}
+    </div>
+  );
+
+  return (
+    <div style={{ background: "var(--surface2)", borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)" }}>
+      {/* Header */}
+      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+        <span style={{ fontFamily: "DM Mono,monospace", fontSize: 13, color: "#f97316" }}>⏪ Git Reset 단계별 시뮬레이터</span>
+        {done && mode && (
+          <span style={{ fontSize: 10, fontFamily: "DM Mono,monospace", padding: "3px 10px", borderRadius: 5,
+            background: `${mode.color}15`, color: mode.color, border: `1px solid ${mode.color}35`, animation: "fadeInUp .3s ease" }}>
+            {mode.icon} git reset {mode.label.split(" ")[0]} HEAD~1 실행됨
+          </span>
+        )}
+      </div>
+
+      <div className="sim-grid-eq">
+        {/* Left: Commit history + 3 zones */}
+        <div style={{ padding: 18, borderRight: "1px solid var(--border)" }}>
+          {/* Commit list */}
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "DM Mono,monospace", letterSpacing: 1, marginBottom: 10 }}>COMMIT HISTORY (Repository)</div>
+            {COMMITS_INIT.map((c, i) => {
+              const isRemoved = done && i === COMMITS_INIT.length - 1;
+              const isNewHead = done && i === COMMITS_INIT.length - 2;
+              const isVisible = !isRemoved;
+              const isOldHead = !done && i === COMMITS_INIT.length - 1;
+              return (
+                <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 8, marginBottom: 4,
+                  background: isNewHead ? "rgba(0,212,255,0.08)" : isOldHead ? "rgba(0,212,255,0.08)" : isRemoved ? "rgba(239,68,68,0.06)" : "transparent",
+                  border: `1px solid ${isNewHead || isOldHead ? "rgba(0,212,255,0.2)" : isRemoved ? "rgba(239,68,68,0.2)" : "transparent"}`,
+                  opacity: isRemoved ? 0.35 : 1, textDecoration: isRemoved ? "line-through" : "none",
+                  transition: "all .5s cubic-bezier(.34,1.2,.64,1)", animation: `staggerReveal .4s ease ${i * .05}s both` }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", flexShrink: 0, transition: "all .4s",
+                    background: isRemoved ? "#ef4444" : isNewHead || isOldHead ? "#00d4ff" : "#22c55e",
+                    boxShadow: isNewHead || isOldHead ? "0 0 8px rgba(0,212,255,0.5)" : "none" }} />
+                  <code style={{ fontFamily: "DM Mono,monospace", fontSize: 10, color: isRemoved ? "#ef4444" : "#f59e0b", flexShrink: 0 }}>{c.id.slice(0, 7)}</code>
+                  <span style={{ fontSize: 11, color: isRemoved ? "#ef4444" : isNewHead || isOldHead ? "var(--accent)" : "var(--text-muted)", flex: 1 }}>{c.msg}</span>
+                  {(isNewHead || isOldHead) && <span style={{ fontSize: 9, color: "#7c3aed", fontFamily: "DM Mono,monospace", padding: "1px 6px", borderRadius: 3, background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.25)" }}>HEAD</span>}
+                  {isRemoved && <span style={{ fontSize: 9, color: "#ef4444", fontFamily: "DM Mono,monospace" }}>제거됨</span>}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 3 zones with flow arrows */}
+          <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "DM Mono,monospace", letterSpacing: 1, marginBottom: 10 }}>변경사항 위치</div>
+          <div style={{ display: "flex", gap: 6, alignItems: "stretch" }}>
+            <ResetZone title="Staging Area" icon="📋" color="#f59e0b" files={staging} active={staging.length > 0} check={mode?.staging} />
+            <div style={{ display: "flex", alignItems: "center", color: "var(--text-muted)", fontSize: 16, flexShrink: 0 }}>→</div>
+            <ResetZone title="Working Dir" icon="📁" color="#f97316" files={working} active={working.length > 0} check={mode?.working} />
+          </div>
+
+          {/* Mode comparison table (after done) */}
+          {done && (
+            <div style={{ marginTop: 16, animation: "slideDown .4s ease" }}>
+              <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "DM Mono,monospace", letterSpacing: 1, marginBottom: 8 }}>3개 모드 비교</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+                {MODES.map(m => {
+                  const isActive = mode?.id === m.id;
+                  return (
+                    <div key={m.id} style={{ padding: "10px 10px", borderRadius: 8, textAlign: "center",
+                      background: isActive ? `${m.color}14` : "rgba(0,0,0,0.15)",
+                      border: `2px solid ${isActive ? m.color : "var(--border)"}`,
+                      boxShadow: isActive ? `0 0 12px ${m.color}30` : "none", transition: "all .3s" }}>
+                      <div style={{ fontSize: 12, marginBottom: 4 }}>{m.icon}</div>
+                      <div style={{ fontSize: 10, fontFamily: "DM Mono,monospace", color: m.color, fontWeight: isActive ? "bold" : "normal", marginBottom: 6 }}>{m.label.split(" ")[0]}</div>
+                      <div style={{ fontSize: 9, color: "var(--text-muted)", lineHeight: 1.8 }}>
+                        <div>Staging: <span style={{ color: m.staging ? "#22c55e" : "#ef4444" }}>{m.staging ? "✓ 유지" : "✗ 삭제"}</span></div>
+                        <div>Working: <span style={{ color: m.working ? "#22c55e" : "#ef4444" }}>{m.working ? "✓ 유지" : "✗ 삭제"}</span></div>
+                      </div>
+                      {isActive && <div style={{ fontSize: 8, color: m.color, fontFamily: "DM Mono,monospace", marginTop: 4, animation: "pulse 2s infinite" }}>● 현재 선택</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Mode selector + terminal */}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: 18, flex: done ? "none" : 1 }}>
+            <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "DM Mono,monospace", letterSpacing: 1, marginBottom: 12 }}>RESET 모드 선택</div>
+
+            {MODES.map(m => (
+              <div key={m.id} onClick={() => !done && setMode(m)}
+                style={{ padding: 14, borderRadius: 10, marginBottom: 8, cursor: done ? "default" : "pointer", transition: "all .3s cubic-bezier(.34,1.56,.64,1)",
+                  background: mode?.id === m.id ? `${m.color}10` : "transparent",
+                  border: `2px solid ${mode?.id === m.id ? m.color : "var(--border)"}`,
+                  transform: mode?.id === m.id ? "scale(1.02)" : "scale(1)",
+                  opacity: done && mode?.id !== m.id ? 0.4 : 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <span>{m.icon}</span>
+                  <code style={{ fontFamily: "DM Mono,monospace", fontSize: 12, color: m.color }}>git reset {m.label.split(" ")[0]} HEAD~1</code>
+                  {/* Risk meter */}
+                  <div style={{ marginLeft: "auto", display: "flex", gap: 2, alignItems: "center" }}>
+                    {[1, 2, 3].map(r => (
+                      <div key={r} style={{ width: 10, height: 10, borderRadius: 2, background: r <= m.risk ? m.color : "var(--border)", transition: "background .3s" }} />
+                    ))}
+                    <span style={{ fontSize: 9, color: m.color, fontFamily: "DM Mono,monospace", marginLeft: 4 }}>{m.riskLabel}</span>
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 4 }}>{m.desc}</div>
+                {mode?.id === m.id && !done && (
+                  <div style={{ fontSize: 10, color: m.color, fontFamily: "DM Mono,monospace", padding: "4px 8px", marginTop: 4,
+                    background: `${m.color}0a`, borderRadius: 5, border: `1px solid ${m.color}20`, animation: "slideDown .3s ease" }}>
+                    💡 {m.useCase}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <div style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center" }}>
+              <button className="sim-btn" onClick={() => doReset(mode)} disabled={!mode || done}
+                style={mode && !done ? { animation: "pulse 2s infinite" } : {}}>
+                {done ? `✓ ${mode?.label.split(" ")[0]} 실행 완료` : "▶ 실행"}
+              </button>
+              <button className="ghost-btn" onClick={reset}>↺ 초기화</button>
+            </div>
+          </div>
+
+          {/* Terminal */}
+          {log.length > 0 && (
+            <div style={{ background: "#0d1117", flex: 1, display: "flex", flexDirection: "column", borderTop: "1px solid #1e2d45" }}>
+              <div style={{ padding: "8px 14px", borderBottom: "1px solid #1e2d45", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b" }} />
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
+                <span style={{ flex: 1, textAlign: "center", fontSize: 9, color: "#374151" }}>~/project</span>
+              </div>
+              <div style={{ padding: 12, overflowY: "auto", flex: 1, maxHeight: 400 }}>
+                {log.map((l, i) => (
+                  <div key={i} style={{ lineHeight: 1.8, animation: `fadeInLeft .2s ease ${i * .04}s both`,
+                    color: l.type === "cmd" ? "var(--accent)" : l.type === "out" ? "#22c55e" : l.type === "err" ? "#ef4444"
+                      : l.type === "stat" ? "#f59e0b" : l.type === "info" ? "#a78bfa" : l.type === "warn" ? "#f97316" : l.type === "graph" ? "#a78bfa" : "#64748b",
+                    paddingLeft: l.type === "stat" || l.type === "warn" || l.type === "graph" ? 4 : 0 }}>
+                    {l.type === "cmd" && <><span style={{ color: "#7c3aed" }}>❯ </span>{l.text}</>}
+                    {l.type === "out" && l.text}
+                    {l.type === "err" && <span style={{ fontWeight: "bold" }}>{l.text}</span>}
+                    {l.type === "stat" && <span style={{ color: "#22c55e" }}>{l.text}</span>}
+                    {l.type === "info" && l.text}
+                    {l.type === "warn" && <span style={{ color: "#f97316" }}>{l.text}</span>}
+                    {l.type === "graph" && <span style={{ opacity: 0.8 }}>{l.text}</span>}
+                    {l.type === "blank" && <br />}
+                  </div>
+                ))}
+                <div ref={logEndRef} />
+                {done && (
+                  <div style={{ marginTop: 8, padding: "8px 10px", background: "rgba(167,139,250,0.08)", borderRadius: 6, border: "1px solid rgba(167,139,250,0.2)", animation: "fadeInUp .3s ease" }}>
+                    <div style={{ fontSize: 10, color: "#a78bfa", fontFamily: "DM Mono,monospace" }}>💡 복구 팁: git reflog로 이전 커밋 해시를 찾아</div>
+                    <div style={{ fontSize: 10, color: "#a78bfa", fontFamily: "DM Mono,monospace" }}>   git reset --hard m1n2o3p 로 되돌릴 수 있습니다.</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   SIMULATION 4 — TEAM PR WORKFLOW
+══════════════════════════════════════════════ */
+function PRWorkflowSim() {
+  const STEPS = [
+    { id: 0, actor: "개발자", role: "dev", action: "feature 브랜치 생성 & 코딩", cmd: "git switch -c feature/dark-mode", icon: "👩‍💻", color: "#00d4ff", status: "coding",
+      explain: "main에서 분기하여 독립적인 feature 브랜치를 만듭니다. 이 브랜치에서 모든 개발이 이루어집니다." },
+    { id: 1, actor: "개발자", role: "dev", action: "변경사항 커밋 & 푸시", cmd: "git push -u origin feature/dark-mode", icon: "📤", color: "#7c3aed", status: "pushed",
+      explain: "로컬 커밋을 원격 저장소에 올립니다. -u 플래그로 upstream을 설정하면 이후 git push만으로 푸시 가능합니다." },
+    { id: 2, actor: "개발자", role: "dev", action: "Pull Request 생성", cmd: "gh pr create --title 'Add dark mode'", icon: "🔀", color: "#f59e0b", status: "pr_open",
+      explain: "GitHub에서 PR을 생성합니다. 변경사항 설명, 리뷰어 지정, 라벨 추가를 합니다." },
+    { id: 3, actor: "리뷰어", role: "reviewer", action: "코드 리뷰 & 피드백", cmd: "GitHub → Review Changes", icon: "👀", color: "#f97316", status: "review",
+      explain: "리뷰어가 코드를 검토하고 개선점을 코멘트로 남깁니다. Request Changes로 수정을 요청합니다." },
+    { id: 4, actor: "개발자", role: "dev", action: "피드백 반영 & 재푸시", cmd: "git push origin feature/dark-mode", icon: "🔧", color: "#00d4ff", status: "fix",
+      explain: "리뷰 피드백을 반영하여 코드를 수정하고 다시 푸시합니다. PR이 자동으로 업데이트됩니다." },
+    { id: 5, actor: "리뷰어", role: "reviewer", action: "Approve 승인", cmd: "GitHub → Approve", icon: "✅", color: "#22c55e", status: "approved",
+      explain: "리뷰어가 수정된 코드를 확인하고 Approve합니다. 이제 merge할 준비가 되었습니다." },
+    { id: 6, actor: "개발자", role: "dev", action: "PR Merge (Squash)", cmd: "GitHub → Squash and merge", icon: "🔀", color: "#22c55e", status: "merged",
+      explain: "모든 커밋을 하나로 합쳐(Squash) main에 병합합니다. 깔끔한 히스토리를 유지합니다." },
+    { id: 7, actor: "시스템", role: "ci", action: "CI/CD 파이프라인 → 배포", cmd: "GitHub Actions → Deploy to production", icon: "🚀", color: "#7c3aed", status: "deploy",
+      explain: "main 브랜치에 병합되면 자동으로 테스트 → 빌드 → 배포 파이프라인이 실행됩니다." },
+  ];
+
+  const REVIEW_COMMENTS = [
+    { file: "src/hooks/useDarkMode.js", line: 12, code: "const toggle = () => setDark(!dark);", comment: "함수명을 toggleDarkMode로 변경하면 더 명확해요.", author: "김리뷰어", severity: "suggestion", resolved: false },
+    { file: "src/components/Header.jsx", line: 45, code: "const theme = useMemo(() => getTheme(mode));", comment: "useMemo 두 번째 인자로 [mode]를 넣어야 합니다.", author: "박리뷰어", severity: "bug", resolved: false },
+    { file: "src/styles/dark.css", line: 8, code: "color: #fff;", comment: "하드코딩 대신 CSS 변수를 사용해주세요.", author: "김리뷰어", severity: "suggestion", resolved: false },
+  ];
+
+  const CI_STAGES = [
+    { name: "Lint", icon: "🔍", duration: "12s" },
+    { name: "Test", icon: "🧪", duration: "45s" },
+    { name: "Build", icon: "📦", duration: "1m 23s" },
+    { name: "Deploy", icon: "🚀", duration: "38s" },
+  ];
+
+  const [currentStep, setCurrentStep] = useState(-1);
+  const [log, setLog] = useState([]);
+  const [reviews, setReviews] = useState(REVIEW_COMMENTS);
+  const [ciProgress, setCiProgress] = useState(-1);
+  const logEndRef = useRef(null);
+
+  useEffect(() => { if (logEndRef.current) logEndRef.current.scrollIntoView({ behavior: "smooth" }); }, [log.length]);
+
+  const prStatus = currentStep >= 6 ? "merged" : currentStep >= 2 ? "open" : "none";
+  const reviewStatus = currentStep === 3 ? "changes_requested" : currentStep >= 5 ? "approved" : currentStep >= 4 ? "pending" : "none";
+  const isDone = currentStep >= STEPS.length - 1;
+
+  const advance = () => {
+    const next = currentStep + 1;
+    if (next >= STEPS.length) return;
+    const s = STEPS[next];
+    setCurrentStep(next);
+
+    const newLogs = [];
+    if (s.role === "dev") newLogs.push({ type: "cmd", text: s.cmd });
+    else if (s.role === "reviewer") newLogs.push({ type: "info", text: `[${s.actor}] ${s.action}` });
+    else newLogs.push({ type: "info", text: `[${s.actor}] ${s.action}` });
+
+    // Contextual output per step
+    if (s.status === "coding") {
+      newLogs.push({ type: "out", text: "Switched to a new branch 'feature/dark-mode'" });
+      newLogs.push({ type: "stat", text: "// 3 files changed: useDarkMode.js, Header.jsx, dark.css" });
+    } else if (s.status === "pushed") {
+      newLogs.push({ type: "out", text: "Enumerating objects: 8, done." });
+      newLogs.push({ type: "out", text: "remote: Create a pull request for 'feature/dark-mode':" });
+      newLogs.push({ type: "out", text: "remote:   https://github.com/team/project/pull/new/feature/dark-mode" });
+    } else if (s.status === "pr_open") {
+      newLogs.push({ type: "out", text: "Creating pull request for feature/dark-mode into main" });
+      newLogs.push({ type: "out", text: "https://github.com/team/project/pull/42" });
+    } else if (s.status === "review") {
+      newLogs.push({ type: "warn", text: "Changes requested — 3 comments" });
+    } else if (s.status === "fix") {
+      newLogs.push({ type: "out", text: "Everything up-to-date (2 commits pushed)" });
+      setReviews(prev => prev.map(r => ({ ...r, resolved: true })));
+    } else if (s.status === "approved") {
+      newLogs.push({ type: "out", text: "✓ Approved by 김리뷰어, 박리뷰어" });
+    } else if (s.status === "merged") {
+      newLogs.push({ type: "out", text: "Pull request #42 merged (squash)" });
+      newLogs.push({ type: "stat", text: " 3 files changed, 247 insertions(+), 12 deletions(-)" });
+    } else if (s.status === "deploy") {
+      newLogs.push({ type: "out", text: "Workflow 'Deploy to Production' triggered" });
+      // Animate CI
+      setCiProgress(0);
+      CI_STAGES.forEach((_, i) => setTimeout(() => setCiProgress(i + 1), (i + 1) * 800));
+    }
+
+    setLog(l => [...l, ...newLogs]);
+  };
+
+  const reset = () => { setCurrentStep(-1); setLog([]); setReviews(REVIEW_COMMENTS); setCiProgress(-1); };
+
+  const severityColors = { bug: "#ef4444", suggestion: "#f59e0b" };
+  const severityLabels = { bug: "Bug", suggestion: "제안" };
+
+  return (
+    <div style={{ background: "var(--surface2)", borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)" }}>
+      {/* Header */}
+      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontFamily: "DM Mono,monospace", fontSize: 13, color: "#22c55e" }}>👥 팀 협업 PR 워크플로우</span>
+          <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "DM Mono,monospace" }}>
+            {currentStep < 0 ? "대기" : `Step ${currentStep + 1}/${STEPS.length}`}
+          </span>
+        </div>
+        {prStatus !== "none" && (
+          <span style={{ fontSize: 10, fontFamily: "DM Mono,monospace", padding: "3px 10px", borderRadius: 20, animation: "fadeInUp .3s ease",
+            background: prStatus === "merged" ? "rgba(124,58,237,0.15)" : "rgba(34,197,94,0.15)",
+            color: prStatus === "merged" ? "#a78bfa" : "#22c55e",
+            border: `1px solid ${prStatus === "merged" ? "rgba(124,58,237,0.35)" : "rgba(34,197,94,0.35)"}` }}>
+            {prStatus === "merged" ? "🟣 Merged" : "🟢 Open"} PR #42
+          </span>
+        )}
+      </div>
+
+      <div className="sim-grid">
+        {/* Main area */}
+        <div style={{ padding: 18, borderRight: "1px solid var(--border)" }}>
+          {/* Step explanation banner */}
+          {currentStep >= 0 && (
+            <div style={{ marginBottom: 14, padding: "10px 14px", borderRadius: 8, animation: "slideDown .3s ease",
+              background: `${STEPS[currentStep].color}08`, border: `1px solid ${STEPS[currentStep].color}20`,
+              display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <span style={{ fontSize: 18 }}>{STEPS[currentStep].icon}</span>
+              <div>
+                <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 12, color: STEPS[currentStep].color, marginBottom: 2 }}>
+                  Step {currentStep + 1}: {STEPS[currentStep].action}
+                  <span style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 400, marginLeft: 8, fontFamily: "DM Mono,monospace",
+                    padding: "1px 6px", background: "rgba(255,255,255,0.05)", borderRadius: 3 }}>{STEPS[currentStep].actor}</span>
+                </div>
+                <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.6 }}>{STEPS[currentStep].explain}</div>
+              </div>
+            </div>
+          )}
+
+          {/* Steps timeline */}
+          <div style={{ position: "relative", paddingLeft: 28 }}>
+            <div style={{ position: "absolute", left: 15, top: 12, bottom: 12, width: 2, background: "var(--border)", borderRadius: 1 }} />
+            {STEPS.map((s, i) => {
+              const active = i === currentStep;
+              const passed = i < currentStep;
+              const upcoming = i === currentStep + 1;
+              return (
+                <div key={s.id} style={{ display: "flex", gap: 12, marginBottom: 10, position: "relative",
+                  opacity: i > currentStep + 1 ? 0.3 : 1, transition: "all .4s" }}>
+                  {/* Timeline node */}
+                  <div style={{ position: "absolute", left: -22, top: 8, width: 20, height: 20, borderRadius: "50%", zIndex: 1, transition: "all .4s",
+                    background: passed ? s.color : active ? `${s.color}30` : "var(--surface)",
+                    border: `2px solid ${passed || active ? s.color : upcoming ? s.color + "50" : "var(--border)"}`,
+                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff",
+                    boxShadow: active ? `0 0 12px ${s.color}` : "none", animation: active ? "pulse 2s infinite" : "none" }}>
+                    {passed ? "✓" : ""}
+                  </div>
+                  {/* Step card */}
+                  <div style={{ flex: 1, padding: "8px 12px", borderRadius: 8, transition: "all .35s cubic-bezier(.34,1.2,.64,1)",
+                    background: active ? `${s.color}0c` : passed ? "rgba(255,255,255,0.015)" : "transparent",
+                    border: `1px solid ${active ? s.color + "40" : passed ? s.color + "18" : "transparent"}` }}>
+                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                      <span style={{ fontSize: 14 }}>{s.icon}</span>
+                      <span style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 12, color: active || passed ? s.color : "var(--text-muted)" }}>{s.actor}</span>
+                      <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{s.action}</span>
+                    </div>
+                    {(active || passed) && (
+                      <code style={{ fontFamily: "DM Mono,monospace", fontSize: 10, color: passed ? `${s.color}99` : s.color,
+                        background: active ? `${s.color}0e` : "transparent", padding: "1px 6px", borderRadius: 3, display: "inline-block", marginTop: 3 }}>
+                        {s.cmd}
+                      </code>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* PR Panel */}
+          {prStatus !== "none" && (
+            <div style={{ marginTop: 12, borderRadius: 10, overflow: "hidden", animation: "prBadge .4s cubic-bezier(.34,1.56,.64,1)",
+              border: `1px solid ${prStatus === "merged" ? "rgba(124,58,237,0.3)" : "rgba(245,158,11,0.3)"}` }}>
+              {/* PR Header */}
+              <div style={{ padding: "12px 14px", background: prStatus === "merged" ? "rgba(124,58,237,0.06)" : "rgba(245,158,11,0.06)",
+                borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
+                  <span style={{ padding: "2px 10px", borderRadius: 20, fontSize: 10, fontFamily: "DM Mono,monospace",
+                    background: prStatus === "merged" ? "rgba(124,58,237,0.2)" : "rgba(34,197,94,0.2)",
+                    color: prStatus === "merged" ? "#a78bfa" : "#22c55e",
+                    border: `1px solid ${prStatus === "merged" ? "rgba(124,58,237,0.4)" : "rgba(34,197,94,0.4)"}` }}>
+                    {prStatus === "merged" ? "Merged" : "Open"}
+                  </span>
+                  <span style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, color: "var(--text)", fontSize: 13 }}>Add dark mode support</span>
+                  <span style={{ fontSize: 10, color: "var(--text-muted)" }}>#42</span>
+                </div>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "DM Mono,monospace" }}>feature/dark-mode → main</span>
+                  <span style={{ fontSize: 9, padding: "1px 6px", borderRadius: 3, background: "rgba(0,212,255,0.1)", color: "#00d4ff", border: "1px solid rgba(0,212,255,0.25)" }}>3 commits</span>
+                  <span style={{ fontSize: 9, color: "#22c55e" }}>+247</span>
+                  <span style={{ fontSize: 9, color: "#ef4444" }}>-12</span>
+                  {/* Labels */}
+                  <span style={{ fontSize: 9, padding: "1px 6px", borderRadius: 3, background: "rgba(124,58,237,0.12)", color: "#a78bfa", border: "1px solid rgba(124,58,237,0.25)" }}>enhancement</span>
+                  <span style={{ fontSize: 9, padding: "1px 6px", borderRadius: 3, background: "rgba(0,212,255,0.12)", color: "#00d4ff", border: "1px solid rgba(0,212,255,0.25)" }}>UI</span>
+                </div>
+                {/* Review status */}
+                {reviewStatus !== "none" && (
+                  <div style={{ marginTop: 8, display: "flex", gap: 6, alignItems: "center" }}>
+                    <span style={{ fontSize: 10, fontFamily: "DM Mono,monospace",
+                      color: reviewStatus === "approved" ? "#22c55e" : reviewStatus === "changes_requested" ? "#f97316" : "#f59e0b" }}>
+                      {reviewStatus === "approved" ? "✓ Approved" : reviewStatus === "changes_requested" ? "⚠ Changes requested" : "● Review pending"}
+                    </span>
+                    <span style={{ fontSize: 9, color: "var(--text-muted)" }}>by 김리뷰어, 박리뷰어</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Review comments */}
+              {currentStep >= 3 && currentStep <= 6 && (
+                <div style={{ padding: "10px 14px", animation: "slideDown .3s ease", opacity: currentStep >= 6 ? 0.35 : 1, transition: "opacity .5s ease" }}>
+                  <div style={{ fontSize: 10, color: "#f97316", fontFamily: "DM Mono,monospace", marginBottom: 8 }}>
+                    📝 코드 리뷰 ({reviews.filter(r => !r.resolved).length} open · {reviews.filter(r => r.resolved).length} resolved)
+                  </div>
+                  {reviews.map((rc, i) => (
+                    <div key={i} style={{ marginBottom: 8, borderRadius: 6, overflow: "hidden",
+                      border: `1px solid ${rc.resolved ? "rgba(34,197,94,0.2)" : "rgba(249,115,22,0.2)"}`,
+                      opacity: rc.resolved ? 0.6 : 1, animation: `staggerReveal .3s ease ${i * .08}s both` }}>
+                      {/* File + line header */}
+                      <div style={{ padding: "4px 10px", background: "rgba(0,0,0,0.2)", display: "flex", alignItems: "center", gap: 6, fontSize: 9, fontFamily: "DM Mono,monospace" }}>
+                        <span style={{ color: "var(--text-muted)" }}>{rc.file}</span>
+                        <span style={{ color: "#f59e0b" }}>:{rc.line}</span>
+                        <span style={{ marginLeft: "auto", padding: "0 5px", borderRadius: 2, fontSize: 8,
+                          background: `${severityColors[rc.severity]}15`, color: severityColors[rc.severity],
+                          border: `1px solid ${severityColors[rc.severity]}30` }}>{severityLabels[rc.severity]}</span>
+                        {rc.resolved && <span style={{ color: "#22c55e", fontSize: 8 }}>✓ resolved</span>}
+                      </div>
+                      {/* Code snippet */}
+                      <div style={{ padding: "4px 10px", background: "rgba(0,0,0,0.1)", fontFamily: "DM Mono,monospace", fontSize: 10, color: "var(--text-muted)" }}>
+                        <span style={{ color: "#374151", marginRight: 8 }}>{rc.line}</span>{rc.code}
+                      </div>
+                      {/* Comment */}
+                      <div style={{ padding: "6px 10px", display: "flex", gap: 6, alignItems: "flex-start" }}>
+                        <div style={{ width: 18, height: 18, borderRadius: "50%", background: "rgba(249,115,22,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#f97316", flexShrink: 0, marginTop: 1 }}>
+                          {rc.author[0]}
+                        </div>
+                        <div>
+                          <span style={{ fontSize: 10, color: "#f97316", fontFamily: "DM Mono,monospace" }}>{rc.author}</span>
+                          <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.5 }}>{rc.comment}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* CI/CD Pipeline */}
+              {currentStep >= 7 && (
+                <div style={{ padding: "10px 14px", borderTop: "1px solid rgba(255,255,255,0.05)", animation: "slideDown .3s ease" }}>
+                  <div style={{ fontSize: 10, color: "#7c3aed", fontFamily: "DM Mono,monospace", marginBottom: 10 }}>⚡ CI/CD Pipeline</div>
+                  <div style={{ display: "flex", gap: 0, alignItems: "center" }}>
+                    {CI_STAGES.map((stage, i) => {
+                      const passed = ciProgress > i;
+                      const running = ciProgress === i;
+                      return (
+                        <React.Fragment key={i}>
+                          <div style={{ flex: 1, textAlign: "center" }}>
+                            <div style={{ padding: "8px 4px", borderRadius: 6, transition: "all .5s",
+                              background: passed ? "rgba(34,197,94,0.1)" : running ? "rgba(124,58,237,0.1)" : "rgba(0,0,0,0.15)",
+                              border: `1px solid ${passed ? "rgba(34,197,94,0.3)" : running ? "rgba(124,58,237,0.4)" : "var(--border)"}`,
+                              boxShadow: running ? "0 0 10px rgba(124,58,237,0.3)" : "none", animation: running ? "pulse 1.5s infinite" : "none" }}>
+                              <div style={{ fontSize: 14, marginBottom: 3 }}>{stage.icon}</div>
+                              <div style={{ fontSize: 9, fontFamily: "DM Mono,monospace", color: passed ? "#22c55e" : running ? "#a78bfa" : "var(--text-muted)" }}>{stage.name}</div>
+                              <div style={{ fontSize: 8, color: "var(--text-muted)", marginTop: 2 }}>{stage.duration}</div>
+                              {passed && <div style={{ fontSize: 9, color: "#22c55e", marginTop: 2 }}>✓</div>}
+                              {running && <div style={{ fontSize: 8, color: "#a78bfa", marginTop: 2, animation: "blink 1s infinite" }}>running...</div>}
+                            </div>
+                          </div>
+                          {i < CI_STAGES.length - 1 && (
+                            <div style={{ fontSize: 12, color: passed ? "#22c55e" : "var(--border)", padding: "0 4px", flexShrink: 0, transition: "color .5s" }}>→</div>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Deploy complete */}
+          {isDone && ciProgress >= CI_STAGES.length && (
+            <div style={{ marginTop: 14, padding: "14px 16px", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: 10, animation: "successPop .5s cubic-bezier(.34,1.56,.64,1)" }}>
+              <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 800, color: "#22c55e", fontSize: 16, marginBottom: 6 }}>🚀 Production 배포 완료!</div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.7 }}>
+                feature/dark-mode → main 병합 → CI 통과 → 자동 배포 완료<br />
+                <span style={{ color: "#a78bfa" }}>전체 파이프라인: 브랜치 생성 → 코딩 → PR → 리뷰 → 수정 → 승인 → Merge → 배포</span>
+              </div>
+            </div>
+          )}
+
+          {/* Controls */}
+          <div style={{ display: "flex", gap: 8, marginTop: 16, alignItems: "center" }}>
+            <button className="sim-btn" onClick={advance} disabled={isDone}
+              style={currentStep < 0 ? { animation: "pulse 2s infinite" } : {}}>
+              {currentStep < 0 ? "▶ 워크플로우 시작" : isDone ? "✓ 전체 완료" : `▶ ${STEPS[currentStep + 1]?.action || ""}`}
+            </button>
+            <button className="ghost-btn" onClick={reset}>↺ 초기화</button>
+            {currentStep >= 0 && <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "DM Mono,monospace" }}>{currentStep + 1}/{STEPS.length}</span>}
+          </div>
+
+          {/* Progress */}
+          <div style={{ marginTop: 12 }}>
+            <div style={{ display: "flex", gap: 3 }}>
+              {STEPS.map((s, i) => (
+                <div key={i} style={{ flex: 1, height: 5, borderRadius: 3, transition: "all .4s ease",
+                  background: i <= currentStep ? s.color : "var(--border)",
+                  boxShadow: i === currentStep ? `0 0 8px ${s.color}` : "none" }} />
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 3, marginTop: 4 }}>
+              {STEPS.map((s, i) => (
+                <div key={i} style={{ flex: 1, fontSize: 7, textAlign: "center", fontFamily: "DM Mono,monospace",
+                  color: i <= currentStep ? s.color : "var(--text-muted)", transition: "color .3s" }}>
+                  {i <= currentStep ? "✓" : s.icon}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Activity Log */}
+        <div style={{ background: "#0d1117", fontFamily: "DM Mono,monospace", fontSize: 11, display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: "8px 14px", borderBottom: "1px solid #1e2d45", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b" }} />
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
+            <span style={{ flex: 1, textAlign: "center", fontSize: 9, color: "#374151" }}>Activity Log</span>
+          </div>
+          <div style={{ padding: 14, flex: 1, overflowY: "auto", maxHeight: 400 }}>
+            {log.length === 0 && <div style={{ color: "var(--text-muted)", animation: "pulse 2s infinite" }}>▶ 시작 버튼을 누르세요...</div>}
+            {log.map((l, i) => (
+              <div key={i} style={{ lineHeight: 1.8, animation: "fadeInLeft .2s ease",
+                color: l.type === "cmd" ? "var(--accent)" : l.type === "out" ? "#22c55e" : l.type === "stat" ? "#f59e0b"
+                  : l.type === "info" ? "#a78bfa" : l.type === "warn" ? "#f97316" : "#64748b",
+                paddingLeft: l.type === "stat" ? 4 : 0 }}>
+                {l.type === "cmd" && <><span style={{ color: "#7c3aed" }}>❯ </span>{l.text}</>}
+                {l.type === "out" && l.text}
+                {l.type === "stat" && <span style={{ opacity: 0.7 }}>{l.text}</span>}
+                {l.type === "info" && l.text}
+                {l.type === "warn" && l.text}
+              </div>
+            ))}
+            <div ref={logEndRef} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   OTHER COMPONENTS (reused from v1)
+══════════════════════════════════════════════ */
+function VCSCompare() {
+  const [flip, setFlip] = useState({});
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      {[
+        { id: "c", type: "중앙 집중형", ex: "SVN, TFS", pros: ["단순한 구조", "중앙 관리 용이"], cons: ["서버 장애 시 협업 불가", "네트워크 필수"], color: "#ef4444", icon: "🏛️" },
+        { id: "d", type: "분산형", ex: "Git, Mercurial", pros: ["오프라인 작업 가능", "전체 히스토리 로컬 보유"], cons: ["초기 학습 곡선"], color: "#22c55e", icon: "🌐" },
+      ].map(item => (
+        <div key={item.id} onClick={() => setFlip(f => ({ ...f, [item.id]: !f[item.id] }))} style={{ perspective: 800, cursor: "pointer", height: 180 }}>
+          <div style={{ position: "relative", transformStyle: "preserve-3d", transform: flip[item.id] ? "rotateY(180deg)" : "none", transition: "transform .6s cubic-bezier(.34,1.2,.64,1)", height: "100%" }}>
+            <div style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", background: "var(--surface2)", border: `2px solid ${item.color}35`, borderRadius: 12, padding: 18, textAlign: "center", position: "absolute", width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <div style={{ fontSize: 36 }}>{item.icon}</div>
+              <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, color: item.color, fontSize: 14 }}>{item.type}</div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "DM Mono,monospace" }}>{item.ex}</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>클릭하여 상세 보기</div>
+            </div>
+            <div style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", background: `${item.color}0e`, border: `2px solid ${item.color}50`, borderRadius: 12, padding: 16, position: "absolute", width: "100%", height: "100%" }}>
+              <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, color: item.color, marginBottom: 10, fontSize: 13 }}>{item.type}</div>
+              <div style={{ marginBottom: 8 }}>
+                {item.pros.map((p, i) => <div key={i} style={{ fontSize: 12, color: "#22c55e", marginBottom: 3 }}>✓ {p}</div>)}
+              </div>
+              {item.cons.map((c, i) => <div key={i} style={{ fontSize: 12, color: "#ef4444", marginBottom: 3 }}>✗ {c}</div>)}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ArchDiagram() {
+  const [active, setActive] = useState(null);
+  const [flowStep, setFlowStep] = useState(-1);
+  const zones = [
+    { id: 0, label: "Working Directory", sub: "실제 파일 수정 공간", color: "#f97316", icon: "📁", cmd: "git add" },
+    { id: 1, label: "Staging Area", sub: "Index / 스냅샷 준비", color: "#f59e0b", icon: "📋", cmd: "git commit" },
+    { id: 2, label: "Repository", sub: ".git 영구 저장소", color: "#22c55e", icon: "🗄️", cmd: "git push" },
+  ];
+  const runFlow = () => {
+    setFlowStep(-1); let s = 0;
+    const iv = setInterval(() => { setFlowStep(s++); if (s > 3) { clearInterval(iv); setTimeout(() => setFlowStep(-1), 1500); } }, 900);
+  };
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, flexWrap: "wrap", padding: "12px 0" }}>
+        {zones.map((z, i) => (
+          <div key={z.id} style={{ display: "flex", alignItems: "center" }}>
+            <div onMouseEnter={() => setActive(z.id)} onMouseLeave={() => setActive(null)} style={{ width: 148, padding: "18px 12px", textAlign: "center", background: active === z.id || flowStep >= z.id ? `${z.color}18` : "var(--surface2)", border: `2px solid ${active === z.id || flowStep >= z.id ? z.color : z.color + "35"}`, borderRadius: 14, transition: "all .4s cubic-bezier(.34,1.56,.64,1)", transform: active === z.id ? "scale(1.06) translateY(-3px)" : "none", boxShadow: flowStep >= z.id ? `0 0 20px ${z.color}45` : "none", cursor: "pointer" }}>
+              <div style={{ fontSize: 28, marginBottom: 6, animation: active === z.id ? "bounce .5s" : "none" }}>{z.icon}</div>
+              <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 12, color: "var(--text)", marginBottom: 3 }}>{z.label}</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{z.sub}</div>
+            </div>
+            {i < zones.length - 1 && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "0 6px" }}>
+                <div style={{ fontSize: 10, fontFamily: "DM Mono,monospace", color: flowStep > i ? zones[i].color : "var(--text-muted)", padding: "2px 7px", borderRadius: 3, background: flowStep > i ? `${zones[i].color}15` : "transparent", transition: "all .3s", marginBottom: 3 }}>{zones[i].cmd}</div>
+                <div style={{ fontSize: 22, color: flowStep > i ? zones[i].color : "var(--border)", transition: "color .3s", animation: flowStep === i ? "bounce .5s" : "none" }}>→</div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <div style={{ textAlign: "center", marginTop: 14 }}>
+        <button className="sim-btn" onClick={runFlow}>▶ 흐름 시뮬레이션</button>
+      </div>
+    </div>
+  );
+}
+
+function StatusVisualizer() {
+  const [files, setFiles] = useState([
+    { name: "index.html", status: "untracked" },
+    { name: "style.css", status: "untracked" },
+    { name: "app.js", status: "untracked" },
+  ]);
+  const [staged, setStaged] = useState([]);
+  const [committed, setCommitted] = useState([]);
+  const [msg, setMsg] = useState("Initial commit");
+  const statusColors = { untracked: { color: "#ef4444", label: "??" }, modified: { color: "#f59e0b", label: "M" }, staged: { color: "#22c55e", label: "A" } };
+  const stageFile = (f) => { setFiles(p => p.filter(x => x.name !== f.name)); setStaged(p => [...p, { ...f, status: "staged" }]); };
+  const commit = () => { if (!staged.length) return; setCommitted(p => [...p, ...staged]); setStaged([]); };
+  const reset = () => { setFiles([{ name: "index.html", status: "untracked" }, { name: "style.css", status: "untracked" }, { name: "app.js", status: "untracked" }]); setStaged([]); setCommitted([]); };
+  const ZoneBox = ({ title, color, fls, action, actionLabel, emptyText }) => (
+    <div style={{ background: "var(--surface2)", border: `1px solid ${color}25`, borderRadius: 10, padding: 14, flex: 1, minWidth: 140 }}>
+      <div style={{ fontFamily: "DM Mono,monospace", fontSize: 10, color, marginBottom: 10, letterSpacing: 1, display: "flex", alignItems: "center", gap: 5 }}>
+        <div style={{ width: 7, height: 7, borderRadius: "50%", background: color, animation: "pulse 2s infinite" }} />{title}
+      </div>
+      {fls.length === 0 ? <div style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "8px 0" }}>{emptyText}</div> : fls.map((f, i) => {
+        const sc = statusColors[f.status];
+        return (
+          <div key={f.name} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 8px", marginBottom: 3, borderRadius: 5, background: `${sc.color}0e`, animation: `staggerReveal .3s ease ${i * .05}s both` }}>
+            <span style={{ width: 18, height: 18, borderRadius: 3, background: `${sc.color}25`, color: sc.color, fontSize: 9, fontFamily: "DM Mono,monospace", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{sc.label}</span>
+            <span style={{ fontSize: 11, color: "var(--text)", flex: 1 }}>{f.name}</span>
+            {action && <button onClick={() => action(f)} style={{ background: `${color}18`, border: `1px solid ${color}35`, color, fontSize: 9, padding: "2px 7px", borderRadius: 3, cursor: "pointer", fontFamily: "DM Mono,monospace" }} onMouseEnter={e => e.target.style.background = `${color}35`} onMouseLeave={e => e.target.style.background = `${color}18`}>{actionLabel}</button>}
+          </div>
+        );
+      })}
+    </div>
+  );
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "stretch" }}>
+        <ZoneBox title="Working Directory" color="#f97316" fls={files} action={stageFile} actionLabel="add" emptyText="파일 없음" />
+        <div style={{ display: "flex", alignItems: "center", color: "#f59e0b", fontSize: 20 }}>→</div>
+        <ZoneBox title="Staging Area" color="#f59e0b" fls={staged} action={null} emptyText="staged 없음" />
+        <div style={{ display: "flex", alignItems: "center", color: "#22c55e", fontSize: 20 }}>→</div>
+        <ZoneBox title="Repository" color="#22c55e" fls={committed} action={null} emptyText="커밋 없음" />
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        <button className="sim-btn" onClick={commit} disabled={!staged.length}>git commit</button>
+        <button className="ghost-btn" onClick={reset}>초기화</button>
+      </div>
+    </div>
+  );
+}
+
+function Terminal({ commands }) {
+  const [lines, setLines] = useState([]); const [running, setRunning] = useState(false);
+  const runDemo = async () => {
+    if (running) return; setRunning(true); setLines([]);
+    for (const cmd of commands) {
+      await new Promise(r => setTimeout(r, 600));
+      setLines(l => [...l, { type: "cmd", text: cmd.cmd }]);
+      if (cmd.output) { await new Promise(r => setTimeout(r, 400)); setLines(l => [...l, { type: "out", text: cmd.output }]); }
+    }
+    setRunning(false);
+  };
+  return (
+    <div style={{ borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)" }}>
+      <div style={{ background: "#1e1e2e", padding: "9px 14px", display: "flex", alignItems: "center", gap: 7 }}>
+        <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#ef4444" }} />
+        <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#f59e0b" }} />
+        <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#22c55e" }} />
+        <span style={{ flex: 1, textAlign: "center", fontSize: 11, color: "var(--text-muted)", fontFamily: "DM Mono,monospace" }}>bash</span>
+        <button onClick={runDemo} disabled={running} style={{ background: running ? "var(--border)" : "var(--accent)", border: "none", color: running ? "var(--text-muted)" : "#000", padding: "3px 12px", borderRadius: 5, fontSize: 10, fontFamily: "DM Mono,monospace", cursor: running ? "default" : "pointer" }}>
+          {running ? "실행중..." : "▶ 실행"}
+        </button>
+      </div>
+      <div style={{ background: "#0d1117", padding: 14, minHeight: 140, fontFamily: "DM Mono,monospace", fontSize: 12, lineHeight: 1.9 }}>
+        {lines.length === 0 && <div style={{ color: "var(--text-muted)", animation: "pulse 2s infinite" }}>▶ 실행 버튼을 눌러 데모를 시작하세요...</div>}
+        {lines.map((l, i) => (
+          <div key={i} style={{ color: l.type === "cmd" ? "var(--accent)" : "#64748b", animation: "fadeInUp .25s ease" }}>
+            {l.type === "cmd" ? <><span style={{ color: "#7c3aed" }}>~/project</span><span style={{ color: "#374151" }}> $ </span>{l.text}</> : l.text}
+          </div>
+        ))}
+        {running && <span style={{ color: "var(--text-muted)", animation: "blink .8s infinite" }}>█</span>}
+      </div>
+    </div>
+  );
+}
+
+function DiffViewer() {
+  return (
+    <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)", fontFamily: "DM Mono,monospace", fontSize: 12 }}>
+      <div style={{ background: "#1e1e2e", padding: "7px 14px", fontSize: 10, color: "var(--text-muted)" }}>git diff — app.js</div>
+      {[
+        { type: "ctx", line: '  function greet(name) {' },
+        { type: "del", line: '-   console.log("Hello " + name);' },
+        { type: "add", line: '+   console.log(`Hello, ${name}!`);' },
+        { type: "ctx", line: '  }' },
+      ].map((l, i) => (
+        <div key={i} style={{ padding: "2px 14px", background: l.type === "del" ? "rgba(239,68,68,0.14)" : l.type === "add" ? "rgba(34,197,94,0.14)" : "transparent", color: l.type === "del" ? "#ef4444" : l.type === "add" ? "#22c55e" : "var(--text-muted)", animation: `fadeInLeft .3s ease ${i * .08}s both` }}>{l.line}</div>
+      ))}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   MAIN APP
+══════════════════════════════════════════════ */
+function GitLecture() {
+  const [tab, setTab] = useState("beginner");
+  const [simTab, setSimTab] = useState("branch");
+  const [visitedTabs, setVisitedTabs] = useState(new Set(["beginner"]));
+  const [visitedSims, setVisitedSims] = useState(new Set());
+
+  useEffect(() => { setVisitedTabs(prev => { const next = new Set(prev); next.add(tab); return next; }); }, [tab]);
+  useEffect(() => { if (tab === "simulations") setVisitedSims(prev => { const next = new Set(prev); next.add(simTab); return next; }); }, [simTab, tab]);
+
+  const tabs = [
+    { id: "beginner", label: "🟢 초급", color: "#22c55e" },
+    { id: "intermediate", label: "🟡 중급", color: "#f59e0b" },
+    { id: "advanced", label: "🔴 고급", color: "#ef4444" },
+    { id: "simulations", label: "⚡ 시뮬레이션", color: "#00d4ff" },
+  ];
+
+  const simTabs = [
+    { id: "branch", label: "🌿 Branch & Merge", color: "#00d4ff" },
+    { id: "conflict", label: "⚔️ Merge Conflict", color: "#ef4444" },
+    { id: "reset", label: "⏪ Git Reset", color: "#f97316" },
+    { id: "pr", label: "👥 PR 워크플로우", color: "#22c55e" },
+  ];
+
+  return (
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text)", fontFamily: "Syne,sans-serif", overflowX: "hidden" }}>
+      <style>{css}</style>
+
+      {/* BG */}
+      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(0,212,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.025) 1px,transparent 1px)", backgroundSize: "40px 40px", animation: "gridMove 5s linear infinite" }} />
+        {[{ top: "8%", left: "10%", size: 320, color: "#00d4ff", d: 0 }, { top: "55%", right: "5%", size: 260, color: "#7c3aed", d: 3 }, { top: "35%", left: "45%", size: 200, color: "#f59e0b", d: 6 }].map((o, i) => (
+          <div key={i} style={{ position: "absolute", ...o, width: o.size, height: o.size, borderRadius: "50%", background: `radial-gradient(circle,${o.color}07 0%,transparent 70%)`, animation: `orbFloat ${8 + i * 2}s ease-in-out ${o.d}s infinite`, filter: "blur(18px)" }} />
+        ))}
+        <div style={{ position: "absolute", left: 0, right: 0, height: 2, background: "linear-gradient(90deg,transparent,rgba(0,212,255,0.09),transparent)", animation: "scanline 9s linear infinite" }} />
+      </div>
+
+      <div style={{ position: "relative", zIndex: 1 }}>
+        {/* HERO — compact */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 24px 36px", textAlign: "center" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(0,212,255,0.07)", border: "1px solid rgba(0,212,255,0.18)", padding: "5px 18px", borderRadius: 30, marginBottom: 20, animation: "fadeInUp .7s ease .2s both" }}>
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", animation: "pulse 2s infinite" }} />
+            <span style={{ fontSize: 11, color: "var(--accent)", fontFamily: "DM Mono,monospace", letterSpacing: 2 }}>VERSION CONTROL SYSTEM</span>
+          </div>
+          <h1 style={{ fontSize: "clamp(36px,8vw,64px)", fontWeight: 800, lineHeight: 1.1, marginBottom: 14, animation: "fadeInUp .7s ease .35s both" }}>
+            <span style={{ background: "linear-gradient(135deg,#fff,#94a3b8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Master </span>
+            <span style={{ background: "linear-gradient(135deg,#00d4ff,#7c3aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Git</span>
+          </h1>
+          <p style={{ fontSize: "clamp(13px,2vw,16px)", color: "var(--text-muted)", marginBottom: 24, maxWidth: 500, lineHeight: 1.7, animation: "fadeInUp .7s ease .5s both" }}>
+            <Typewriter texts={["코드의 역사를 기록하라", "팀과 함께 협업하라", "실수를 두려워하지 마라", "git commit -m 'Begin your journey'"]} />
+          </p>
+          <div style={{ display: "flex", gap: 28, flexWrap: "wrap", justifyContent: "center", animation: "fadeInUp .7s ease .65s both" }}>
+            {[{ n: "4", l: "모듈", c: "var(--accent)" }, { n: "4", l: "시뮬레이션", c: "#7c3aed" }, { n: "30+", l: "명령어", c: "#f59e0b" }, { n: "3", l: "레벨", c: "#22c55e" }].map((s, i) => (
+              <div key={i} style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 28, fontWeight: 800, color: s.c, fontFamily: "DM Mono,monospace" }}>{s.n}</div>
+                <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 2 }}>{s.l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CONTENT */}
+        <div style={{ maxWidth: 980, margin: "0 auto", padding: "0 22px 80px" }}>
+
+          {/* Tab nav */}
+          <Reveal>
+            <div style={{ display: "flex", gap: 0, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 4, marginBottom: 44 }}>
+              {tabs.map(t => (
+                <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, padding: "11px 10px", background: tab === t.id ? `linear-gradient(135deg,${t.color}18,${t.color}0a)` : "transparent", border: tab === t.id ? `1px solid ${t.color}35` : "1px solid transparent", borderRadius: 8, color: tab === t.id ? t.color : "var(--text-muted)", fontFamily: "Syne,sans-serif", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "all .3s cubic-bezier(.34,1.56,.64,1)", transform: tab === t.id ? "scale(1.02)" : "none", boxShadow: tab === t.id ? `0 0 16px ${t.color}18` : "none" }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </Reveal>
+
+          {/* ── BEGINNER ── */}
+          {tab === "beginner" && (
+            <div style={{ animation: "zoomIn .35s ease" }}>
+              <Reveal><h2 style={{ fontSize: 30, fontWeight: 800, marginBottom: 6, color: "#22c55e" }}>🟢 초급: VCS & Git 기초</h2><p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 28 }}>버전 관리 시스템의 개념을 이해하고 Git의 기본 워크플로우를 익힙니다.</p></Reveal>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <ModuleCard module="VCS란 무엇인가?" index={0} color="green" icon="📚">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                    <div style={{ background: "rgba(0,0,0,.3)", border: "1px solid rgba(0,212,255,.12)", borderRadius: 9, padding: 14 }}>
+                      <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "DM Mono,monospace", marginBottom: 6 }}>정의</div>
+                      <p style={{ fontSize: 13, lineHeight: 1.8, color: "var(--text)" }}>코드의 변경 사항을 기록하는 특수 데이터베이스(Repository)입니다. 프로젝트 히스토리 추적, 실수 시 복구, 팀원 간의 협업(Merge)을 용이하게 합니다.</p>
+                    </div>
+                    <div><div style={{ fontFamily: "DM Mono,monospace", fontSize: 11, color: "var(--accent)", marginBottom: 10, letterSpacing: 1 }}>VCS 유형 비교 (카드 클릭)</div><VCSCompare /></div>
+                  </div>
+                </ModuleCard>
+                <ModuleCard module="Git 초기 설정" index={1} color="green" icon="⚙️">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 6 }}>
+                      {[{ s: "system", d: "전체 사용자", icon: "🖥️" }, { s: "global", d: "현재 사용자", icon: "👤", hi: true }, { s: "local", d: "현재 프로젝트", icon: "📁" }].map((item, i) => (
+                        <div key={i} style={{ background: item.hi ? "rgba(0,212,255,0.07)" : "var(--surface2)", border: `1px solid ${item.hi ? "rgba(0,212,255,0.25)" : "var(--border)"}`, borderRadius: 9, padding: 12, textAlign: "center" }}>
+                          <div style={{ fontSize: 22, marginBottom: 5 }}>{item.icon}</div>
+                          <div style={{ fontFamily: "DM Mono,monospace", fontSize: 11, color: item.hi ? "var(--accent)" : "var(--text)", marginBottom: 3 }}>--{item.s}</div>
+                          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{item.d}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <CmdBadge cmd='git config --global user.name "이름"' desc="사용자 이름 설정" color="#22c55e" />
+                    <CmdBadge cmd='git config --global user.email "이메일"' desc="이메일 설정" color="#22c55e" />
+                    <CmdBadge cmd='git config --global core.editor "code --wait"' desc="VS Code 기본 에디터 설정" color="#22c55e" />
+                    <CmdBadge cmd='git config --global core.autocrlf true' desc="Windows 줄바꿈 설정" color="#22c55e" />
+                    <CmdBadge cmd='git config --global -e' desc="설정 파일을 에디터로 열기" color="#22c55e" />
+                  </div>
+                </ModuleCard>
+                <ModuleCard module="Git 3단계 아키텍처" index={2} color="green" icon="🏗️">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
+                      {[{ n: "Working Directory", d: "실제 파일을 수정하는 로컬 폴더", c: "#f97316", icon: "📝" }, { n: "Staging Area", d: "다음 커밋에 포함될 변경 사항 (Index)", c: "#f59e0b", icon: "📋" }, { n: "Repository", d: "커밋된 데이터가 영구 저장되는 DB", c: "#22c55e", icon: "🗄️" }].map((z, i) => (
+                        <div key={i} style={{ background: `${z.c}0d`, border: `1px solid ${z.c}28`, borderRadius: 10, padding: 14, textAlign: "center" }}>
+                          <div style={{ fontSize: 26, marginBottom: 6 }}>{z.icon}</div>
+                          <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, fontSize: 11, color: z.c, marginBottom: 4 }}>{z.n}</div>
+                          <div style={{ fontSize: 10, color: "var(--text-muted)", lineHeight: 1.5 }}>{z.d}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <ArchDiagram />
+                    <div><div style={{ fontFamily: "DM Mono,monospace", fontSize: 10, color: "var(--text-muted)", marginBottom: 10, letterSpacing: 1 }}>파일 스테이징 시뮬레이터</div><StatusVisualizer /></div>
+                  </div>
+                </ModuleCard>
+                <ModuleCard module="기본 명령어 실습" index={3} color="green" icon="⌨️">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <CmdBadge cmd="git init" desc="새 저장소 초기화 (.git 생성)" color="#22c55e" />
+                    <CmdBadge cmd="git add <file>" desc="파일을 Staging Area로 이동" color="#22c55e" />
+                    <CmdBadge cmd='git commit -m "message"' desc="스냅샷을 Repository에 영구 저장" color="#22c55e" />
+                    <Terminal commands={[
+                      { cmd: "git init", output: "Initialized empty Git repository in ~/project/.git/" },
+                      { cmd: "git add index.html" },
+                      { cmd: 'git commit -m "Initial commit"', output: "[main (root-commit) a1b2c3d] Initial commit\n 1 file changed, 10 insertions(+)" },
+                      { cmd: "git log --oneline", output: "a1b2c3d (HEAD → main) Initial commit" },
+                    ]} />
+                    <div style={{ background: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.2)", borderRadius: 9, padding: 14 }}>
+                      <div style={{ fontFamily: "DM Mono,monospace", fontSize: 11, color: "#22c55e", marginBottom: 6 }}>💡 커밋의 특징</div>
+                      <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.7 }}>Git은 파일의 차이점(Delta)만이 아닌 <strong style={{ color: "var(--text)" }}>전체 파일의 스냅샷</strong>을 저장합니다. 데이터 압축과 중복 제거를 통해 효율적으로 관리합니다.</p>
+                    </div>
+                  </div>
+                </ModuleCard>
+              </div>
+            </div>
+          )}
+
+          {/* ── INTERMEDIATE ── */}
+          {tab === "intermediate" && (
+            <div style={{ animation: "zoomIn .35s ease" }}>
+              <Reveal><h2 style={{ fontSize: 30, fontWeight: 800, marginBottom: 6, color: "#f59e0b" }}>🟡 중급: 파일 관리 & 히스토리</h2><p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 28 }}>파일 상태 관리, diff 비교, 히스토리 탐색 기법을 마스터합니다.</p></Reveal>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <ModuleCard module="파일 상태 확인 (Status & Diff)" index={0} color="yellow" icon="🔍">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                      {[{ cmd: "git status", s: "상세 상태 확인", c: "#f59e0b" }, { cmd: "git status -s", s: "간결한 상태", c: "#f59e0b" }, { cmd: "git diff", s: "Working ↔ Staging", c: "#f97316" }, { cmd: "git diff --staged", s: "Staging ↔ Commit", c: "#f97316" }].map((item, i) => (
+                        <div key={i} style={{ background: "var(--surface2)", border: `1px solid ${item.c}25`, borderRadius: 7, padding: 10 }}>
+                          <code style={{ fontFamily: "DM Mono,monospace", fontSize: 11, color: item.c, display: "block", marginBottom: 3 }}>{item.cmd}</code>
+                          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{item.s}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {[{ code: "M", label: "수정됨", c: "#f59e0b" }, { code: "A", label: "추가됨", c: "#22c55e" }, { code: "??", label: "Untracked", c: "#ef4444" }, { code: "D", label: "삭제됨", c: "#7c3aed" }].map((s, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, background: `${s.c}0d`, border: `1px solid ${s.c}28`, borderRadius: 5, padding: "5px 10px" }}>
+                          <span style={{ fontFamily: "DM Mono,monospace", fontSize: 12, color: s.c, fontWeight: 700 }}>{s.code}</span>
+                          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{s.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <DiffViewer />
+                  </div>
+                </ModuleCard>
+                <ModuleCard module=".gitignore 파일 관리" index={1} color="yellow" icon="🙈">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.7 }}>로그, 바이너리, 개인 설정 파일 등 불필요한 파일을 명시합니다.</p>
+                    <div style={{ background: "#0d1117", borderRadius: 8, padding: 14, fontFamily: "DM Mono,monospace", fontSize: 12, lineHeight: 2 }}>
+                      {[["#의존성", ""], ["node_modules/", "#ef4444"], ["dist/", "#ef4444"], ["*.log", "#ef4444"], [".env", "#ef4444"], [".DS_Store", "#ef4444"]].map(([l, c], i) => (
+                        <div key={i} style={{ color: c || "#64748b" }}>{l}</div>
+                      ))}
+                    </div>
+                    <div style={{ background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 9, padding: 12, display: "flex", gap: 10 }}>
+                      <span style={{ fontSize: 18, flexShrink: 0 }}>⚠️</span>
+                      <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6 }}>이미 커밋된 파일은 <code style={{ color: "var(--accent)", fontFamily: "DM Mono,monospace" }}>git rm --cached &lt;file&gt;</code>로 캐시 삭제 후 .gitignore에 추가해야 합니다.</p>
+                    </div>
+                  </div>
+                </ModuleCard>
+                <ModuleCard module="히스토리 탐색" index={2} color="yellow" icon="📜">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <CmdBadge cmd="git log --oneline" desc="커밋 내역 한 줄 표시" color="#f59e0b" />
+                    <CmdBadge cmd="git log --oneline --graph" desc="브랜치 구조 그래프 시각화" color="#f59e0b" />
+                    <CmdBadge cmd="git show <commit_id>" desc="특정 커밋 변경 내용 확인" color="#f59e0b" />
+                    <CmdBadge cmd="git ls-tree <commit_id>" desc="특정 커밋의 파일 구조 확인" color="#f59e0b" />
+                  </div>
+                </ModuleCard>
+                <ModuleCard module="취소 및 복구 (Restore)" index={3} color="yellow" icon="↩️">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {[
+                      { cmd: "git restore --staged <file>", d: "Staging에서 내리기 (커밋 대상 제외)", c: "#f59e0b", icon: "⬇️" },
+                      { cmd: "git restore <file>", d: "로컬 변경 사항 폐기 (마지막 커밋으로 되돌림)", c: "#ef4444", icon: "🔄" },
+                      { cmd: "git clean -fd", d: "추적되지 않는 파일 강제 삭제", c: "#ef4444", icon: "🗑️" },
+                      { cmd: "git restore --source=HEAD~1 <file>", d: "이전 커밋에서 특정 파일 가져오기", c: "#7c3aed", icon: "⏪" },
+                    ].map((item, i) => (
+                      <div key={i} style={{ background: "var(--surface2)", border: `1px solid ${item.c}18`, borderRadius: 9, padding: 12, display: "flex", gap: 10 }}>
+                        <span style={{ fontSize: 18, flexShrink: 0 }}>{item.icon}</span>
+                        <div><code style={{ fontFamily: "DM Mono,monospace", fontSize: 11, color: item.c, display: "block", marginBottom: 3 }}>{item.cmd}</code><span style={{ fontSize: 12, color: "var(--text-muted)" }}>{item.d}</span></div>
+                      </div>
+                    ))}
+                  </div>
+                </ModuleCard>
+              </div>
+            </div>
+          )}
+
+          {/* ── ADVANCED ── */}
+          {tab === "advanced" && (
+            <div style={{ animation: "zoomIn .35s ease" }}>
+              <Reveal><h2 style={{ fontSize: 30, fontWeight: 800, marginBottom: 6, color: "#ef4444" }}>🔴 고급: 브랜칭 & 협업 전략</h2><p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 28 }}>브랜치 전략, 병합, 리베이스, 협업 워크플로우를 완전히 이해합니다.</p></Reveal>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <ModuleCard module="브랜치 (Branch)" index={0} color="red" icon="🌿">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div style={{ background: "rgba(0,0,0,.3)", borderRadius: 9, padding: 14, fontFamily: "DM Mono,monospace", fontSize: 12, lineHeight: 2.2 }}>
+                      <div><span style={{ color: "#22c55e" }}>●──●──●──●</span>  <span style={{ color: "#22c55e", opacity: .6 }}>main</span></div>
+                      <div><span style={{ color: "#64748b" }}>       \──</span><span style={{ color: "#00d4ff" }}>●──●──/</span>  <span style={{ color: "#00d4ff", opacity: .6 }}>feature/login</span></div>
+                    </div>
+                    <CmdBadge cmd="git branch" desc="브랜치 목록 확인" color="#ef4444" />
+                    <CmdBadge cmd="git switch -c <name>" desc="브랜치 생성 후 전환 (권장)" color="#ef4444" />
+                    <CmdBadge cmd="git branch -d <name>" desc="브랜치 삭제" color="#ef4444" />
+                  </div>
+                </ModuleCard>
+                <ModuleCard module="Merge vs Rebase" index={1} color="red" icon="🔀">
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    {[
+                      { t: "Merge", d: "두 브랜치의 변경사항을 합치며 히스토리를 보존합니다.", pros: "히스토리 보존, 안전", cons: "복잡한 히스토리", cmd: "git merge <branch>", c: "#22c55e" },
+                      { t: "Rebase", d: "커밋을 다른 브랜치 위에 재적용하여 선형 히스토리를 만듭니다.", pros: "깔끔한 선형 히스토리", cons: "공유 브랜치 사용 금지", cmd: "git rebase <branch>", c: "#7c3aed" },
+                    ].map((item, i) => (
+                      <div key={i} style={{ background: `${item.c}08`, border: `1px solid ${item.c}28`, borderRadius: 11, padding: 14 }}>
+                        <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, color: item.c, marginBottom: 6, fontSize: 15 }}>{item.t}</div>
+                        <p style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 10 }}>{item.d}</p>
+                        <div style={{ fontSize: 11, color: "#22c55e", marginBottom: 3 }}>✓ {item.pros}</div>
+                        <div style={{ fontSize: 11, color: "#ef4444", marginBottom: 10 }}>✗ {item.cons}</div>
+                        <code style={{ fontFamily: "DM Mono,monospace", fontSize: 10, color: item.c, background: `${item.c}14`, padding: "3px 8px", borderRadius: 4 }}>{item.cmd}</code>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 12, background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.22)", borderRadius: 9, padding: 12 }}>
+                    <div style={{ fontFamily: "DM Mono,monospace", fontSize: 11, color: "#7c3aed", marginBottom: 5 }}>⚡ Golden Rule</div>
+                    <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.7 }}><strong style={{ color: "var(--text)" }}>공유된 브랜치에는 절대 rebase를 사용하지 마세요.</strong> 로컬 브랜치 정리 시에만 사용하세요.</p>
+                  </div>
+                </ModuleCard>
+                <ModuleCard module="원격 저장소 (Remote)" index={2} color="red" icon="☁️">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <CmdBadge cmd="git remote add origin <url>" desc="원격 저장소 연결" color="#f97316" />
+                    <CmdBadge cmd="git push -u origin main" desc="처음 push 시 업스트림 설정" color="#f97316" />
+                    <CmdBadge cmd="git fetch" desc="원격 변경사항 가져오기 (병합 안 함)" color="#f97316" />
+                    <CmdBadge cmd="git pull" desc="fetch + merge 동시 실행" color="#f97316" />
+                    <CmdBadge cmd="git clone <url>" desc="원격 저장소 복제" color="#f97316" />
+                  </div>
+                </ModuleCard>
+                <ModuleCard module="히스토리 수정 (Reset & Revert)" index={3} color="red" icon="⚠️">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {[
+                      { cmd: "git reset --soft HEAD~1", d: "커밋 취소 (변경사항 Staging 유지)", c: "#f59e0b", r: "낮음" },
+                      { cmd: "git reset --mixed HEAD~1", d: "커밋 취소 + 언스테이징 (Working 유지)", c: "#f97316", r: "보통" },
+                      { cmd: "git reset --hard HEAD~1", d: "커밋 완전 삭제 (복구 불가!)", c: "#ef4444", r: "높음" },
+                      { cmd: "git revert <commit>", d: "특정 커밋을 취소하는 새 커밋 생성 (안전)", c: "#22c55e", r: "안전" },
+                    ].map((item, i) => (
+                      <div key={i} style={{ background: "var(--surface2)", border: `1px solid ${item.c}18`, borderRadius: 9, padding: 12, display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ flex: 1 }}><code style={{ fontFamily: "DM Mono,monospace", fontSize: 11, color: item.c, display: "block", marginBottom: 3 }}>{item.cmd}</code><span style={{ fontSize: 12, color: "var(--text-muted)" }}>{item.d}</span></div>
+                        <div style={{ padding: "3px 9px", borderRadius: 5, fontSize: 10, fontFamily: "DM Mono,monospace", background: `${item.c}14`, color: item.c, border: `1px solid ${item.c}28`, flexShrink: 0 }}>위험도: {item.r}</div>
+                      </div>
+                    ))}
+                  </div>
+                </ModuleCard>
+              </div>
+            </div>
+          )}
+
+          {/* ── SIMULATIONS ── */}
+          {tab === "simulations" && (
+            <div style={{ animation: "zoomIn .35s ease" }}>
+              <Reveal>
+                <h2 style={{ fontSize: 30, fontWeight: 800, marginBottom: 6, color: "var(--accent)" }}>⚡ 인터랙티브 시뮬레이션</h2>
+                <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 24 }}>직접 조작하며 Git의 핵심 개념을 체득하세요.</p>
+              </Reveal>
+
+              {/* Sim sub-tabs */}
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 28 }}>
+                {simTabs.map(t => (
+                  <button key={t.id} onClick={() => setSimTab(t.id)} style={{ padding: "8px 16px", background: simTab === t.id ? `${t.color}18` : "var(--surface)", border: `1px solid ${simTab === t.id ? t.color + "50" : "var(--border)"}`, borderRadius: 8, color: simTab === t.id ? t.color : "var(--text-muted)", fontFamily: "DM Mono,monospace", fontSize: 12, cursor: "pointer", transition: "all .3s cubic-bezier(.34,1.56,.64,1)", boxShadow: simTab === t.id ? `0 0 14px ${t.color}20` : "none" }}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
+              {simTab === "branch" && (
+                <div style={{ animation: "zoomIn .3s ease" }}>
+                  <Reveal>
+                    <div style={{ marginBottom: 16, padding: "14px 18px", background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.18)", borderRadius: 12 }}>
+                      <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, color: "var(--accent)", marginBottom: 4 }}>🌿 Branch & Merge 시뮬레이터</div>
+                      <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6 }}>feature/login 브랜치를 만들고 커밋한 뒤, main 브랜치에 병합하는 전체 흐름을 단계별로 실행해보세요. 왼쪽 그래프가 실시간으로 변합니다.</p>
+                    </div>
+                  </Reveal>
+                  <BranchMergeSim />
+                </div>
+              )}
+
+              {simTab === "conflict" && (
+                <div style={{ animation: "zoomIn .3s ease" }}>
+                  <Reveal>
+                    <div style={{ marginBottom: 16, padding: "14px 18px", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 12 }}>
+                      <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, color: "#ef4444", marginBottom: 4 }}>⚔️ Merge Conflict 해결 시뮬레이터</div>
+                      <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6 }}>두 브랜치가 동일한 파일을 수정했을 때 발생하는 충돌을 직접 해결해보세요. 각 섹션마다 "현재 브랜치" 또는 "병합 브랜치" 중 하나를 선택하여 충돌을 해소합니다.</p>
+                    </div>
+                  </Reveal>
+                  <ConflictSim />
+                </div>
+              )}
+
+              {simTab === "reset" && (
+                <div style={{ animation: "zoomIn .3s ease" }}>
+                  <Reveal>
+                    <div style={{ marginBottom: 16, padding: "14px 18px", background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.2)", borderRadius: 12 }}>
+                      <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, color: "#f97316", marginBottom: 4 }}>⏪ Git Reset 단계별 시뮬레이터</div>
+                      <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6 }}>--soft, --mixed, --hard 세 가지 모드의 차이를 직접 확인하세요. 각 모드를 선택하고 실행하면 커밋 히스토리와 파일 상태가 어떻게 변하는지 시각적으로 보여줍니다.</p>
+                    </div>
+                  </Reveal>
+                  <ResetSim />
+                </div>
+              )}
+
+              {simTab === "pr" && (
+                <div style={{ animation: "zoomIn .3s ease" }}>
+                  <Reveal>
+                    <div style={{ marginBottom: 16, padding: "14px 18px", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)", borderRadius: 12 }}>
+                      <div style={{ fontFamily: "Syne,sans-serif", fontWeight: 700, color: "#22c55e", marginBottom: 4 }}>👥 팀 협업 PR 워크플로우 시뮬레이터</div>
+                      <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6 }}>실제 팀 환경에서 feature 브랜치 생성부터 PR 생성, 코드 리뷰, 피드백 반영, Merge, 자동 배포까지의 전체 협업 흐름을 체험해보세요.</p>
+                    </div>
+                  </Reveal>
+                  <PRWorkflowSim />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Progress — real tracking */}
+          <Reveal delay={0.2} style={{ marginTop: 56 }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 26 }}>
+              <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: 18, fontWeight: 700, marginBottom: 20 }}>📊 학습 진행 현황</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                {/* Tab progress */}
+                <div>
+                  <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "DM Mono,monospace", letterSpacing: 1, marginBottom: 10 }}>강의 탭 ({visitedTabs.size}/4 완료)</div>
+                  {tabs.map(t => {
+                    const done = visitedTabs.has(t.id);
+                    return (
+                      <div key={t.id} onClick={() => setTab(t.id)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", marginBottom: 4, borderRadius: 8, cursor: "pointer",
+                        background: done ? `${t.color}0c` : "transparent", border: `1px solid ${done ? t.color + "30" : "var(--border)"}`, transition: "all .3s" }}>
+                        <span style={{ width: 18, height: 18, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10,
+                          background: done ? `${t.color}20` : "var(--surface2)", color: done ? t.color : "var(--text-muted)", border: `1px solid ${done ? t.color : "var(--border)"}`, transition: "all .3s" }}>
+                          {done ? "✓" : ""}
+                        </span>
+                        <span style={{ fontSize: 12, color: done ? t.color : "var(--text-muted)", fontFamily: "Syne,sans-serif", fontWeight: done ? 600 : 400, transition: "all .3s" }}>{t.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Simulation progress */}
+                <div>
+                  <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "DM Mono,monospace", letterSpacing: 1, marginBottom: 10 }}>시뮬레이션 ({visitedSims.size}/4 체험)</div>
+                  {simTabs.map(t => {
+                    const done = visitedSims.has(t.id);
+                    return (
+                      <div key={t.id} onClick={() => { setTab("simulations"); setSimTab(t.id); }} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", marginBottom: 4, borderRadius: 8, cursor: "pointer",
+                        background: done ? `${t.color}0c` : "transparent", border: `1px solid ${done ? t.color + "30" : "var(--border)"}`, transition: "all .3s" }}>
+                        <span style={{ width: 18, height: 18, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10,
+                          background: done ? `${t.color}20` : "var(--surface2)", color: done ? t.color : "var(--text-muted)", border: `1px solid ${done ? t.color : "var(--border)"}`, transition: "all .3s" }}>
+                          {done ? "✓" : ""}
+                        </span>
+                        <span style={{ fontSize: 12, color: done ? t.color : "var(--text-muted)", fontFamily: "Syne,sans-serif", fontWeight: done ? 600 : 400, transition: "all .3s" }}>{t.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              {/* Overall progress bar */}
+              <div style={{ marginTop: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                  <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "DM Mono,monospace" }}>전체 진행률</span>
+                  <span style={{ fontSize: 11, color: "var(--accent)", fontFamily: "DM Mono,monospace" }}>{Math.round(((visitedTabs.size + visitedSims.size) / 8) * 100)}%</span>
+                </div>
+                <div style={{ background: "var(--surface2)", borderRadius: 4, height: 6, overflow: "hidden" }}>
+                  <div style={{ height: "100%", borderRadius: 4, background: "linear-gradient(90deg,#00d4ff,#7c3aed)", width: `${((visitedTabs.size + visitedSims.size) / 8) * 100}%`, transition: "width .8s cubic-bezier(.34,1,.64,1)", boxShadow: "0 0 8px rgba(0,212,255,0.5)" }} />
+                </div>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Quick Ref */}
+          <Reveal delay={0.3} style={{ marginTop: 20 }}>
+            <div style={{ background: "linear-gradient(135deg,rgba(0,212,255,0.04),rgba(124,58,237,0.04))", border: "1px solid rgba(0,212,255,0.13)", borderRadius: 14, padding: 26 }}>
+              <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: 18, fontWeight: 700, marginBottom: 18, color: "var(--accent)" }}>⚡ 치트시트</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 8 }}>
+                {[
+                  { cmd: "git init", d: "저장소 초기화", cat: "기초", c: "#22c55e" },
+                  { cmd: "git add .", d: "전체 스테이징", cat: "기초", c: "#22c55e" },
+                  { cmd: "git commit -m 'msg'", d: "커밋", cat: "기초", c: "#22c55e" },
+                  { cmd: "git status -s", d: "간단 상태 확인", cat: "기초", c: "#22c55e" },
+                  { cmd: "git log --oneline", d: "커밋 히스토리", cat: "중급", c: "#f59e0b" },
+                  { cmd: "git diff --staged", d: "스테이징 변경 비교", cat: "중급", c: "#f59e0b" },
+                  { cmd: "git restore --staged <f>", d: "언스테이징", cat: "중급", c: "#f59e0b" },
+                  { cmd: "git restore <file>", d: "변경사항 폐기", cat: "중급", c: "#f59e0b" },
+                  { cmd: "git switch -c <name>", d: "브랜치 생성 & 전환", cat: "고급", c: "#ef4444" },
+                  { cmd: "git merge <branch>", d: "브랜치 병합", cat: "고급", c: "#ef4444" },
+                  { cmd: "git rebase -i HEAD~3", d: "대화형 리베이스", cat: "고급", c: "#ef4444" },
+                  { cmd: "git cherry-pick <hash>", d: "특정 커밋만 적용", cat: "고급", c: "#ef4444" },
+                ].map((item, i) => (
+                  <div key={i} style={{ background: "var(--surface2)", borderRadius: 7, padding: "9px 12px", display: "flex", gap: 8, alignItems: "center", animation: `staggerReveal .3s ease ${i * .03}s both` }}>
+                    <code style={{ fontFamily: "DM Mono,monospace", fontSize: 11, color: "var(--accent)", flex: 1 }}>{item.cmd}</code>
+                    <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 3, background: `${item.c}14`, color: item.c, fontFamily: "DM Mono,monospace", flexShrink: 0, border: `1px solid ${item.c}28` }}>{item.cat}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        </div>
+
+        {/* Footer */}
+        <div style={{ textAlign: "center", padding: "36px 24px", borderTop: "1px solid var(--border)", fontFamily: "DM Mono,monospace", fontSize: 12, color: "var(--text-muted)" }}>
+          <div style={{ animation: "glow 3s ease-in-out infinite", color: "var(--accent)", fontSize: 13, marginBottom: 6 }}>git commit -m "Keep learning, keep growing"</div>
+          <div>© Git Mastery Course · Built with React</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(GitLecture));
+</script>
+</body>
+</html>

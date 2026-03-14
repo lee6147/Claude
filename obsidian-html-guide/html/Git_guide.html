@@ -1,0 +1,1472 @@
+<!-- 원본: GitGuide.jsx | 변환: 2026-02-20 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git 완전 정복 가이드</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body, #root { min-height: 100vh; }
+  body { background: #02080a; overflow-x: hidden; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #1e3a2a; border-radius: 3px; }
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateX(18px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes popIn {
+    0%   { opacity: 0; transform: scale(0.5); }
+    70%  { transform: scale(1.15); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes arrowSlide {
+    0%   { stroke-dashoffset: 200; opacity: 0; }
+    20%  { opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 1; }
+  }
+  @keyframes glow {
+    0%,100% { filter: drop-shadow(0 0 4px currentColor); }
+    50%      { filter: drop-shadow(0 0 12px currentColor); }
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; } 50% { opacity: 0; }
+  }
+  @keyframes pulse-ring {
+    0%   { transform: scale(1);   opacity: 0.8; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0px); }
+    50%      { transform: translateY(-6px); }
+  }
+  button { font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo } = React;
+
+/* ─ seededRandom (Math.random 금지 대체) ─ */
+function seededRandom(seed) {
+  const x = Math.sin(seed * 9301 + 49297) * 49297;
+  return x - Math.floor(x);
+}
+
+/* ─ 색상 / 테마 ─ */
+const C = {
+  bg:      "#02080a",
+  panel:   "#060f0a",
+  panel2:  "#0d1f16",
+  border:  "#1e3a2a",
+  green:   "#00ff9d",
+  cyan:    "#00cfff",
+  purple:  "#ff6ef7",
+  yellow:  "#ffb300",
+  red:     "#ff4f4f",
+  dim:     "#4a7a6a",
+  dimmer:  "#2a5a3a",
+  text:    "#aeffd8",
+  code:    "#7dffb3",
+};
+
+const LEVELS = {
+  beginner:     { label: "🌱 초급", color: C.green,  glow: `0 0 20px ${C.green}55` },
+  intermediate: { label: "🌿 중급", color: C.cyan,   glow: `0 0 20px ${C.cyan}55`  },
+  advanced:     { label: "🚀 고급", color: C.purple, glow: `0 0 20px ${C.purple}55`},
+};
+
+/* ══════════════════════════════════════
+   PRIMITIVE COMPONENTS
+══════════════════════════════════════ */
+function HL({ children, c = C.green }) {
+  return <span style={{ color: c, fontWeight: 700, textShadow: `0 0 8px ${c}88` }}>{children}</span>;
+}
+
+function InfoBox({ children, type = "tip", accentColor }) {
+  const map = {
+    tip:     { bg: `${C.green}10`,  border: `${C.green}44`,  icon: "💡", c: accentColor || C.green  },
+    warning: { bg: `${C.yellow}10`, border: `${C.yellow}44`, icon: "⚠️", c: C.yellow },
+    danger:  { bg: `${C.red}10`,    border: `${C.red}44`,    icon: "🚨", c: C.red    },
+  };
+  const s = map[type];
+  return (
+    <div style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 10,
+                  padding: "11px 15px", color: s.c, fontSize: 13.5, lineHeight: 1.75 }}>
+      {s.icon} {children}
+    </div>
+  );
+}
+
+function CodeBlock({ children, label }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard?.writeText(children);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${C.border}` }}>
+      <div style={{ background: C.panel2, padding: "7px 14px",
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    borderBottom: `1px solid ${C.border}` }}>
+        <span style={{ color: C.dim, fontSize: 12, fontFamily: "monospace" }}>
+          {label}
+        </span>
+        <button onClick={copy} style={{ background: "none", border: `1px solid ${C.dimmer}`,
+          color: copied ? C.green : C.dim, borderRadius: 5, padding: "2px 10px",
+          cursor: "pointer", fontSize: 11, transition: "all 0.2s" }}>
+          {copied ? "✓ 복사됨" : "복사"}
+        </button>
+      </div>
+      <pre style={{ margin: 0, padding: "15px 18px", background: C.panel, color: C.code,
+                    fontSize: 13, lineHeight: 1.85, fontFamily: "'Cascadia Code','Consolas',monospace",
+                    overflowX: "auto", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+        {children}
+      </pre>
+    </div>
+  );
+}
+
+function DiagramBox({ children, color = C.green, label }) {
+  return (
+    <div style={{ background: C.panel, border: `1px solid ${color}22`, borderRadius: 13, overflow: "hidden" }}>
+      {label && (
+        <div style={{ padding: "7px 14px", background: `${color}0a`,
+                      borderBottom: `1px solid ${color}22`, color: `${color}99`, fontSize: 11,
+                      fontFamily: "monospace", letterSpacing: 1 }}>
+          ◈ {label}
+        </div>
+      )}
+      <div style={{ padding: 18 }}>{children}</div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   ANIMATED DIAGRAM 1 — GitGraph
+══════════════════════════════════════ */
+function AnimatedGitGraph() {
+  const [step, setStep] = useState(0);
+  const MAX = 10;
+
+  useEffect(() => {
+    if (step >= MAX) return;
+    const t = setTimeout(() => setStep(s => s + 1), 420);
+    return () => clearTimeout(t);
+  }, [step]);
+
+  const replay = () => setStep(0);
+  const W = 520, H = 160;
+  const mainY = 50, featY = 110;
+  const commits = [
+    [40,  mainY, "Initial",     C.green,  0],
+    [120, mainY, "Add README",  C.green,  1],
+    [200, mainY, "─",           C.green,  2],
+    [310, mainY, "Merge login", C.green,  7],
+    [420, mainY, "Deploy",      C.green,  9],
+  ];
+  const featureCommits = [
+    [260, featY, "Login UI",    C.cyan,   4],
+    [350, featY, "Logic",       C.cyan,   5],
+  ];
+  const show = (id) => step > id;
+
+  return (
+    <DiagramBox color={C.green} label="GITGRAPH — BRANCH VISUALIZATION">
+      <div style={{ position: "relative" }}>
+        <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ overflow: "visible", display: "block" }}>
+          <defs>
+            <marker id="ah-g" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill={C.green} />
+            </marker>
+            <marker id="ah-c" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill={C.cyan} />
+            </marker>
+          </defs>
+          {[
+            { x1: 40,  x2: 120, revealAt: 1 },
+            { x1: 120, x2: 200, revealAt: 2 },
+            { x1: 200, x2: 310, revealAt: 7 },
+            { x1: 310, x2: 450, revealAt: 9 },
+          ].map((seg, i) => {
+            const len = seg.x2 - seg.x1;
+            const visible = step > seg.revealAt - 1;
+            return (
+              <line key={`ml-${i}`} x1={seg.x1} y1={mainY} x2={seg.x2} y2={mainY}
+                stroke={C.green} strokeWidth="2.5" opacity="0.6"
+                strokeDasharray={len}
+                strokeDashoffset={visible ? 0 : len}
+                style={{ transition: "stroke-dashoffset 0.4s ease" }} />
+            );
+          })}
+          {show(2) && <path d={`M200,${mainY} Q220,${mainY} 240,${featY}`}
+            stroke={C.cyan} strokeWidth="2" fill="none" opacity="0.6"
+            strokeDasharray="100" strokeDashoffset={show(3) ? 0 : 100}
+            style={{ transition: "stroke-dashoffset 0.4s ease" }} />}
+          {[
+            { x1: 240, x2: 300, revealAt: 4 },
+            { x1: 300, x2: 390, revealAt: 5 },
+          ].map((seg, i) => {
+            const len = seg.x2 - seg.x1;
+            const visible = step > seg.revealAt - 1;
+            return (
+              <line key={`fl-${i}`} x1={seg.x1} y1={featY} x2={seg.x2} y2={featY}
+                stroke={C.cyan} strokeWidth="2.5" opacity="0.6"
+                strokeDasharray={len}
+                strokeDashoffset={visible ? 0 : len}
+                style={{ transition: "stroke-dashoffset 0.4s ease" }} />
+            );
+          })}
+          {show(6) && <path d={`M390,${featY} Q400,${featY} 420,${mainY}`}
+            stroke={C.cyan} strokeWidth="2" fill="none" opacity="0.6"
+            strokeDasharray="100" strokeDashoffset={show(7) ? 0 : 100}
+            style={{ transition: "stroke-dashoffset 0.4s ease" }} />}
+          {commits.map(([x, y, label, color, id]) => show(id) && (
+            <g key={id} style={{ animation: "popIn 0.35s ease" }}>
+              <circle cx={x} cy={y} r="10" fill={C.panel} stroke={color} strokeWidth="2.5" />
+              {id !== 2 && <text x={x} y={y - 18} textAnchor="middle" fontSize="10"
+                fill={color} fontFamily="monospace" opacity="0.9">{label}</text>}
+            </g>
+          ))}
+          {featureCommits.map(([x, y, label, color, id]) => show(id) && (
+            <g key={id} style={{ animation: "popIn 0.35s ease" }}>
+              <circle cx={x} cy={y} r="10" fill={C.panel} stroke={color} strokeWidth="2.5" />
+              <text x={x} y={y + 26} textAnchor="middle" fontSize="10"
+                fill={color} fontFamily="monospace" opacity="0.9">{label}</text>
+            </g>
+          ))}
+          {show(1) && <text x="10" y={mainY + 5} fontSize="10" fill={`${C.green}aa`} fontFamily="monospace">main</text>}
+          {show(3) && <text x="10" y={featY + 5} fontSize="10" fill={`${C.cyan}aa`} fontFamily="monospace">feature/login</text>}
+          {show(9) && (
+            <g>
+              <text x="420" y={mainY - 24} textAnchor="middle" fontSize="9" fill={C.yellow} fontFamily="monospace">HEAD</text>
+              <line x1="420" y1={mainY - 15} x2="420" y2={mainY - 12} stroke={C.yellow} strokeWidth="1.5" />
+            </g>
+          )}
+        </svg>
+        <button onClick={replay}
+          style={{ position: "absolute", top: 0, right: 0, background: `${C.green}15`,
+                   border: `1px solid ${C.green}44`, color: C.green, borderRadius: 8,
+                   padding: "4px 12px", cursor: "pointer", fontSize: 11 }}>
+          ↺ 재생
+        </button>
+      </div>
+    </DiagramBox>
+  );
+}
+
+/* ══════════════════════════════════════
+   ANIMATED DIAGRAM 2 — Sequence Diagram
+══════════════════════════════════════ */
+function AnimatedSequenceDiagram() {
+  const [step, setStep] = useState(-1);
+  const [running, setRunning] = useState(false);
+  const timerRef = useRef(null);
+
+  const messages = [
+    { from: 0, to: 0,  label: "git pull origin main",       color: C.green,  y: 80  },
+    { from: 0, to: 0,  label: "git switch -c feature/new",  color: C.green,  y: 120 },
+    { from: 0, to: 0,  label: "코드 작성 + commit ✏️",         color: C.dim,    y: 160 },
+    { from: 0, to: 1,  label: "git push →",                  color: C.cyan,   y: 200 },
+    { from: 1, to: 1,  label: "Pull Request 생성 🔔",          color: C.yellow, y: 240 },
+    { from: 1, to: 2,  label: "코드 리뷰 요청 →",               color: C.yellow, y: 280 },
+    { from: 2, to: 1,  label: "← 리뷰 완료 ✅",                color: C.green,  y: 320 },
+    { from: 1, to: 1,  label: "main 에 Merge 🎉",              color: C.purple, y: 360 },
+  ];
+  const participants = [
+    { label: "💻 로컬",   x: 80  },
+    { label: "☁️ GitHub", x: 260 },
+    { label: "👥 팀원",   x: 440 },
+  ];
+  const H = 420;
+
+  useEffect(() => {
+    if (!running) return;
+    if (step >= messages.length - 1) { setRunning(false); return; }
+    const t = setTimeout(() => setStep(s => s + 1), 700);
+    return () => clearTimeout(t);
+  }, [running, step]);
+
+  const start = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setRunning(false);
+    setStep(-1);
+    timerRef.current = setTimeout(() => {
+      setStep(0);
+      setRunning(true);
+    }, 80);
+  };
+
+  return (
+    <DiagramBox color={C.cyan} label="SEQUENCE DIAGRAM — 협업 워크플로우">
+      <svg width="100%" viewBox={`0 0 520 ${H}`} style={{ display: "block" }}>
+        {participants.map((p, i) => (
+          <g key={i}>
+            <rect x={p.x - 45} y="8" width="90" height="32" rx="8"
+              fill={`${[C.green,C.cyan,C.purple][i]}18`}
+              stroke={[C.green,C.cyan,C.purple][i]} strokeWidth="1.5" />
+            <text x={p.x} y="29" textAnchor="middle" fontSize="11"
+              fill={[C.green,C.cyan,C.purple][i]} fontFamily="monospace">{p.label}</text>
+            <line x1={p.x} y1="42" x2={p.x} y2={H - 10}
+              stroke={[C.green,C.cyan,C.purple][i]} strokeWidth="1" strokeDasharray="4 4" opacity="0.3" />
+          </g>
+        ))}
+        {messages.map((m, i) => {
+          if (i > step) return null;
+          const fromX = participants[m.from].x;
+          const toX   = participants[m.to].x;
+          const isSelf = m.from === m.to;
+          return (
+            <g key={i} style={{ animation: "fadeUp 0.3s ease" }}>
+              {isSelf ? (
+                <>
+                  <rect x={fromX - 80} y={m.y - 11} width="160" height="22" rx="5"
+                    fill={`${m.color}15`} stroke={`${m.color}55`} strokeWidth="1" />
+                  <text x={fromX} y={m.y + 4} textAnchor="middle" fontSize="9.5"
+                    fill={m.color} fontFamily="monospace">{m.label}</text>
+                </>
+              ) : (
+                <>
+                  <defs>
+                    <marker id={`arrowR-${i}`} markerWidth="7" markerHeight="7" refX="4" refY="3.5" orient="auto">
+                      <path d="M0,0 L7,3.5 L0,7 Z" fill={m.color} />
+                    </marker>
+                    <marker id={`arrowL-${i}`} markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto">
+                      <path d="M7,0 L0,3.5 L7,7 Z" fill={m.color} />
+                    </marker>
+                  </defs>
+                  <line x1={fromX} y1={m.y} x2={toX} y2={m.y}
+                    stroke={m.color} strokeWidth="1.8"
+                    markerEnd={toX > fromX ? `url(#arrowR-${i})` : `url(#arrowL-${i})`}
+                    strokeDasharray="200" strokeDashoffset="0"
+                    style={{ animation: "arrowSlide 0.5s ease forwards" }} />
+                  <text x={(fromX + toX) / 2} y={m.y - 6} textAnchor="middle"
+                    fontSize="9.5" fill={m.color} fontFamily="monospace">{m.label}</text>
+                </>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+      <div style={{ textAlign: "center", marginTop: 4 }}>
+        <button onClick={start}
+          style={{ background: `${C.cyan}15`, border: `1px solid ${C.cyan}44`,
+                   color: C.cyan, borderRadius: 8, padding: "6px 22px",
+                   cursor: "pointer", fontSize: 12 }}>
+          {running ? "⏳ 진행 중..." : step >= 0 ? "↺ 다시 보기" : "▶ 협업 시뮬레이션 시작"}
+        </button>
+      </div>
+    </DiagramBox>
+  );
+}
+
+/* ══════════════════════════════════════
+   ANIMATED DIAGRAM 3 — Conflict Flow
+══════════════════════════════════════ */
+function AnimatedConflictFlow() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setStep(s => (s + 1) % 7), 1100);
+    return () => clearInterval(t);
+  }, []);
+
+  const nodes = [
+    { id: 0, x: 200, y: 20,  w: 140, h: 32, label: "🚨 충돌 발생!", color: C.red    },
+    { id: 1, x: 200, y: 90,  w: 140, h: 32, label: "📂 충돌 파일 열기", color: C.yellow },
+    { id: 2, x: 200, y: 160, w: 150, h: 32, label: "✏️ 원하는 내용 남기기", color: C.cyan  },
+    { id: 3, x: 200, y: 230, w: 165, h: 32, label: "🗑️ <<<  ===  >>> 삭제", color: C.cyan  },
+    { id: 4, x: 200, y: 300, w: 100, h: 32, label: "git add .", color: C.green  },
+    { id: 5, x: 200, y: 370, w: 115, h: 32, label: "git commit", color: C.green  },
+    { id: 6, x: 200, y: 440, w: 130, h: 32, label: "✅ 해결 완료!", color: C.green  },
+  ];
+
+  return (
+    <DiagramBox color={C.red} label="FLOWCHART — 충돌 해결 단계">
+      <svg width="100%" viewBox="0 0 400 490" style={{ display: "block" }}>
+        {nodes.map((n, i) => {
+          if (i === 0) return null;
+          const prev = nodes[i - 1];
+          return (
+            <line key={`l${i}`} x1="250" y1={prev.y + prev.h} x2="250" y2={n.y}
+              stroke={step >= i ? n.color : C.border} strokeWidth="2"
+              strokeDasharray="4 3" opacity="0.7"
+              style={{ transition: "stroke 0.4s" }} />
+          );
+        })}
+        {nodes.map((n) => {
+          const active = step === n.id;
+          const done   = step > n.id;
+          const cx = 250;
+          return (
+            <g key={n.id}>
+              <rect x={cx - n.w / 2} y={n.y} width={n.w} height={n.h} rx="10"
+                fill={done ? `${n.color}20` : active ? `${n.color}30` : C.panel2}
+                stroke={done || active ? n.color : C.border} strokeWidth={active ? 2.5 : 1.5}
+                style={{ transition: "all 0.35s", filter: active ? `drop-shadow(0 0 8px ${n.color}88)` : "none" }} />
+              <text x={cx} y={n.y + n.h / 2 + 4.5} textAnchor="middle" fontSize="11"
+                fill={done || active ? n.color : C.dim} fontFamily="monospace"
+                style={{ transition: "fill 0.35s" }}>{n.label}</text>
+              {active && (
+                <circle cx={cx - n.w / 2 - 12} cy={n.y + n.h / 2} r="5" fill={n.color}
+                  style={{ animation: "pulse-ring 1s ease-out infinite" }} />
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    </DiagramBox>
+  );
+}
+
+/* ══════════════════════════════════════
+   ANIMATED DIAGRAM 4 — Three Areas
+══════════════════════════════════════ */
+function AnimatedThreeAreas() {
+  const [phase, setPhase] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setPhase(p => (p + 1) % 3), 1800);
+    return () => clearInterval(t);
+  }, []);
+
+  const boxes = [
+    { label: "📂 Working Directory", sub: "작업 디렉토리", color: C.red,    x: 10  },
+    { label: "📦 Staging Area",      sub: "스테이징 영역",  color: C.yellow, x: 195 },
+    { label: "📚 Repository",        sub: "저장소",         color: C.green,  x: 380 },
+  ];
+  const arrows = [
+    { x1: 177, x2: 193, y: 60, label: "git add",    color: C.yellow, active: phase === 1 },
+    { x1: 362, x2: 378, y: 60, label: "git commit", color: C.green,  active: phase === 2 },
+  ];
+
+  return (
+    <DiagramBox color={C.green} label="FLOWCHART — Git 의 3가지 영역">
+      <svg width="100%" viewBox="0 0 550 120" style={{ display: "block" }}>
+        <defs>
+          {arrows.map((a, i) => (
+            <marker key={i} id={`a3-${i}`} markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+              <path d="M0,0 L7,3.5 L0,7 Z" fill={a.color} />
+            </marker>
+          ))}
+        </defs>
+        {boxes.map((b, i) => {
+          const isActive = (i === 0 && phase === 0) || (i === 1 && phase === 1) || (i === 2 && phase === 2);
+          return (
+            <g key={i}>
+              <rect x={b.x} y="20" width="165" height="80" rx="12"
+                fill={isActive ? `${b.color}18` : `${b.color}08`}
+                stroke={b.color} strokeWidth={isActive ? 2.5 : 1}
+                opacity={isActive ? 1 : 0.5}
+                style={{ transition: "all 0.5s", filter: isActive ? `drop-shadow(0 0 10px ${b.color}66)` : "none" }} />
+              <text x={b.x + 82} y="55" textAnchor="middle" fontSize="11"
+                fill={b.color} fontFamily="monospace" opacity={isActive ? 1 : 0.5}
+                style={{ transition: "opacity 0.5s" }}>{b.label}</text>
+              <text x={b.x + 82} y="74" textAnchor="middle" fontSize="10"
+                fill={`${b.color}88`} fontFamily="monospace">{b.sub}</text>
+            </g>
+          );
+        })}
+        {arrows.map((a, i) => (
+          <g key={i}>
+            <line x1={a.x1} y1={a.y} x2={a.x2} y2={a.y}
+              stroke={a.color} strokeWidth={a.active ? 3 : 1.5}
+              markerEnd={`url(#a3-${i})`} opacity={a.active ? 1 : 0.3}
+              style={{ transition: "all 0.5s" }} />
+            <text x={(a.x1 + a.x2) / 2} y={a.y - 8} textAnchor="middle" fontSize="9.5"
+              fill={a.color} fontFamily="monospace" opacity={a.active ? 1 : 0.3}
+              style={{ transition: "opacity 0.5s" }}>{a.label}</text>
+          </g>
+        ))}
+        <text x="275" y="115" textAnchor="middle" fontSize="10" fill={C.dim} fontFamily="monospace">
+          {["파일 수정 중 ✏️", "git add → 스테이지에 올리기 📦", "git commit → 영구 저장 💾"][phase]}
+        </text>
+      </svg>
+    </DiagramBox>
+  );
+}
+
+/* ══════════════════════════════════════
+   ANIMATED DIAGRAM 5 — Stash Flow
+══════════════════════════════════════ */
+function AnimatedStashFlow() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setStep(s => (s + 1) % 5), 1300);
+    return () => clearInterval(t);
+  }, []);
+
+  const nodes = [
+    [0, 100, 40,  "📝 작업 중...",          C.cyan  ],
+    [1, 100, 130, "⚡ 급한 일 발생!",        C.red   ],
+    [2, 280, 130, "📦 Stash 보관함",         C.yellow],
+    [3, 280, 220, "🔧 다른 작업 처리",        C.cyan  ],
+    [4, 100, 220, "✅ git stash pop 복원!", C.green ],
+  ];
+  const edges = [
+    { from: 0, to: 1, label: "",              color: C.red,    activeAt: 1 },
+    { from: 1, to: 2, label: "git stash",     color: C.yellow, activeAt: 2 },
+    { from: 2, to: 3, label: "",              color: C.cyan,   activeAt: 3 },
+    { from: 3, to: 4, label: "git stash pop", color: C.green,  activeAt: 4 },
+    { from: 4, to: 0, label: "작업 재개!",      color: C.green,  activeAt: 4 },
+  ];
+  const pos = Object.fromEntries(nodes.map(([id, x, y]) => [id, { x, y }]));
+
+  return (
+    <DiagramBox color={C.yellow} label="FLOWCHART — Stash 워크플로우">
+      <svg width="100%" viewBox="0 0 400 290" style={{ display: "block" }}>
+        <defs>
+          {edges.map((e, i) => (
+            <marker key={i} id={`sf-${i}`} markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill={e.color} />
+            </marker>
+          ))}
+        </defs>
+        {edges.map((e, i) => {
+          const s = pos[e.from], t = pos[e.to];
+          const active = step >= e.activeAt;
+          const dx = t.x - s.x, dy = t.y - s.y;
+          const BOX_H = 38, BOX_W = 160;
+          let x1, y1, x2, y2;
+          if (Math.abs(dy) > Math.abs(dx)) {
+            x1 = s.x;  y1 = dy > 0 ? s.y + BOX_H : s.y;
+            x2 = t.x;  y2 = dy > 0 ? t.y          : t.y + BOX_H;
+          } else {
+            x1 = dx > 0 ? s.x + BOX_W / 2 : s.x - BOX_W / 2; y1 = s.y + BOX_H / 2;
+            x2 = dx > 0 ? t.x - BOX_W / 2 : t.x + BOX_W / 2; y2 = t.y + BOX_H / 2;
+          }
+          const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+          return (
+            <g key={i}>
+              <line x1={x1} y1={y1} x2={x2} y2={y2}
+                stroke={e.color} strokeWidth={active ? 2.5 : 1}
+                opacity={active ? 1 : 0.2}
+                markerEnd={`url(#sf-${i})`}
+                style={{ transition: "all 0.4s" }} />
+              {e.label && (
+                <text x={mx + (Math.abs(dx) > Math.abs(dy) ? 0 : 22)} y={my + (Math.abs(dy) > Math.abs(dx) ? 0 : -6)}
+                  textAnchor="middle" fontSize="9" fill={e.color}
+                  fontFamily="monospace" opacity={active ? 1 : 0.2}
+                  style={{ transition: "opacity 0.4s" }}>{e.label}</text>
+              )}
+            </g>
+          );
+        })}
+        {nodes.map(([id, x, y, label, color]) => {
+          const active = step === id;
+          const done   = step > id;
+          return (
+            <g key={id}>
+              <rect x={x - 80} y={y} width="160" height="38" rx="10"
+                fill={active ? `${color}25` : done ? `${color}10` : C.panel2}
+                stroke={color} strokeWidth={active ? 2.5 : 1}
+                opacity={done || active ? 1 : 0.4}
+                style={{ transition: "all 0.4s", filter: active ? `drop-shadow(0 0 10px ${color}88)` : "none" }} />
+              <text x={x} y={y + 22} textAnchor="middle" fontSize="10.5"
+                fill={color} fontFamily="monospace"
+                opacity={done || active ? 1 : 0.4}
+                style={{ transition: "opacity 0.4s" }}>{label}</text>
+            </g>
+          );
+        })}
+      </svg>
+    </DiagramBox>
+  );
+}
+
+/* ══════════════════════════════════════
+   ANIMATED DIAGRAM 6 — Reset vs Revert
+══════════════════════════════════════ */
+function AnimatedResetVsRevert() {
+  const [phase, setPhase] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setPhase(p => (p + 1) % 3), 2200);
+    return () => clearInterval(t);
+  }, []);
+
+  const commits = ["A", "B", "C", "D"];
+  const cw = 56, gap = 18, startX = 30, y1 = 50, y2 = 140;
+  const revertX = startX + 110 + 4 * (cw + gap);
+
+  return (
+    <DiagramBox color={C.purple} label="DIAGRAM — reset vs revert 비교">
+      <svg width="100%" viewBox="0 0 420 210" style={{ display: "block" }}>
+        <text x="10" y={y1 + 5} fontSize="10" fill={`${C.red}cc`} fontFamily="monospace">git reset --hard</text>
+        <text x="10" y={y2 + 5} fontSize="10" fill={`${C.green}cc`} fontFamily="monospace">git revert</text>
+        {commits.map((c, i) => {
+          const x = startX + 110 + i * (cw + gap);
+          const gone = phase === 1 && i === 3;
+          return (
+            <g key={`r-${i}`}>
+              {i > 0 && (
+                <line x1={startX + 110 + (i - 1) * (cw + gap) + cw / 2} y1={y1}
+                  x2={gone ? x + cw / 2 - 10 : x - cw / 2 + 5} y2={y1}
+                  stroke={gone ? C.red : `${C.red}66`} strokeWidth="2"
+                  style={{ transition: "all 0.5s" }} />
+              )}
+              <circle cx={x} cy={y1} r={cw / 2 - 4}
+                fill={gone ? `${C.red}08` : `${C.red}20`}
+                stroke={gone ? `${C.red}22` : C.red}
+                strokeDasharray={gone ? "4 3" : "0"}
+                strokeWidth={gone ? 1 : 2}
+                style={{ transition: "all 0.6s" }} />
+              <text x={x} y={y1 + 4.5} textAnchor="middle" fontSize="13"
+                fill={gone ? `${C.red}33` : C.red} fontFamily="monospace"
+                style={{ transition: "fill 0.5s" }}>{c}</text>
+              {gone && (
+                <text x={x} y={y1 - 22} textAnchor="middle" fontSize="18" fill={C.red}
+                  style={{ animation: "fadeUp 0.4s ease" }}>💨</text>
+              )}
+            </g>
+          );
+        })}
+        {commits.map((c, i) => {
+          const x = startX + 110 + i * (cw + gap);
+          return (
+            <g key={`rv-${i}`}>
+              {i > 0 && (
+                <line x1={startX + 110 + (i - 1) * (cw + gap) + cw / 2} y1={y2}
+                  x2={x - cw / 2 + 5} y2={y2}
+                  stroke={`${C.green}66`} strokeWidth="2" />
+              )}
+              <circle cx={x} cy={y2} r={cw / 2 - 4}
+                fill={`${C.green}20`} stroke={C.green} strokeWidth="2" />
+              <text x={x} y={y2 + 4.5} textAnchor="middle" fontSize="13"
+                fill={C.green} fontFamily="monospace">{c}</text>
+            </g>
+          );
+        })}
+        {phase === 2 && (
+          <g style={{ animation: "popIn 0.4s ease" }}>
+            <line x1={startX + 110 + 3 * (cw + gap) + cw / 2} y1={y2}
+              x2={revertX - cw / 2 + 5} y2={y2}
+              stroke={`${C.green}66`} strokeWidth="2" />
+            <circle cx={revertX} cy={y2} r={cw / 2 - 4}
+              fill={`${C.green}30`} stroke={C.green} strokeWidth="2.5"
+              style={{ filter: `drop-shadow(0 0 8px ${C.green}88)` }} />
+            <text x={revertX} y={y2 + 4.5} textAnchor="middle" fontSize="11"
+              fill={C.green} fontFamily="monospace">D'</text>
+            <text x={revertX} y={y2 - 22} textAnchor="middle" fontSize="9"
+              fill={`${C.green}aa`} fontFamily="monospace">revert</text>
+          </g>
+        )}
+        <text x="215" y="105" textAnchor="middle" fontSize="9.5" fill={`${C.red}aa`} fontFamily="monospace">
+          {phase === 1 ? "D 커밋이 사라짐 ⚠️" : "커밋 D를 없애고 싶을 때"}
+        </text>
+        <text x="215" y="195" textAnchor="middle" fontSize="9.5" fill={`${C.green}aa`} fontFamily="monospace">
+          {phase === 2 ? "D를 취소하는 D' 커밋 추가 ✅ (협업 시 안전)" : "커밋 D를 안전하게 되돌릴 때"}
+        </text>
+      </svg>
+    </DiagramBox>
+  );
+}
+
+/* ══════════════════════════════════════
+   ANIMATED DIAGRAM 7 — Git Bisect
+══════════════════════════════════════ */
+function AnimatedBisect() {
+  const [step, setStep] = useState(0);
+  const MAX = 4;
+  useEffect(() => {
+    const t = setInterval(() => setStep(s => (s + 1) % (MAX + 1)), 1400);
+    return () => clearInterval(t);
+  }, []);
+
+  const commits = ["A","B","C","D","E","F","G","H"];
+  const bugAt = 5;
+  const states = [
+    { lo: 0, hi: 7, check: -1, label: "🔍 탐색 시작: good=A, bad=H" },
+    { lo: 0, hi: 7, check: 4, label: "E 체크 → 정상 (good)" },
+    { lo: 4, hi: 7, check: 6, label: "G 체크 → 버그 (bad)" },
+    { lo: 4, hi: 6, check: 5, label: "F 체크 → 버그 (bad)" },
+    { lo: 4, hi: 5, check: 5, label: "🎯 버그 커밋 발견: F !" },
+  ];
+  const cur = states[step] || states[0];
+  const cw = 42, gap = 8, startX = 20;
+
+  return (
+    <DiagramBox color={C.yellow} label="DIAGRAM — Git Bisect 이진 탐색">
+      <svg width="100%" viewBox="0 0 420 120" style={{ display: "block" }}>
+        {commits.map((c, i) => {
+          const x = startX + i * (cw + gap) + cw / 2;
+          const inRange = i >= cur.lo && i <= cur.hi;
+          const isCheck = i === cur.check;
+          const isBug   = i >= bugAt;
+          const isFound = step === MAX && i === bugAt;
+
+          let stroke = C.border, fill = C.panel2, textCol = C.dim;
+          if (isFound) { stroke = C.red; fill = `${C.red}30`; textCol = C.red; }
+          else if (isCheck) { stroke = C.yellow; fill = `${C.yellow}25`; textCol = C.yellow; }
+          else if (inRange && isBug)  { stroke = `${C.red}88`; fill = `${C.red}10`; textCol = `${C.red}aa`; }
+          else if (inRange && !isBug) { stroke = `${C.green}88`; fill = `${C.green}10`; textCol = `${C.green}aa`; }
+
+          return (
+            <g key={i}>
+              <circle cx={x} cy={50} r={cw / 2 - 4}
+                fill={fill} stroke={stroke} strokeWidth={isCheck || isFound ? 2.5 : 1.5}
+                style={{ transition: "all 0.45s", filter: isFound ? `drop-shadow(0 0 12px ${C.red}99)` : isCheck ? `drop-shadow(0 0 8px ${C.yellow}88)` : "none" }} />
+              <text x={x} y={55} textAnchor="middle" fontSize="12"
+                fill={textCol} fontFamily="monospace"
+                style={{ transition: "fill 0.45s" }}>{c}</text>
+              {i < commits.length - 1 && (
+                <line x1={x + cw / 2 - 4} y1={50}
+                  x2={startX + (i + 1) * (cw + gap) + cw / 2 - cw / 2 + 4} y2={50}
+                  stroke={inRange && i + 1 <= cur.hi ? `${C.dim}88` : `${C.dim}22`}
+                  strokeWidth="1.5" style={{ transition: "stroke 0.45s" }} />
+              )}
+              {i === 0 && <text x={x} y={84} textAnchor="middle" fontSize="8.5" fill={`${C.green}aa`} fontFamily="monospace">✅ good</text>}
+              {i === 7 && <text x={x} y={84} textAnchor="middle" fontSize="8.5" fill={`${C.red}aa`} fontFamily="monospace">❌ bad</text>}
+              {isCheck && step < MAX && (
+                <text x={x} y={18} textAnchor="middle" fontSize="10" fill={C.yellow} fontFamily="monospace">▼ check</text>
+              )}
+              {isFound && (
+                <text x={x} y={18} textAnchor="middle" fontSize="10" fill={C.red} fontFamily="monospace"
+                  style={{ animation: "glow 1s ease infinite" }}>🐛 범인!</text>
+              )}
+            </g>
+          );
+        })}
+        <text x="210" y="108" textAnchor="middle" fontSize="9.5" fill={C.dim} fontFamily="monospace">
+          {cur.label}
+        </text>
+      </svg>
+    </DiagramBox>
+  );
+}
+
+/* ══════════════════════════════════════
+   ANIMATED DIAGRAM 8 — Journey
+══════════════════════════════════════ */
+function AnimatedJourney() {
+  const [started, setStarted] = useState(false);
+  const stages = [
+    { label: "git init 배우기",    pct: 100, color: C.green,  delay: 0    },
+    { label: "add / commit 연습", pct: 100, color: C.green,  delay: 300  },
+    { label: "push / pull 익히기", pct: 100, color: C.green,  delay: 600  },
+    { label: "branch 생성",        pct: 80,  color: C.cyan,   delay: 900  },
+    { label: "merge 연습",          pct: 60,  color: C.cyan,   delay: 1200 },
+    { label: "충돌 해결",            pct: 40,  color: C.yellow, delay: 1500 },
+    { label: "Pull Request",        pct: 30,  color: C.purple, delay: 1800 },
+    { label: "Code Review",         pct: 20,  color: C.purple, delay: 2100 },
+    { label: "오픈소스 기여",         pct: 10,  color: C.purple, delay: 2400 },
+  ];
+  return (
+    <DiagramBox color={C.green} label="JOURNEY — Git 마스터 여정">
+      <div style={{ padding: "4px 0" }}>
+        {stages.map((s, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 9 }}>
+            <span style={{ color: s.color, fontSize: 11, fontFamily: "monospace",
+                           minWidth: 155, textAlign: "right", opacity: 0.85 }}>
+              {s.label}
+            </span>
+            <div style={{ flex: 1, height: 12, background: `${s.color}15`,
+                          borderRadius: 6, overflow: "hidden", border: `1px solid ${s.color}33` }}>
+              <div style={{
+                height: "100%",
+                background: `linear-gradient(90deg, ${s.color}cc, ${s.color}44)`,
+                borderRadius: 6,
+                width: started ? `${s.pct}%` : "0%",
+                transition: `width 0.9s ease ${started ? s.delay : 0}ms`,
+                boxShadow: `0 0 8px ${s.color}66`,
+              }} />
+            </div>
+            <span style={{ color: s.color, fontSize: 10, fontFamily: "monospace", minWidth: 32 }}>
+              {started ? `${s.pct}%` : "0%"}
+            </span>
+          </div>
+        ))}
+        <div style={{ textAlign: "center", marginTop: 12 }}>
+          <button onClick={() => setStarted(v => !v)}
+            style={{ background: `${C.green}15`, border: `1px solid ${C.green}44`,
+                     color: C.green, borderRadius: 8, padding: "5px 20px",
+                     cursor: "pointer", fontSize: 12 }}>
+            {started ? "↺ 초기화" : "▶ 학습 시작!"}
+          </button>
+        </div>
+      </div>
+    </DiagramBox>
+  );
+}
+
+/* ══════════════════════════════════════
+   ANIMATED DIAGRAM 9 — .gitignore
+══════════════════════════════════════ */
+function AnimatedGitignoreFlow() {
+  const [fileIdx, setFileIdx] = useState(0);
+  const files = [".env", "node_modules/", "app.js", ".DS_Store", "index.html", "dist/"];
+  const ignored = new Set([".env", "node_modules/", ".DS_Store", "dist/"]);
+
+  useEffect(() => {
+    const t = setInterval(() => setFileIdx(i => (i + 1) % files.length), 1400);
+    return () => clearInterval(t);
+  }, []);
+
+  const cur = files[fileIdx];
+  const isIgnored = ignored.has(cur);
+
+  return (
+    <DiagramBox color={C.yellow} label="FLOWCHART — .gitignore 동작 원리">
+      <svg width="100%" viewBox="0 0 400 200" style={{ display: "block" }}>
+        <defs>
+          <marker id="gi-a" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill={C.dim} />
+          </marker>
+          <marker id="gi-r" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill={C.red} />
+          </marker>
+          <marker id="gi-g" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+            <path d="M0,0 L7,3.5 L0,7 Z" fill={C.green} />
+          </marker>
+        </defs>
+        <rect x="20" y="75" width="110" height="38" rx="10"
+          fill={`${C.cyan}15`} stroke={C.cyan} strokeWidth="1.5" />
+        <text x="75" y="94" textAnchor="middle" fontSize="10.5" fill={C.cyan} fontFamily="monospace"
+          key={cur} style={{ animation: "fadeUp 0.3s ease" }}>{cur}</text>
+        <text x="75" y="107" textAnchor="middle" fontSize="9" fill={`${C.cyan}88`} fontFamily="monospace">📄 파일</text>
+        <line x1="132" y1="94" x2="155" y2="94" stroke={C.dim} strokeWidth="1.5" markerEnd="url(#gi-a)" />
+        <polygon points="195,70 235,94 195,118 155,94"
+          fill={`${C.yellow}15`} stroke={C.yellow} strokeWidth="1.5" />
+        <text x="195" y="91" textAnchor="middle" fontSize="9" fill={C.yellow} fontFamily="monospace">.gitignore</text>
+        <text x="195" y="103" textAnchor="middle" fontSize="9" fill={C.yellow} fontFamily="monospace">목록?</text>
+        <line x1="235" y1="94" x2="285" y2="64" stroke={isIgnored ? C.red : `${C.red}33`} strokeWidth={isIgnored ? 2.5 : 1.5} markerEnd="url(#gi-r)"
+          style={{ transition: "all 0.4s" }} />
+        <text x="268" y="72" fontSize="9" fill={`${C.red}aa`} fontFamily="monospace">Yes</text>
+        <rect x="285" y="48" width="95" height="32" rx="8"
+          fill={isIgnored ? `${C.red}25` : `${C.red}08`} stroke={C.red} strokeWidth={isIgnored ? 2 : 1}
+          style={{ transition: "all 0.4s", filter: isIgnored ? `drop-shadow(0 0 8px ${C.red}88)` : "none" }} />
+        <text x="332" y="69" textAnchor="middle" fontSize="10" fill={C.red} fontFamily="monospace">❌ Git 무시</text>
+        <line x1="235" y1="94" x2="285" y2="124" stroke={!isIgnored ? C.green : `${C.green}33`} strokeWidth={!isIgnored ? 2.5 : 1.5} markerEnd="url(#gi-g)"
+          style={{ transition: "all 0.4s" }} />
+        <text x="268" y="122" fontSize="9" fill={`${C.green}aa`} fontFamily="monospace">No</text>
+        <rect x="285" y="108" width="95" height="32" rx="8"
+          fill={!isIgnored ? `${C.green}25` : `${C.green}08`} stroke={C.green} strokeWidth={!isIgnored ? 2 : 1}
+          style={{ transition: "all 0.4s", filter: !isIgnored ? `drop-shadow(0 0 8px ${C.green}88)` : "none" }} />
+        <text x="332" y="129" textAnchor="middle" fontSize="10" fill={C.green} fontFamily="monospace">✅ Git 추적</text>
+        <text x="200" y="180" textAnchor="middle" fontSize="10" fill={isIgnored ? C.red : C.green} fontFamily="monospace">
+          {cur} → {isIgnored ? "무시됨 (추적 안 됨)" : "Git 이 추적함"}
+        </text>
+      </svg>
+    </DiagramBox>
+  );
+}
+
+/* ══════════════════════════════════════
+   OTHER REUSED COMPONENTS
+══════════════════════════════════════ */
+function CompareBox({ left, right }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      {[left, right].map((side, i) => (
+        <div key={i} style={{ background: `${side.color}08`, border: `1px solid ${side.color}33`, borderRadius: 10, padding: 14 }}>
+          <div style={{ color: side.color, fontWeight: 700, marginBottom: 10, fontSize: 13 }}>{side.label}</div>
+          {side.items.map((item, j) => (
+            <div key={j} style={{ color: "#bbb", fontSize: 12.5, padding: "3px 0", fontFamily: "monospace" }}>{item}</div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BenefitCards() {
+  const b = [
+    { icon: "🕐", t: "시간 여행",  d: "언제든 과거 버전으로" },
+    { icon: "👥", t: "협업",       d: "여러 명이 동시에 작업" },
+    { icon: "🔒", t: "백업",       d: "코드를 안전하게 보관" },
+    { icon: "🌿", t: "실험",       d: "안전하게 새 기능 테스트" },
+  ];
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10 }}>
+      {b.map((x, i) => (
+        <div key={i} style={{ background: `${C.green}08`, border: `1px solid ${C.green}22`, borderRadius: 10, padding: 12, textAlign: "center" }}>
+          <div style={{ fontSize: 24, marginBottom: 5 }}>{x.icon}</div>
+          <div style={{ color: C.green, fontWeight: 700, fontSize: 13 }}>{x.t}</div>
+          <div style={{ color: C.dim, fontSize: 12, marginTop: 3 }}>{x.d}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function OSTabs() {
+  const [os, setOs] = useState("windows");
+  const codes = {
+    windows: `# git-scm.com 에서 설치 파일 다운로드\n# 설치 후 Git Bash 또는 PowerShell에서:\ngit --version`,
+    macos:   `# Homebrew 사용 (권장)\nbrew install git\n\n# 또는 Xcode Command Line Tools\nxcode-select --install`,
+    linux:   `# Ubuntu/Debian\nsudo apt-get update && sudo apt-get install git\n\n# Fedora\nsudo dnf install git\n\n# Arch Linux\nsudo pacman -S git`,
+  };
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+        {[["windows","🪟 Windows"],["macos","🍎 macOS"],["linux","🐧 Linux"]].map(([k,l]) => (
+          <button key={k} onClick={() => setOs(k)}
+            style={{ padding: "6px 14px", borderRadius: 8,
+                     border: `1px solid ${os===k ? C.green : C.border}`,
+                     background: os===k ? `${C.green}15` : "transparent",
+                     color: os===k ? C.green : C.dim, cursor: "pointer", fontSize: 12, transition: "all 0.2s" }}>
+            {l}
+          </button>
+        ))}
+      </div>
+      <CodeBlock label={`설치 — ${os}`}>{codes[os]}</CodeBlock>
+    </div>
+  );
+}
+
+function CommitGuide() {
+  const types = [
+    { icon:"✨", type:"feat",     desc:"새 기능" },
+    { icon:"🐛", type:"fix",      desc:"버그 수정" },
+    { icon:"📝", type:"docs",     desc:"문서" },
+    { icon:"♻️", type:"refactor", desc:"리팩토링" },
+    { icon:"🎨", type:"style",    desc:"포맷팅" },
+    { icon:"🧪", type:"test",     desc:"테스트" },
+    { icon:"🚀", type:"deploy",   desc:"배포" },
+    { icon:"🔧", type:"config",   desc:"설정" },
+  ];
+  return (
+    <div style={{ background:`${C.green}08`, border:`1px solid ${C.green}22`, borderRadius:12, padding:14 }}>
+      <div style={{ color:C.green, fontWeight:700, fontSize:13, marginBottom:10 }}>📝 좋은 커밋 메시지</div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, marginBottom:12 }}>
+        {types.map((g,i) => (
+          <div key={i} style={{ textAlign:"center", background:C.panel, borderRadius:8, padding:8 }}>
+            <div style={{ fontSize:17 }}>{g.icon}</div>
+            <div style={{ color:C.code, fontFamily:"monospace", fontSize:10 }}>{g.type}</div>
+            <div style={{ color:C.dim, fontSize:10 }}>{g.desc}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontFamily:"monospace", fontSize:12, color:C.code, background:C.panel, padding:"8px 12px", borderRadius:8 }}>
+        ✨ feat(auth): 소셜 로그인 기능 추가
+      </div>
+    </div>
+  );
+}
+
+function UndoTable() {
+  const rows = [
+    { opt:"--soft",  work:"✅ 유지", stage:"✅ 유지", commit:"❌ 취소", safe:"안전",   sc:C.green  },
+    { opt:"--mixed", work:"✅ 유지", stage:"❌ 취소", commit:"❌ 취소", safe:"보통",   sc:C.yellow },
+    { opt:"--hard",  work:"❌ 취소", stage:"❌ 취소", commit:"❌ 취소", safe:"위험 ⚠️", sc:C.red    },
+  ];
+  return (
+    <div style={{ background:C.panel, border:`1px solid ${C.border}`, borderRadius:12, overflow:"hidden" }}>
+      <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+        <thead>
+          <tr style={{ background:C.panel2 }}>
+            {["옵션","작업 파일","Staging","커밋","위험도"].map(h => (
+              <th key={h} style={{ padding:"10px 12px", color:C.green, fontWeight:600,
+                                   textAlign:"left", borderBottom:`1px solid ${C.border}` }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r,i) => (
+            <tr key={i} style={{ borderBottom:`1px solid ${C.panel2}` }}>
+              <td style={{ padding:"9px 12px", color:C.code, fontFamily:"monospace" }}>{r.opt}</td>
+              <td style={{ padding:"9px 12px", color:r.work.includes("✅")?C.green:C.red }}>{r.work}</td>
+              <td style={{ padding:"9px 12px", color:r.stage.includes("✅")?C.green:C.red }}>{r.stage}</td>
+              <td style={{ padding:"9px 12px", color:r.commit.includes("✅")?C.green:C.red }}>{r.commit}</td>
+              <td style={{ padding:"9px 12px", color:r.sc, fontWeight:600 }}>{r.safe}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function MergeCards() {
+  const s = [
+    { name:"Regular Merge",   cmd:"git merge feature",          color:C.cyan,   desc:"모든 히스토리 보존 + merge commit 생성" },
+    { name:"Squash Merge",    cmd:"git merge --squash feature", color:C.green,  desc:"모든 커밋을 1개로 합침 (깔끔!)" },
+    { name:"Fast-forward",    cmd:"git merge --ff-only feature",color:C.yellow, desc:"일직선 히스토리, 브랜치 기록 없음" },
+    { name:"No Fast-forward", cmd:"git merge --no-ff feature",  color:C.purple, desc:"브랜치 기록 보존 + 명시적 merge commit" },
+  ];
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+      {s.map((x,i) => (
+        <div key={i} style={{ background:`${x.color}08`, border:`1px solid ${x.color}33`, borderRadius:10, padding:13 }}>
+          <div style={{ color:x.color, fontWeight:700, fontSize:13, marginBottom:5 }}>{x.name}</div>
+          <div style={{ color:C.dim, fontFamily:"monospace", fontSize:11, marginBottom:8,
+                        background:C.panel, padding:"3px 8px", borderRadius:5 }}>{x.cmd}</div>
+          <div style={{ color:`${x.color}bb`, fontSize:12 }}>{x.desc}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PushPullViz() {
+  const [dir, setDir] = useState(0);
+  useEffect(() => { const t = setInterval(()=>setDir(d=>(d+1)%2),1800); return ()=>clearInterval(t); }, []);
+  return (
+    <DiagramBox color={C.cyan} label="DIAGRAM — push / pull">
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-around", padding:"4px 0" }}>
+        <div style={{ textAlign:"center" }}>
+          <div style={{ fontSize:30, marginBottom:4 }}>💻</div>
+          <div style={{ color:C.green, fontWeight:700, fontSize:12 }}>로컬 저장소</div>
+          <div style={{ color:C.dim, fontSize:10 }}>내 컴퓨터</div>
+        </div>
+        <div style={{ flex:1, textAlign:"center" }}>
+          <div style={{ color:C.green, fontSize:12, opacity:dir===0?1:0.2, transition:"opacity 0.5s", marginBottom:5 }}>
+            ────── 🚀 git push ──────→
+          </div>
+          <div style={{ color:C.cyan, fontSize:12, opacity:dir===1?1:0.2, transition:"opacity 0.5s" }}>
+            ←────── 📥 git pull ──────
+          </div>
+        </div>
+        <div style={{ textAlign:"center" }}>
+          <div style={{ fontSize:30, marginBottom:4 }}>☁️</div>
+          <div style={{ color:C.cyan, fontWeight:700, fontSize:12 }}>GitHub</div>
+          <div style={{ color:C.dim, fontSize:10 }}>원격 저장소</div>
+        </div>
+      </div>
+    </DiagramBox>
+  );
+}
+
+function SquashViz() {
+  return (
+    <div style={{ background:C.panel, border:`1px solid ${C.purple}22`, borderRadius:12, padding:16 }}>
+      <div style={{ color:`${C.purple}88`, fontSize:11, marginBottom:12, fontFamily:"monospace" }}>◈ SQUASH 예시</div>
+      <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", marginBottom:10 }}>
+        {["WIP: 작업중","타이핑 수정","버그 고침"].map((c,i)=>(
+          <div key={i} style={{ background:`${C.red}12`, border:`1px solid ${C.red}44`, borderRadius:6,
+                                padding:"4px 9px", color:C.red, fontSize:11, fontFamily:"monospace" }}>{c}</div>
+        ))}
+      </div>
+      <div style={{ color:C.purple, textAlign:"center", fontSize:18, marginBottom:10 }}>↓ squash</div>
+      <div style={{ background:`${C.green}15`, border:`1px solid ${C.green}44`, borderRadius:6,
+                    padding:"8px 12px", color:C.green, fontSize:12, fontFamily:"monospace" }}>
+        ✨ feat: 로그인 기능 완성
+      </div>
+    </div>
+  );
+}
+
+function ParticleBg() {
+  const ref = useRef(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
+    resize();
+    // seededRandom 사용 (Math.random 금지)
+    const particles = Array.from({ length: 55 }, (_, i) => ({
+      x: seededRandom(i * 7 + 1) * canvas.width,
+      y: seededRandom(i * 7 + 2) * canvas.height,
+      vx: (seededRandom(i * 7 + 3) - 0.5) * 0.35,
+      vy: (seededRandom(i * 7 + 4) - 0.5) * 0.35,
+      r: seededRandom(i * 7 + 5) * 1.4 + 0.4,
+      a: seededRandom(i * 7 + 6) * 0.5 + 0.1,
+    }));
+    let raf;
+    const draw = () => {
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x = (p.x + p.vx + canvas.width)  % canvas.width;
+        p.y = (p.y + p.vy + canvas.height) % canvas.height;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0,255,157,${p.a * 0.35})`;
+        ctx.fill();
+      });
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    window.addEventListener("resize", resize);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
+  }, []);
+  return <canvas ref={ref} style={{ position:"absolute", inset:0, width:"100%", height:"100%", pointerEvents:"none" }} />;
+}
+
+function QuickRef() {
+  const cmds = [
+    ["git status",              "현재 상태 확인"],
+    ["git add .",               "모든 변경사항 스테이지"],
+    ['git commit -m "msg"',     "커밋"],
+    ["git push",                "원격에 푸시"],
+    ["git pull",                "원격에서 풀"],
+    ["git log --oneline",       "커밋 로그 보기"],
+    ["git switch -c branch",    "새 브랜치 생성+이동"],
+    ["git merge branch",        "브랜치 병합"],
+    ["git stash",               "임시 저장"],
+    ["git diff",                "변경사항 보기"],
+  ];
+  return (
+    <div style={{ background:C.panel, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden" }}>
+      <div style={{ background:C.panel2, padding:"11px 18px", borderBottom:`1px solid ${C.border}` }}>
+        <span style={{ color:C.yellow, fontWeight:700 }}>⭐ 자주 쓰는 명령어 TOP 10</span>
+      </div>
+      {cmds.map(([cmd,desc],i) => (
+        <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"8px 16px",
+                              background:i%2===0?`${C.green}03`:"transparent" }}>
+          <span style={{ color:`${C.green}55`, fontWeight:700, minWidth:20, fontSize:12 }}>#{i+1}</span>
+          <code style={{ color:C.code, fontFamily:"monospace", fontSize:12.5, flex:1 }}>{cmd}</code>
+          <span style={{ color:C.dim, fontSize:11.5 }}>{desc}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   CONTENT DATA
+══════════════════════════════════════ */
+function buildSections() {
+  return {
+    beginner: {
+      topics: [
+        {
+          id:"what", icon:"🤔", title:"Git이란 무엇인가?",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:18 }}>
+              <p style={{ color:C.text, lineHeight:1.85, fontSize:15, margin:0 }}>
+                Git은 <HL>파일의 변경 이력을 기록하고 관리하는 버전 관리 시스템</HL>입니다.
+                게임의 <HL>세이브 포인트</HL>처럼, 언제든 과거로 돌아갈 수 있어요!
+              </p>
+              <CompareBox
+                left={{ label:"❌ Git 없이", color:C.red,
+                        items:["report_final.doc","report_final_진짜.doc","report_final_최종.doc","report_최종_진짜최종.doc","🤯 파일 20개..."] }}
+                right={{ label:"✅ Git과 함께", color:C.green,
+                         items:['git commit -m "초안"','git commit -m "수정"','git commit -m "최종"',"git log 로 모든 버전 확인!","😎 파일 1개 + 히스토리"] }}
+              />
+              <BenefitCards />
+            </div>
+          ),
+        },
+        {
+          id:"install", icon:"💻", title:"Git 설치하기",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <p style={{ color:C.text, lineHeight:1.85, fontSize:15, margin:0 }}>자신의 운영체제에 맞는 방법으로 설치하세요!</p>
+              <OSTabs />
+              <CodeBlock label="설치 확인">{`git --version\n# 출력 예시: git version 2.42.0`}</CodeBlock>
+            </div>
+          ),
+        },
+        {
+          id:"config", icon:"⚙️", title:"Git 초기 설정",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <InfoBox type="warning">Git을 처음 사용한다면 <b>반드시</b> 사용자 정보를 설정해야 해요!</InfoBox>
+              <CodeBlock label="사용자 정보 설정">{`# 이름 설정 (커밋에 표시될 이름)\ngit config --global user.name "홍길동"\n\n# 이메일 설정 (GitHub 계정과 동일하게!)\ngit config --global user.email "gildong@example.com"\n\n# 설정 확인\ngit config --list`}</CodeBlock>
+              <CodeBlock label="추가 유용한 설정">{`# 기본 브랜치 이름을 'main'으로\ngit config --global init.defaultBranch main\n\n# 출력을 컬러풀하게!\ngit config --global color.ui auto\n\n# 기본 에디터 설정 (VS Code)\ngit config --global core.editor "code --wait"`}</CodeBlock>
+            </div>
+          ),
+        },
+        {
+          id:"repo", icon:"📁", title:"저장소 만들기",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <CodeBlock label="새 저장소 만들기 (git init)">{`# 1. 프로젝트 폴더 생성\nmkdir my-project\ncd my-project\n\n# 2. Git 저장소로 초기화\ngit init\n\n# 출력: Initialized empty Git repository in /my-project/.git/`}</CodeBlock>
+              <CodeBlock label="기존 저장소 복제 (git clone)">{`# GitHub 프로젝트를 내 컴퓨터로 복사\ngit clone https://github.com/username/repository.git\n\n# 특정 브랜치만 클론\ngit clone -b develop https://github.com/username/repo.git\n\n# 최신 커밋만 (빠름!)\ngit clone --depth 1 https://github.com/username/repo.git`}</CodeBlock>
+            </div>
+          ),
+        },
+        {
+          id:"areas", icon:"🎯", title:"Git의 3가지 영역",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:18 }}>
+              <InfoBox>이것만 이해하면 Git의 80%는 끝! 자동 애니메이션을 보세요 👇</InfoBox>
+              <AnimatedThreeAreas />
+              <p style={{ color:C.text, lineHeight:1.85, fontSize:14, margin:0 }}>
+                🍕 <HL>피자 비유:</HL> 주방(Working)에서 만든 피자를 오븐 앞(Staging)에 줄 세운 뒤, 사진첩(Repository)에 영구 기록!
+              </p>
+            </div>
+          ),
+        },
+        {
+          id:"basic", icon:"🛠️", title:"기본 명령어",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <CodeBlock label="상태 확인 (git status)">{`git status\n\n# 출력 예시:\n# modified:   README.md   ← 수정했지만 add 안 함\n# new-file.txt            ← 새 파일 (추적 안 함)`}</CodeBlock>
+              <CodeBlock label="스테이지에 추가 (git add)">{`git add README.md     # 특정 파일\ngit add .             # 모든 변경사항 ⭐\ngit add *.js          # 특정 확장자만`}</CodeBlock>
+              <CodeBlock label="커밋하기 (git commit)">{`git commit -m "커밋 메시지"\ngit commit -am "메시지"   # 수정된 파일만 add+commit`}</CodeBlock>
+              <CommitGuide />
+              <CodeBlock label="로그 보기 (git log)">{`git log                          # 기본 로그\ngit log --oneline                # 한 줄로 보기 ⭐\ngit log --oneline --graph --all  # 그래프로!\ngit log -5                       # 최근 5개만`}</CodeBlock>
+            </div>
+          ),
+        },
+      ],
+    },
+    intermediate: {
+      topics: [
+        {
+          id:"branch", icon:"🌿", title:"브랜치 다루기",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:18 }}>
+              <p style={{ color:"#b3edff", lineHeight:1.85, fontSize:15, margin:0 }}>
+                브랜치 = <HL c={C.cyan}>독립적인 작업 공간</HL>. 나무의 가지처럼 여러 작업을 동시에!
+              </p>
+              <AnimatedGitGraph />
+              <CodeBlock label="브랜치 명령어">{`git branch                    # 목록 보기\ngit branch -a                 # 원격 포함 전체\ngit switch -c feature/login   # 생성 + 이동 ⭐\ngit switch main               # 브랜치 이동\ngit merge feature/login       # 병합\ngit branch -d feature/login   # 삭제`}</CodeBlock>
+              <InfoBox type="warning">충돌 발생 시 아래 순서로 해결하세요!</InfoBox>
+              <AnimatedConflictFlow />
+            </div>
+          ),
+        },
+        {
+          id:"remote", icon:"🌐", title:"원격 저장소 (GitHub)",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <p style={{ color:"#b3edff", lineHeight:1.85, fontSize:15, margin:0 }}>
+                원격 저장소 = <HL c={C.cyan}>클라우드에 있는 내 프로젝트 복사본</HL>
+              </p>
+              <PushPullViz />
+              <CodeBlock label="원격 저장소 연결 & 관리">{`git remote add origin https://github.com/username/repo.git\ngit remote -v                  # 연결 확인\ngit remote set-url origin URL  # URL 변경\n\n# 첫 푸시\ngit push -u origin main\n\n# 이후 푸시\ngit push\n\n# 최신 내용 가져오기 + 병합\ngit pull origin main\n\n# 가져오기만 (병합 X, 안전)\ngit fetch origin`}</CodeBlock>
+            </div>
+          ),
+        },
+        {
+          id:"collab", icon:"👥", title:"협업하기",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <InfoBox accentColor={C.cyan}><b>Pull Request (PR)</b> = "내 코드를 봐주세요!"라고 요청하는 것</InfoBox>
+              <AnimatedSequenceDiagram />
+              <CodeBlock label="Fork & PR 흐름">{`# 1. GitHub에서 Fork 클릭\n# 2. 내 저장소 클론\ngit clone https://github.com/내계정/repo.git\n\n# 3. 브랜치 생성 후 작업\ngit switch -c feature/my-feature\ngit add .\ngit commit -m "✨ 새 기능 추가"\ngit push origin feature/my-feature\n\n# 4. GitHub에서 Pull Request 생성!`}</CodeBlock>
+            </div>
+          ),
+        },
+        {
+          id:"undo", icon:"⏪", title:"되돌리기",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <UndoTable />
+              <AnimatedResetVsRevert />
+              <CodeBlock label="상황별 명령어">{`# 파일 수정 취소\ngit restore 파일명\n\n# add 취소\ngit restore --staged 파일명\n\n# 커밋 취소 (커밋만)\ngit reset --soft HEAD~1\n\n# 커밋 취소 (add 포함)\ngit reset --mixed HEAD~1\n\n# 커밋 취소 (모두) ⚠️ 위험!\ngit reset --hard HEAD~1\n\n# 안전하게 되돌리기 (새 커밋 생성)\ngit revert 커밋해시`}</CodeBlock>
+              <InfoBox type="warning"><b>--hard</b>는 복구 어려움! 협업 시엔 <b>revert</b>를 사용하세요.</InfoBox>
+            </div>
+          ),
+        },
+        {
+          id:"merge-strategy", icon:"🔀", title:"Merge 전략",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:18 }}>
+              <MergeCards />
+              <CodeBlock label="Merge 옵션">{`git merge feature/login           # Regular Merge\ngit merge --no-ff feature/login   # 브랜치 기록 보존\ngit merge --squash feature/login  # 1개 커밋으로 합침\ngit merge --ff-only feature/login # Fast-forward만`}</CodeBlock>
+              <SquashViz />
+            </div>
+          ),
+        },
+      ],
+    },
+    advanced: {
+      topics: [
+        {
+          id:"stash", icon:"📦", title:"Stash (임시 저장)",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <InfoBox accentColor={C.purple}>Stash = 작업 중인 파일을 서랍에 잠시 넣어두는 것!</InfoBox>
+              <AnimatedStashFlow />
+              <CodeBlock label="Stash 명령어">{`git stash                            # 임시 저장\ngit stash push -m "로그인 작업 중"   # 메시지와 함께 ⭐\ngit stash list                       # 목록 보기\ngit stash pop                        # 최근 것 복원 + 삭제\ngit stash apply                      # 복원 (삭제 X)\ngit stash apply stash@{2}            # 특정 stash 복원\ngit stash drop                       # 삭제\ngit stash clear                      # 전체 삭제\ngit stash -u                         # 추적 안 된 파일도\ngit stash branch new-branch stash@{0}# 새 브랜치로`}</CodeBlock>
+            </div>
+          ),
+        },
+        {
+          id:"rebase", icon:"🎨", title:"Interactive Rebase",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <InfoBox accentColor={C.purple}>커밋 히스토리를 자유자재로 편집!</InfoBox>
+              <CodeBlock label="기본 사용법">{`# 최근 3개 커밋 편집\ngit rebase -i HEAD~3`}</CodeBlock>
+              <CodeBlock label="에디터 옵션">{`pick abc1234 첫 번째 커밋\npick def5678 두 번째 커밋\npick ghi9012 세 번째 커밋\n\n# p, pick   = 커밋 유지\n# r, reword = 메시지 수정\n# e, edit   = 커밋 수정\n# s, squash = 이전 커밋과 합치기\n# f, fixup  = squash (메시지 버림)\n# d, drop   = 커밋 삭제`}</CodeBlock>
+              <SquashViz />
+            </div>
+          ),
+        },
+        {
+          id:"reflog", icon:"⏰", title:"Git Reflog — 실수 복구",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <InfoBox accentColor={C.purple}>Reflog = Git의 블랙박스! 모든 HEAD 이동 기록 보관 (기본 90일)</InfoBox>
+              <CodeBlock label="Reflog 활용">{`# reflog 확인\ngit reflog\n\n# 출력 예시:\n# a1b2c3d HEAD@{0}: reset: moving to HEAD~3\n# e4f5g6h HEAD@{1}: commit: 중요한 커밋!\n# i7j8k9l HEAD@{2}: commit: 이전 커밋\n\n# 해당 시점으로 복구\ngit reset --hard HEAD@{1}\n\n# 새 브랜치로 복구\ngit checkout -b recovered-branch HEAD@{1}`}</CodeBlock>
+              <InfoBox type="warning">Reflog는 <b>로컬에만</b> 존재합니다. 기본 90일 후 삭제됩니다!</InfoBox>
+            </div>
+          ),
+        },
+        {
+          id:"bisect", icon:"🔍", title:"Git Bisect — 버그 찾기",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <InfoBox accentColor={C.purple}>이진 탐색으로 버그 발생 커밋을 빠르게 찾기!</InfoBox>
+              <AnimatedBisect />
+              <CodeBlock label="Bisect 사용법">{`git bisect start              # 시작\ngit bisect bad                # 현재(버그 있음)\ngit bisect good abc1234       # 정상 커밋 지정\n# → Git이 중간 커밋으로 이동\n\ngit bisect good  # 또는\ngit bisect bad   # 반복 → 버그 커밋 발견!\n\ngit bisect reset # 종료\n\n# 자동화\ngit bisect start HEAD abc1234\ngit bisect run npm test`}</CodeBlock>
+            </div>
+          ),
+        },
+        {
+          id:"hooks", icon:"🪝", title:"Git Hooks — 자동화",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <InfoBox accentColor={C.purple}>Git 이벤트 발생 시 자동 실행되는 스크립트!</InfoBox>
+              <CodeBlock label="Hooks 위치">{`.git/hooks/\n├── pre-commit     # 커밋 전에 실행\n├── commit-msg     # 커밋 메시지 검사\n├── pre-push       # 푸시 전에 실행\n├── post-merge     # 병합 후 실행\n└── post-checkout  # 체크아웃 후 실행`}</CodeBlock>
+              <CodeBlock label="pre-commit hook 예시">{`#!/bin/sh\necho "🔍 린트 검사 중..."\nnpm run lint\n\nif [ $? -ne 0 ]; then\n    echo "❌ 린트 오류! 커밋 취소."\n    exit 1\nfi\necho "✅ 린트 통과!"\n\n# 실행 권한 부여\nchmod +x .git/hooks/pre-commit`}</CodeBlock>
+            </div>
+          ),
+        },
+        {
+          id:"tips", icon:"💡", title:"유용한 팁들",
+          content: (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              <AnimatedGitignoreFlow />
+              <CodeBlock label=".gitignore 템플릿">{`.DS_Store\nThumbs.db\n.env\n.env.local\nnode_modules/\nvenv/\n__pycache__/\ndist/\nbuild/\n*.log\n.idea/\n.vscode/`}</CodeBlock>
+              <CodeBlock label="Alias 설정">{`git config --global alias.st status\ngit config --global alias.co checkout\ngit config --global alias.lg "log --oneline --graph --all"\n\n# 사용\ngit st    # git status\ngit lg    # 예쁜 로그 그래프`}</CodeBlock>
+              <CodeBlock label="기타 유용한 명령어">{`git blame 파일명              # 누가 어떤 줄 수정했는지\ngit log --grep="버그"         # 특정 단어 포함 커밋 찾기\ngit checkout HEAD~1 -- 파일명 # 삭제된 파일 복구\ngit cherry-pick 커밋해시      # 특정 커밋만 가져오기`}</CodeBlock>
+              <AnimatedJourney />
+            </div>
+          ),
+        },
+      ],
+    },
+  };
+}
+
+/* ══════════════════════════════════════
+   MAIN APP
+══════════════════════════════════════ */
+function App() {
+  const [level, setLevel] = useState("beginner");
+  const [topicId, setTopicId] = useState("what");
+  const [mounted, setMounted] = useState(false);
+  const [showRef, setShowRef] = useState(false);
+
+  const SECTIONS = useMemo(() => buildSections(), []);
+
+  useEffect(() => { const t = setTimeout(() => setMounted(true), 80); return () => clearTimeout(t); }, []);
+
+  const sec   = SECTIONS[level];
+  const lv    = LEVELS[level];
+  const topic = sec.topics.find(t => t.id === topicId) || sec.topics[0];
+
+  const handleLevel = (lvKey) => { setLevel(lvKey); setTopicId(SECTIONS[lvKey].topics[0].id); };
+
+  return (
+    <div style={{ minHeight:"100vh", background:C.bg, fontFamily:"-apple-system,'Segoe UI','Noto Sans KR',sans-serif",
+                  color:"#e0ffe8", position:"relative" }}>
+
+      {/* Grid bg */}
+      <div style={{ position:"fixed", inset:0, pointerEvents:"none",
+        backgroundImage:"linear-gradient(rgba(0,255,157,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,157,0.025) 1px,transparent 1px)",
+        backgroundSize:"44px 44px" }} />
+      {/* Glow orbs */}
+      <div style={{ position:"fixed", top:-220, left:-220, width:520, height:520, borderRadius:"50%", pointerEvents:"none",
+        background:"radial-gradient(circle,rgba(0,255,157,0.055) 0%,transparent 70%)" }} />
+      <div style={{ position:"fixed", bottom:-220, right:-220, width:520, height:520, borderRadius:"50%", pointerEvents:"none",
+        background:"radial-gradient(circle,rgba(0,207,255,0.055) 0%,transparent 70%)" }} />
+
+      {/* HEADER */}
+      <div style={{ position:"relative", background:"linear-gradient(135deg,#060f0a 0%,#0a1a10 100%)",
+                    borderBottom:`1px solid ${C.border}`, padding:"0 24px", overflow:"hidden" }}>
+        <ParticleBg />
+        <div style={{ maxWidth:940, margin:"0 auto", padding:"30px 0 24px", position:"relative" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:18,
+                        opacity:mounted?1:0, transform:mounted?"translateY(0)":"translateY(-18px)",
+                        transition:"all 0.6s ease" }}>
+            <div style={{ fontSize:44, animation:"float 3s ease-in-out infinite" }}>🌲</div>
+            <div>
+              <h1 style={{ margin:0, fontSize:27, fontWeight:900, letterSpacing:-0.5,
+                           background:"linear-gradient(135deg,#00ff9d,#00cfff)",
+                           WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+                Git 완전 정복 가이드
+              </h1>
+              <p style={{ margin:"4px 0 0", color:C.dim, fontSize:13.5 }}>
+                초보자도 쉽게 이해하는 버전 관리 시스템 · 애니메이션 다이어그램으로 배우기
+              </p>
+            </div>
+          </div>
+          <div style={{ display:"flex", gap:8, flexWrap:"wrap",
+                        opacity:mounted?1:0, transform:mounted?"translateY(0)":"translateY(10px)",
+                        transition:"all 0.6s ease 0.18s" }}>
+            {Object.entries(LEVELS).map(([key,info]) => (
+              <button key={key} onClick={() => handleLevel(key)}
+                style={{ padding:"7px 20px", borderRadius:24,
+                         border:`1.5px solid ${level===key ? info.color : C.border}`,
+                         background:level===key ? `${info.color}15` : "transparent",
+                         color:level===key ? info.color : C.dim,
+                         cursor:"pointer", fontWeight:level===key?700:400, fontSize:13,
+                         boxShadow:level===key ? info.glow : "none", transition:"all 0.22s" }}>
+                {info.label}
+              </button>
+            ))}
+            <button onClick={() => setShowRef(v => !v)}
+              style={{ marginLeft:"auto", padding:"7px 18px", borderRadius:24,
+                       border:`1.5px solid ${showRef ? C.yellow : C.border}`,
+                       background:showRef ? `${C.yellow}15` : "transparent",
+                       color:showRef ? C.yellow : C.dim,
+                       cursor:"pointer", fontSize:13, transition:"all 0.22s" }}>
+              ⭐ 빠른 참조
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Ref */}
+      {showRef && (
+        <div style={{ maxWidth:940, margin:"0 auto", padding:"16px 24px 0",
+                      animation:"fadeUp 0.3s ease" }}>
+          <QuickRef />
+        </div>
+      )}
+
+      {/* MAIN GRID */}
+      <div style={{ maxWidth:940, margin:"0 auto", padding:"20px 24px 70px",
+                    display:"grid", gridTemplateColumns:"210px 1fr", gap:20 }}>
+
+        {/* Sidebar */}
+        <div style={{ position:"sticky", top:20, alignSelf:"start" }}>
+          <div style={{ background:C.panel, border:`1px solid ${lv.color}22`, borderRadius:13, overflow:"hidden" }}>
+            <div style={{ padding:"11px 14px", background:`${lv.color}0c`,
+                          borderBottom:`1px solid ${lv.color}22` }}>
+              <span style={{ color:lv.color, fontWeight:700, fontSize:12.5 }}>{lv.label} 목차</span>
+            </div>
+            {sec.topics.map(t => (
+              <button key={t.id} onClick={() => setTopicId(t.id)}
+                style={{ width:"100%", textAlign:"left", padding:"9px 13px",
+                         background:topicId===t.id ? `${lv.color}0e` : "transparent",
+                         border:"none", borderLeft:`3px solid ${topicId===t.id ? lv.color : "transparent"}`,
+                         color:topicId===t.id ? lv.color : C.dim,
+                         cursor:"pointer", fontSize:12.5, lineHeight:1.45,
+                         transition:"all 0.18s", display:"flex", alignItems:"center", gap:8 }}>
+                <span>{t.icon}</span><span>{t.title}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div key={`${level}-${topicId}`}
+          style={{ background:C.panel, border:`1px solid ${lv.color}22`, borderRadius:13,
+                   overflow:"hidden", animation:"fadeSlideIn 0.32s ease" }}>
+          <div style={{ padding:"16px 22px", background:`${lv.color}08`,
+                        borderBottom:`1px solid ${lv.color}22`,
+                        display:"flex", alignItems:"center", gap:10 }}>
+            <span style={{ fontSize:21 }}>{topic.icon}</span>
+            <h2 style={{ margin:0, fontSize:17.5, fontWeight:800, color:lv.color }}>{topic.title}</h2>
+          </div>
+          <div style={{ padding:22 }}>{topic.content}</div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ borderTop:`1px solid ${C.border}`, padding:"18px 24px",
+                    textAlign:"center", color:C.dimmer, fontSize:12.5 }}>
+        Made with ❤️ for Git beginners · 🌲 Git 완전 정복 가이드
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>

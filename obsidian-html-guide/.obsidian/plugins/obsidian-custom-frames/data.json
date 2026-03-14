@@ -1,0 +1,137 @@
+{
+  "frames": [
+    {
+      "url": "file:///C:/Users/user/obsidian-html-guide/html/BQB_Final_Launcher.html",
+      "displayName": "BQB Final Launcher",
+      "icon": "rocket",
+      "hideOnMobile": true,
+      "addRibbonIcon": true,
+      "openInCenter": true,
+      "zoomLevel": 1,
+      "forceIframe": false,
+      "customCss": "body { overflow-x: hidden; }",
+      "customJs": ""
+    },
+    {
+      "url": "file:///C:/Users/user/obsidian-html-guide/html/RnD_%EC%84%BC%ED%84%B0_%EA%B5%AC%EC%B6%95_%EA%B0%80%EC%9D%B4%EB%93%9C.html",
+      "displayName": "R&D 센터 구축 가이드",
+      "icon": "building",
+      "hideOnMobile": true,
+      "addRibbonIcon": true,
+      "openInCenter": true,
+      "zoomLevel": 1,
+      "forceIframe": false,
+      "customCss": "body { overflow-x: hidden; }",
+      "customJs": ""
+    },
+    {
+      "url": "file:///C:/Users/user/obsidian-html-guide/html/obsidian_guide.html",
+      "displayName": "Obsidian Guide",
+      "icon": "book",
+      "hideOnMobile": true,
+      "addRibbonIcon": true,
+      "openInCenter": true,
+      "zoomLevel": 1,
+      "forceIframe": false,
+      "customCss": "body { overflow-x: hidden; }",
+      "customJs": ""
+    },
+    {
+      "url": "file:///C:/Users/user/obsidian-html-guide/html/Git_guide.html",
+      "displayName": "Git 완전 정복 가이드",
+      "icon": "git-branch",
+      "hideOnMobile": true,
+      "addRibbonIcon": true,
+      "openInCenter": true,
+      "zoomLevel": 1,
+      "forceIframe": false,
+      "customCss": "body { overflow-x: hidden; }",
+      "customJs": ""
+    },
+    {
+      "url": "file:///C:/Users/user/obsidian-html-guide/html/obsidian_lecture.html",
+      "displayName": "Obsidian Lecture",
+      "icon": "presentation",
+      "hideOnMobile": true,
+      "addRibbonIcon": true,
+      "openInCenter": true,
+      "zoomLevel": 1,
+      "forceIframe": false,
+      "customCss": "body { overflow-x: hidden; }",
+      "customJs": ""
+    },
+    {
+      "url": "file:///C:/Users/user/obsidian-html-guide/html/sherlock.html",
+      "displayName": "안개 속의 암호",
+      "icon": "search",
+      "hideOnMobile": true,
+      "addRibbonIcon": true,
+      "openInCenter": true,
+      "zoomLevel": 1,
+      "forceIframe": false,
+      "customCss": "body { overflow-x: hidden; }",
+      "customJs": ""
+    },
+    {
+      "url": "file:///C:/Users/user/obsidian-html-guide/html/Claude_Code_Guide.html",
+      "displayName": "Claude Code 완전 정복",
+      "icon": "code",
+      "hideOnMobile": true,
+      "addRibbonIcon": true,
+      "openInCenter": true,
+      "zoomLevel": 1,
+      "forceIframe": false,
+      "customCss": "body { overflow-x: hidden; }",
+      "customJs": ""
+    },
+    {
+      "url": "file:///C:/Users/user/obsidian-html-guide/html/git-lecture.html",
+      "displayName": "Git 강의 시뮬레이터",
+      "icon": "git-merge",
+      "hideOnMobile": true,
+      "addRibbonIcon": true,
+      "openInCenter": true,
+      "zoomLevel": 1,
+      "forceIframe": false,
+      "customCss": "body { overflow-x: hidden; }",
+      "customJs": ""
+    },
+    {
+      "url": "file:///C:/Users/user/obsidian-html-guide/html/%EC%85%9C%EB%A1%9D_Test.html",
+      "displayName": "셜록 Test",
+      "icon": "book-open",
+      "hideOnMobile": true,
+      "addRibbonIcon": true,
+      "openInCenter": true,
+      "zoomLevel": 1,
+      "forceIframe": false,
+      "customCss": "body { overflow-x: hidden; }",
+      "customJs": ""
+    },
+    {
+      "url": "file:///C:/Users/user/obsidian-html-guide/html/JiraGuide.html",
+      "displayName": "Jira Guide",
+      "icon": "layout-list",
+      "hideOnMobile": true,
+      "addRibbonIcon": true,
+      "openInCenter": true,
+      "zoomLevel": 1,
+      "forceIframe": false,
+      "customCss": "body { overflow-x: hidden; }",
+      "customJs": ""
+    },
+    {
+      "url": "file:///C:/Users/user/obsidian-html-guide/html/ConfluenceGuide.html",
+      "displayName": "Confluence 정복 가이드",
+      "icon": "globe",
+      "hideOnMobile": true,
+      "addRibbonIcon": true,
+      "openInCenter": true,
+      "zoomLevel": 1,
+      "forceIframe": false,
+      "customCss": "body { overflow-x: hidden; }",
+      "customJs": ""
+    }
+  ],
+  "padding": 0
+}

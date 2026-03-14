@@ -1,0 +1,18 @@
+# 텐빌더 AI Coding Aliases
+# Add to your .zshrc: cat .zshrc.ai >> ~/.zshrc
+
+# --- Claude Code ---
+alias cc='claude'
+alias ccr='claude "현재 브랜치 변경사항을 리뷰해줘"'
+alias cct='claude "테스트를 실행하고 실패하면 수정해줘"'
+alias ccf='claude "이 파일을 분석해줘:"'
+alias ccp='claude "이 프로젝트의 CLAUDE.md를 읽고 요약해줘"'
+
+# --- Git + AI ---
+alias gpr='git diff main...HEAD | claude "이 PR을 리뷰해줘"'
+alias gcm='claude "변경사항을 보고 적절한 커밋 메시지를 제안해줘"'
+
+# --- Quick Actions ---
+alias ai-review='claude "현재 브랜치의 변경사항을 보안, 성능, 에러핸들링 관점에서 리뷰해줘"'
+alias ai-test='claude "테스트 커버리지가 낮은 파일을 찾아서 테스트를 추가해줘"'
+alias ai-doc='claude "이 프로젝트의 README.md를 현재 코드 기반으로 업데이트해줘"'

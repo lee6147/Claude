@@ -1,0 +1,42 @@
+# .cursorrules
+
+## 이 파일은 무엇인가?
+
+Cursor IDE에서 AI 어시스턴트의 행동을 지시하는 설정 파일입니다.
+Claude Code의 CLAUDE.md와 같은 역할을 합니다.
+
+## 프로젝트
+
+- **이름:** [PROJECT_NAME]
+- **언어:** [TypeScript / Python / ...]
+- **프레임워크:** [Next.js / FastAPI / ...]
+
+## 규칙
+
+### 코드 스타일
+
+- [예: 함수형 컴포넌트만 사용 (React)]
+- [예: 타입은 `interface` 우선, 유니온은 `type`]
+- [예: 변수명은 camelCase, 상수는 UPPER_SNAKE_CASE]
+
+### 파일 구조
+
+- [예: 컴포넌트 = `components/[Feature]/[Component].tsx`]
+- [예: API 라우트 = `app/api/[resource]/route.ts`]
+
+### 금지
+
+- `any` 타입 사용 금지
+- `console.log` 커밋 금지
+- 인라인 스타일 금지 (Tailwind 또는 CSS Modules 사용)
+
+### 테스트
+
+- 모든 유틸리티 함수에 단위 테스트 필수
+- 테스트 파일 위치: `__tests__/` 또는 `*.test.ts`
+- 테스트 프레임워크: [Jest / Vitest / pytest]
+
+## 참고
+
+이 파일과 함께 CLAUDE.md도 프로젝트 루트에 배치하면
+Claude Code + Cursor 동시 사용 시 일관된 AI 지원을 받을 수 있습니다.
